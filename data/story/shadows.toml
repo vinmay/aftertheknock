@@ -85,7 +85,7 @@ setup = [["set", "chars.player.location", "stairwell"], ["set", "chars.player.lo
   fallback = [{ actor = "mara", action = "move", target = "roof" }]
 
   [[D.lock.roof.steps]]
-  hint = "Someone says one short sentence aloud, in this place, that nobody in the other night should hear."
+  hint = "Someone says one quiet sentence aloud, 4 to 12 words, the kind of line you overhear through a wall and can't stop thinking about. Like: \"The third stair is the loud one.\" or \"She always takes the long way down.\" Write a new one; never reuse these."
   speak = "aloud"
   fallback = [{ actor = "mara", action = "speak", target = "$here", text = "$speech" }]
 
@@ -105,7 +105,7 @@ setup = [["set", "chars.player.location", "stairwell"], ["set", "chars.player.lo
   fallback = [{ actor = "mara", action = "open", target = "unit07" }]
 
   [[D.lock.basement.steps]]
-  hint = "Someone says one short sentence aloud, in this place, that nobody in the other night should hear."
+  hint = "Someone says one quiet sentence aloud, 4 to 12 words, the kind of line you overhear through a wall and can't stop thinking about. Like: \"The third stair is the loud one.\" or \"She always takes the long way down.\" Write a new one; never reuse these."
   speak = "aloud"
   fallback = [{ actor = "mara", action = "speak", target = "$here", text = "$speech" }]
 
@@ -126,7 +126,7 @@ setup = [["set", "chars.player.location", "stairwell"], ["set", "chars.mara.loca
   fallback = [{ actor = "mara", action = "give", target = "key07", to = "player" }]
 
   [[D.open.roof.steps]]
-  hint = "Someone says one short sentence aloud, in this place, that nobody in the other night should hear."
+  hint = "Someone says one quiet sentence aloud, 4 to 12 words, the kind of line you overhear through a wall and can't stop thinking about. Like: \"The third stair is the loud one.\" or \"She always takes the long way down.\" Write a new one; never reuse these."
   speak = "aloud"
   fallback = [{ actor = "mara", action = "speak", target = "$here", text = "$speech" }]
 
@@ -147,6 +147,6 @@ setup = [["set", "chars.player.location", "stairwell"], ["set", "chars.mara.loca
   fallback = [{ actor = "mara", action = "move", target = "unit07" }]
 
   [[D.open.basement.steps]]
-  hint = "Someone says one short sentence aloud, in this place, that nobody in the other night should hear."
+  hint = "Someone says one quiet sentence aloud, 4 to 12 words, the kind of line you overhear through a wall and can't stop thinking about. Like: \"The third stair is the loud one.\" or \"She always takes the long way down.\" Write a new one; never reuse these."
   speak = "aloud"
   fallback = [{ actor = "mara", action = "speak", target = "$here", text = "$speech" }]

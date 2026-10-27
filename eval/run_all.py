@@ -355,11 +355,18 @@ def main():
     else:
         import os
         ledger = json.loads(Path(os.environ.get("KNOCK_SPEND_FILE", "eval/results/spend.json")).read_text())
-        ids = {p.stem for p in RUNS.glob("*.json")}
-        runs = [v for k, v in ledger["runs"].items() if k in ids]
-        m["spend"] = {"playthroughs": len(runs), "usd_total": round(sum(r["usd"] for r in runs), 5),
-                      "usd_per_playthrough_mean": round(statistics.mean(r["usd"] for r in runs), 5) if runs else None,
-                      "price_in_per_m": ledger["price_in_per_m"], "price_out_per_m": ledger["price_out_per_m"],
+        pin, pout = ledger["price_in_per_m"], ledger["price_out_per_m"]
+        # Spend per playthrough from each run's own recorded token counts (run ids repeat across
+        # eval invocations, so the ledger's per-run totals can include earlier runs).
+        costs = []
+        for p in sorted(RUNS.glob("*.json")):
+            rec = json.loads(p.read_text())
+            toks = [(r.get("meta") or {}) for r in rec["log"] if r["kind"] in ("proposal", "narration")]
+            costs.append(sum(t.get("prompt_tokens", 0) for t in toks) / 1e6 * pin
+                         + sum(t.get("output_tokens", 0) for t in toks) / 1e6 * pout)
+        m["spend"] = {"playthroughs": len(costs), "usd_total": round(sum(costs), 5),
+                      "usd_per_playthrough_mean": round(statistics.mean(costs), 5) if costs else None,
+                      "price_in_per_m": pin, "price_out_per_m": pout,
                       "ledger_total_usd_all_calls": ledger["total_usd"]}
     charts(m)
     (RESULTS / "summary.json").write_text(json.dumps(m, indent=1))

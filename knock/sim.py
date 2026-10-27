@@ -12,7 +12,7 @@ from dataclasses import dataclass, field
 from .engine import Timeline
 from .models import prompt_hash
 from .state import STORY_DIR, INACTIVE, apply_delta
-from .narrator import BANNED_PHRASES, banned_in
+from .narrator import BANNED_PHRASES, banned_in, normalize
 from .validator import ACTIONS
 
 MAX_ATTEMPTS = 3
@@ -33,6 +33,8 @@ FALLBACK_SPOKEN = ["It was always going to be you.", "Count the stairs on the wa
                    "Leave the light off.", "You can stop holding the door now."]
 SPOKEN_PATTERN = "^[A-Za-z][A-Za-z ,.'?!-]{2,70}$"
 MAX_SPOKEN_WORDS = 12
+MIN_SPOKEN_WORDS = 4
+SPEAK_EXAMPLES = {"the third stair is the loud one.", "she always takes the long way down."}
 
 SYSTEM = ("You write one event at a time for a hidden timeline in a quiet horror story. "
           "Reply with JSON only. Use only the ids listed. The summary is one short past-tense "
@@ -187,6 +189,8 @@ def beat_violations(step: dict, p: dict, decision=None, state: dict | None = Non
             out.append(("R_BEAT", unmet))
     if p.get("action") not in step.get("actions", ACTIONS) and not (step.get("mark") or step.get("speak")):
         out.append(("R_BEAT", f"action {p.get('action')!r} not allowed for this step"))
+    if step.get("speak") and normalize(p.get("text") or "") in SPEAK_EXAMPLES:
+        out.append(("R_BEAT", "that is one of the examples; write a new sentence"))
     banned = banned_in(p.get("text") or "")
     if banned:
         out.append(("R_BEAT", f"banned phrase {banned[0]!r}; write something specific to this night"))
@@ -194,8 +198,8 @@ def beat_violations(step: dict, p: dict, decision=None, state: dict | None = Non
         text = p.get("text") or ""
         if p.get("action") != "speak":
             out.append(("R_BEAT", "this step must be someone speaking"))
-        elif not re.fullmatch(SPOKEN_PATTERN, text) or len(text.split()) > MAX_SPOKEN_WORDS:
-            out.append(("R_BEAT", f"spoken words must be one short plain sentence of at most {MAX_SPOKEN_WORDS} words"))
+        elif not re.fullmatch(SPOKEN_PATTERN, text) or not MIN_SPOKEN_WORDS <= len(text.split()) <= MAX_SPOKEN_WORDS:
+            out.append(("R_BEAT", f"say one plain sentence of {MIN_SPOKEN_WORDS} to {MAX_SPOKEN_WORDS} words"))
     if step.get("mark"):
         pat = DIGITS_PATTERN if step["mark"] == "digits" else WORDS_PATTERN
         if p.get("action") != "mark":
