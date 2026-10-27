@@ -34,13 +34,14 @@ Terminal version: `uv run knock play`.
 | Mode | What happens | Needs |
 |---|---|---|
 | **Local live** (default: `knock-server`) | Shadow timelines are generated during your playthrough by Gemma 4 E2B on your own GPU, offline. This is the mode the evaluation measures. | Ollama + `gemma4:e2b` |
+| **Hosted live** (`render.yaml` service `knock-live`, *prepared, not yet deployed*) | The same engine and front end on Render. Model calls go to **Gemma 4 31B (`gemma-4-31B-it`), an open-weight model on DigitalOcean serverless inference**, through its OpenAI-compatible API. That is a bigger model than the local default, so its numbers are reported separately and never mixed into the results below. Spend is capped (default $10) and logged per playthrough. If the endpoint is down or the cap is reached, the page switches to the labeled replays. | Configured by the deployer (`.env.example`) |
 | **Replay site** (static, `site/`, hosted on Render) | Plays committed recordings of real local runs. Every screen says **"Replay of a real recorded run — the model is not running live."** Nothing is generated. When the site is built, each recording is re-run through the engine from its recorded model outputs, and the build fails if any timeline's state hash differs. Choices follow the recording. | A browser |
 | **Replay via the server** (`knock-server --replay-only`) | The same recordings, re-executed by the engine when you play them, labeled the same way. | Python |
 | **Evaluation** (`eval/run_all.py`) | Fresh local live runs, or `--from-results` to recompute every number from the saved raw logs. | Ollama for fresh runs |
 
 Rebuild the replay site after re-recording: `uv run python scripts/build_static.py`. A test fails if `site/` is out of date.
 
-No closed-model API is called anywhere.
+No closed-model API is called anywhere. The hosted mode is selected only by environment variables (`KNOCK_PROVIDER=openai` plus `KNOCK_OPENAI_*`). Without them, everything runs locally.
 
 ## How it works
 
@@ -118,9 +119,11 @@ Every number above comes from `uv run python eval/run_all.py` (or `--from-result
 
 ## Why open models
 
-- **Many background calls.** Each playthrough makes about 10 model calls (about 5,600 tokens) that the player never sees directly, and most of them happen in a world the player never visits. Running locally, they cost nothing and need no account.
-- **Pinned weights.** The validator, the prompts and the fallback rates were tuned against one exact model file (digest in MODELS.md). A hosted model that changes underneath would silently change how often the story falls back.
-- **Inspectable.** The whole simulation runs on your machine: model, prompts, proposals, rejections and commits. The evidence view (press `E`) shows all of it.
+The same open-weight family runs in both live modes. Gemma 4 E2B runs locally on a consumer GPU, and Gemma 4 31B is hosted for people without one.
+
+- **Many background calls.** Each playthrough makes about 10 model calls (about 5,600 tokens) that the player never sees directly, and most of them happen in a world the player never visits. Locally they cost nothing and need no account. Hosted, they cost about a tenth of a cent per playthrough at the listed price ($0.18 / $0.50 per million input / output tokens), which an open model makes possible at hobby scale.
+- **Pinned weights.** The validator, prompts and fallback rates were tuned against one exact local model file (digest in MODELS.md). A closed model that changed underneath would silently change how often the story falls back. With open weights, the local mode can always be checked against the same file.
+- **Inspectable.** In local mode the whole simulation runs on your machine: model, prompts, proposals, rejections and commits. In both modes the evidence view (press `E`) shows every proposal and validator decision.
 
 ## Tests
 
