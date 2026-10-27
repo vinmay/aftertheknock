@@ -129,11 +129,16 @@ class ReplayModel:
     def __init__(self, record: dict):
         self.name = f"replay of {record['model'].get('model')}"
         self.recorded_model = record["model"]
-        self.queues: dict[str, list[str]] = {}
+        self.queues: dict[str, list] = {}
+        # Steps that the original run resolved without the model (time budget), to replay identically.
+        self.forced_fallback = {(r["branch"], r["step"]) for r in record["log"]
+                                if r["kind"] == "fallback" and r.get("reason", "").startswith("budget")}
         for r in record["log"]:
             if r["kind"] in ("proposal", "narration"):
-                text = r.get("raw", r.get("text", ""))
-                self.queues.setdefault(r["prompt_hash"], []).append(text)
+                if r.get("transport"):
+                    self.queues.setdefault(r["prompt_hash"], []).append(TransportError(r["transport"]))
+                else:
+                    self.queues.setdefault(r["prompt_hash"], []).append(r.get("raw", r.get("text", "")))
         self.misses = 0
 
     def info(self) -> dict:
@@ -144,12 +149,24 @@ class ReplayModel:
         if not q:
             self.misses += 1
             return Reply("", 0.0, model=self.name)
-        return Reply(q.pop(0), 0.0, model=self.name)
+        item = q.pop(0)
+        if isinstance(item, TransportError):
+            raise TransportError(item.reason)
+        return Reply(item, 0.0, model=self.name)
 
 
 # ---------------------------------------------------------------- hosted (OpenAI-compatible)
 class SpendCapReached(RuntimeError):
     pass
+
+
+class TransportError(RuntimeError):
+    """The provider could not be reached or did not answer (timeout, connection, 429, 5xx, auth).
+    Distinct from content failures (bad JSON, validator rejections), which are retried with feedback."""
+
+    def __init__(self, reason: str):
+        super().__init__(reason)
+        self.reason = reason
 
 
 class SpendLedger:
@@ -225,9 +242,12 @@ class OpenAICompatModel:
     never logged or recorded.
     """
     live = True
+    supports_deadline = True       # the simulator passes a wall-clock deadline per call
+    transport_retries = 1          # one retry on a transport failure, then the authored fallback
+    shadow_budget_s = 25.0         # cooperative wall-clock budget per shadow timeline
 
     def __init__(self, base_url: str, model: str, api_key: str, ledger: SpendLedger,
-                 temperature: float = 0.8, timeout: float = 60, run_id: str | None = None):
+                 temperature: float = 0.8, timeout: float = 12, run_id: str | None = None):
         self.url = base_url.rstrip("/")
         self.name = model
         self._key = api_key
@@ -253,17 +273,18 @@ class OpenAICompatModel:
     def for_run(self, run_id: str) -> "OpenAICompatModel":
         m = OpenAICompatModel(self.url, self.name, self._key, self.ledger, self.temperature, self.timeout, run_id)
         m.schema_supported = self.schema_supported
+        m.shadow_budget_s, m.transport_retries = self.shadow_budget_s, self.transport_retries
         return m
 
     def info(self) -> dict:
         return {"model": self.name, "provider": self.url.split("//")[-1].split("/")[0],
                 "quantization": "provider-managed", "hosted": True}
 
-    def _post(self, body: dict) -> dict:
+    def _post(self, body: dict, timeout: float | None = None) -> dict:
         req = urllib.request.Request(f"{self.url}/chat/completions", data=json.dumps(body).encode(),
                                      headers={"Content-Type": "application/json",
                                               "Authorization": f"Bearer {self._key}"})
-        with urllib.request.urlopen(req, timeout=self.timeout) as r:
+        with urllib.request.urlopen(req, timeout=timeout or self.timeout) as r:
             return json.load(r)
 
     def ping(self) -> bool:
@@ -286,9 +307,15 @@ class OpenAICompatModel:
             return False
 
     def generate(self, messages: list[dict], schema: dict | None = None, seed: int = 0,
-                 max_tokens: int = 200) -> Reply:
+                 max_tokens: int = 200, deadline: float | None = None) -> Reply:
+        import socket
         import urllib.error
         self.ledger.check()
+        timeout = self.timeout
+        if deadline is not None:
+            timeout = min(timeout, deadline - time.monotonic())
+            if timeout <= 0.05:
+                raise TransportError("shadow time budget used up")
         body = {"model": self.name, "messages": list(messages), "temperature": self.temperature,
                 "seed": seed, "max_tokens": max_tokens}
         if schema is not None:
@@ -303,12 +330,17 @@ class OpenAICompatModel:
                                   for k, v in schema["properties"].items()})}]
         t0 = time.perf_counter()
         try:
-            d = self._post(body)
+            d = self._post(body, timeout)
         except urllib.error.HTTPError as exc:
             if exc.code in (400, 422) and "response_format" in body:
                 self.schema_supported = False
-                return self.generate(messages, schema, seed, max_tokens)
-            raise
+                return self.generate(messages, schema, seed, max_tokens, deadline)
+            raise TransportError(f"HTTP {exc.code}") from exc
+        except (urllib.error.URLError, socket.timeout, TimeoutError, ConnectionError, OSError) as exc:
+            reason = getattr(exc, "reason", exc)
+            raise TransportError(f"unreachable: {type(reason).__name__}") from exc
+        except json.JSONDecodeError as exc:
+            raise TransportError("unreadable reply from provider") from exc
         dt = time.perf_counter() - t0
         if schema is not None and "response_format" in body:
             self.schema_supported = True

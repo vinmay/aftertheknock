@@ -13,6 +13,7 @@ from .engine import Timeline
 from .models import prompt_hash
 from .state import STORY_DIR, INACTIVE, apply_delta
 from .engine import crossed_objects
+from .models import TransportError
 from .narrator import banned_in
 from .validator import ACTIONS
 
@@ -251,27 +252,54 @@ def simulate_shadow(timeline: Timeline, bid: str, spec_key: str, model, seed: in
     crossed = set().union(*(crossed_objects(x.post_fork) for x in timeline.intrusions)) if timeline.intrusions else set()
     timeline.author(bid, spec["setup"], spec["setup_summary"], request_id=f"{bid}:setup")
     committed = []
+    # Hosted models get a cooperative wall-clock budget for the whole shadow; once it is spent the
+    # remaining steps resolve to validated authored fallbacks. Local models (Ollama) are unchanged.
+    budget = getattr(model, "shadow_budget_s", None)
+    deadline = time.monotonic() + budget if budget else None
+    retries = getattr(model, "transport_retries", None)
+    forced = getattr(model, "forced_fallback", set())      # replay: steps the original resolved by budget
     for i, step in enumerate(spec["steps"]):
         rid = f"{bid}:step{i}"
         feedback = None
         event = None
+        reason = "the model's proposals were rejected"
+        transport_failures = 0
+        use_model = (bid, i) not in forced and not (deadline and time.monotonic() >= deadline)
+        if not use_model:
+            reason = "budget: the shadow's time budget was spent"
         flavor = (random.Random(f"{seed}:{bid}:{i}:meaning").choice(MEANINGS[step["mark"]])
                   if step.get("mark") else None)
-        for attempt in range(MAX_ATTEMPTS):
+        for attempt in range(MAX_ATTEMPTS if use_model else 0):
+            if deadline and time.monotonic() >= deadline:
+                reason = "budget: the shadow's time budget was spent"
+                break
             state = timeline.state(bid)
             msgs = build_messages(timeline, bid, spec, step, feedback, flavor)
             schema = step_schema(state, step, crossed)
             call_seed = seed * 1000 + (0 if bid == "B" else 500) + i * 10 + attempt
             t0 = time.perf_counter()
+            transport = None
             try:
-                reply = model.generate(msgs, schema, seed=call_seed)
+                kw = {"deadline": deadline} if deadline and getattr(model, "supports_deadline", False) else {}
+                reply = model.generate(msgs, schema, seed=call_seed, **kw)
                 raw, meta = reply.text, reply.to_dict()
-            except Exception as exc:  # network or server failure counts as a failed attempt
+            except TransportError as exc:          # the provider failed, not the proposal
+                raw, meta, transport = "", {"error": exc.reason, "latency_s": time.perf_counter() - t0}, exc.reason
+            except Exception as exc:  # local model or other failure counts as a failed attempt
                 raw, meta = "", {"error": repr(exc), "latency_s": time.perf_counter() - t0}
             proposal = parse(raw)
             rec = dict(kind="proposal", branch=bid, step=i, attempt=attempt, request_id=rid,
                        prompt_hash=prompt_hash(msgs, schema), call_seed=call_seed, raw=raw, meta=meta,
                        proposal=proposal)
+            if transport is not None:
+                rec["transport"] = transport
+                rec["decision"] = {"accepted": False, "violations": [{"rule": "TRANSPORT", "detail": transport}]}
+                log.add(**rec)
+                transport_failures += 1
+                if retries is None or transport_failures > retries:
+                    reason = f"transport: {transport}"
+                    break
+                continue
             if proposal is None:
                 rec["decision"] = {"accepted": False, "violations": [{"rule": "R_SCHEMA", "detail": "not a JSON object"}]}
                 feedback = "the reply was not a JSON object"
@@ -308,7 +336,7 @@ def simulate_shadow(timeline: Timeline, bid: str, spec_key: str, model, seed: in
                     p["summary"] = p["summary"] or ""
                     event = timeline.commit(bid, p, source="fallback", request_id=rid)
                     log.add(kind="fallback", branch=bid, step=i, request_id=rid, proposal=p,
-                            event_id=event.event_id)
+                            event_id=event.event_id, reason=reason)
                     break
             else:
                 log.add(kind="skipped", branch=bid, step=i, request_id=rid)

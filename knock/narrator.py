@@ -12,7 +12,7 @@ from __future__ import annotations
 import re
 
 from .engine import Intrusion, Timeline
-from .models import prompt_hash
+from .models import TransportError, prompt_hash
 from .state import apply_delta, initial_state, is_plural, location_of
 
 SYSTEM = ("You add one sentence of atmosphere to a quiet, literary horror story, in second person, "
@@ -165,18 +165,26 @@ def narrate_crossing(timeline: Timeline, x: Intrusion, model, pocket: str, seed:
     msgs = build_messages(m)
     raw, color = None, None
     for attempt in range(2):
+        transport = None
         try:
             reply = model.generate(msgs, None, seed=seed * 1000 + 900 + attempt, max_tokens=60)
             model_text, meta = reply.text.strip(), reply.to_dict()
+        except TransportError as exc:
+            model_text, meta, transport = "", {"error": exc.reason}, exc.reason
         except Exception as exc:
             model_text, meta = "", {"error": repr(exc)}
-        problems = check(model_text)
+        problems = check(model_text) if transport is None else [f"TRANSPORT: {transport}"]
         if raw is None:
             raw = {"text": model_text, "problems": problems}
         if log is not None:
-            log.add(kind="narration", branch=x.target_branch, intrusion=x.intrusion_id, attempt=attempt,
-                    prompt_hash=prompt_hash(msgs, None), raw=model_text, text=model_text,
-                    problems=problems, meta=meta)
+            rec = dict(kind="narration", branch=x.target_branch, intrusion=x.intrusion_id, attempt=attempt,
+                       prompt_hash=prompt_hash(msgs, None), raw=model_text, text=model_text,
+                       problems=problems, meta=meta)
+            if transport is not None:
+                rec["transport"] = transport
+            log.add(**rec)
+        if transport is not None:
+            break                                   # the provider is down: hand-written lines only, no wait
         if not problems:
             color = model_text
             break
