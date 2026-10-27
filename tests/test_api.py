@@ -66,3 +66,45 @@ def test_verify_reruns_the_log():
         g.choose(0)
     v = g.verify()
     assert v["verified"] and v["hashes"] == v["replayed"]
+
+
+def test_concurrent_choices_on_one_game_get_409():
+    """Two posts to /api/choose for the same game at once: one proceeds, the other gets a clean 409."""
+    import json
+    import threading
+    import urllib.error
+    import urllib.request
+    from http.server import ThreadingHTTPServer
+
+    class Slow:
+        run_id = "slowgame"
+        ending = None
+        calls = 0
+
+        def choose(self, index):
+            Slow.calls += 1
+            time.sleep(0.5)                     # a choice that takes a while (e.g. waiting on a shadow)
+            return {"scene": "x", "kind": "scene", "text": "", "choices": []}
+
+    api._games.clear()
+    api._add_game(Slow())
+    srv = ThreadingHTTPServer(("127.0.0.1", 0), api.Handler)
+    threading.Thread(target=srv.serve_forever, daemon=True).start()
+    url = f"http://127.0.0.1:{srv.server_address[1]}/api/choose"
+    results = []
+
+    def post():
+        req = urllib.request.Request(url, data=json.dumps({"game": "slowgame", "index": 0}).encode())
+        try:
+            with urllib.request.urlopen(req, timeout=5) as r:
+                results.append(r.status)
+        except urllib.error.HTTPError as e:
+            results.append(e.code)
+
+    ts = [threading.Thread(target=post) for _ in range(2)]
+    ts[0].start(); time.sleep(0.1); ts[1].start()
+    for t in ts:
+        t.join()
+    srv.shutdown()
+    assert sorted(results) == [200, 409]
+    assert Slow.calls == 1                     # the second choice never ran

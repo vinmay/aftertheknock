@@ -41,6 +41,13 @@ _live = {"ok": False, "checked": 0.0}
 _starts: dict[str, list[float]] = {}
 _all_starts: list[float] = []
 _last_seen: dict[str, float] = {}
+_game_locks: dict[str, threading.Lock] = {}
+
+
+def game_lock(gid: str) -> threading.Lock:
+    """One lock per game: state-changing calls on the same night never run at the same time."""
+    with _lock:
+        return _game_locks.setdefault(gid, threading.Lock())
 
 
 def live_ok() -> bool:
@@ -95,6 +102,7 @@ def _add_game(g: Game) -> None:
             idle = min(_games, key=lambda k: _last_seen.get(k, 0))
             _games.pop(idle)
             _last_seen.pop(idle, None)
+            _game_locks.pop(idle, None)
         _games[g.run_id] = g
         _last_seen[g.run_id] = time.time()
 
@@ -228,13 +236,20 @@ class Handler(SimpleHTTPRequestHandler):
                                        "choices": [c["index"] for c in rec["choices"]],
                                        "model": rec["model"], "recorded_run": rec["run_id"]}})
             if u.path == "/api/choose":
-                g = _get(body["game"])
-                v = g.choose(int(body["index"]))
-                rec = getattr(g, "replay_of", None)
-                if g.ending and rec is not None:
-                    v["verified"] = verify_replay(g, rec)
-                elif g.ending:
-                    _save(g)
+                gid = body["game"]
+                g = _get(gid)
+                lock = game_lock(gid)
+                if not lock.acquire(blocking=False):
+                    return self._json({"error": "This night is still answering your last choice."}, HTTPStatus.CONFLICT)
+                try:
+                    v = g.choose(int(body["index"]))
+                    rec = getattr(g, "replay_of", None)
+                    if g.ending and rec is not None:
+                        v["verified"] = verify_replay(g, rec)
+                    elif g.ending:
+                        _save(g)
+                finally:
+                    lock.release()
                 return self._json({"view": v})
         except (KeyError, ValueError, FileNotFoundError) as exc:
             return self._json({"error": str(exc)}, HTTPStatus.BAD_REQUEST)
