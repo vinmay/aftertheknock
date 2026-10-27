@@ -15,6 +15,7 @@ KEY = "test-key-never-logged"
 
 class FakeProvider(BaseHTTPRequestHandler):
     calls = []
+    deny = False
 
     def log_message(self, *a):
         pass
@@ -34,6 +35,8 @@ class FakeProvider(BaseHTTPRequestHandler):
         assert self.headers["Authorization"] == f"Bearer {KEY}"
         req = json.loads(self.rfile.read(int(self.headers["Content-Length"])))
         FakeProvider.calls.append(req)
+        if FakeProvider.deny:
+            return self._send(403, {"id": "Forbidden", "message": "You are not authorized to perform this operation"})
         if "response_format" in req:
             return self._send(400, {"error": {"message": "response_format not supported"}})
         rng = random.Random(len(FakeProvider.calls))
@@ -60,6 +63,7 @@ class FakeProvider(BaseHTTPRequestHandler):
 @pytest.fixture
 def provider():
     FakeProvider.calls = []
+    FakeProvider.deny = False
     srv = ThreadingHTTPServer(("127.0.0.1", 0), FakeProvider)
     threading.Thread(target=srv.serve_forever, daemon=True).start()
     yield f"http://127.0.0.1:{srv.server_address[1]}/v1"
@@ -101,3 +105,11 @@ def test_ledger_persists_across_restarts(provider, tmp_path):
     OpenAICompatModel(provider, "gemma-test", KEY, l1).generate([{"role": "user", "content": "hi"}])
     l2 = SpendLedger(path, 10, 0.18, 0.50)
     assert l2.total == pytest.approx(l1.total) and l2.data["calls"] == 1
+
+
+def test_ping_fails_when_key_cannot_run_inference(provider, tmp_path):
+    """A key that can list models but not run inference must not count as live."""
+    m = OpenAICompatModel(provider, "gemma-test", KEY, SpendLedger(str(tmp_path / "s.json"), 10, 0.18, 0.50))
+    assert m.ping()
+    FakeProvider.deny = True
+    assert not m.ping()

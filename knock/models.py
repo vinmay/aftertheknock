@@ -252,11 +252,14 @@ class OpenAICompatModel:
             return json.load(r)
 
     def ping(self) -> bool:
+        """Can this key actually run inference? Listing models is not enough: a key without
+        inference access can still list them. Costs one tiny completion."""
         try:
             self.ledger.check()
-            req = urllib.request.Request(f"{self.url}/models", headers={"Authorization": f"Bearer {self._key}"})
-            with urllib.request.urlopen(req, timeout=10) as r:
-                return r.status == 200
+            d = self._post({"model": self.name, "messages": [{"role": "user", "content": "ok"}], "max_tokens": 1})
+            usage = d.get("usage") or {}
+            self.ledger.add("health-check", usage.get("prompt_tokens", 0), usage.get("completion_tokens", 0))
+            return bool(d.get("choices"))
         except Exception:
             return False
 
