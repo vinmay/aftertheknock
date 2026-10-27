@@ -6,7 +6,9 @@
 <title>After the Knock</title>
 <meta name="description" content="A short horror story where the choice you didn't make keeps happening.">
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Caveat:wght@500&display=swap">
+<!-- The handwriting font is only needed at a crossing: load it without blocking first paint. -->
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Caveat:wght@500&display=swap" media="print" onload="this.media='all'">
+<noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Caveat:wght@500&display=swap"></noscript>
 <link rel="stylesheet" href="style.css">
 </head>
 <body>
