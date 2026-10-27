@@ -221,3 +221,10 @@ body.staged main { filter: blur(2px) brightness(0.5); }
 .crossing-stage.instant *, .crossing-stage.instant .hand text { animation: none !important; opacity: 1 !important; }
 .crossing-stage.instant .hand text { fill: currentColor; stroke-dashoffset: 0; }
 .drawer .tease { font-style: italic; font-size: 1.15rem; }
+
+.play-live { margin: 2.5rem 0 1rem; }
+.play-live a { color: var(--ink); text-decoration: none; display: inline-block; }
+.foot { position: fixed; bottom: 0; right: 0; padding: 0.6rem 1rem; z-index: 4; }
+.linkish { font-family: var(--mono); font-size: 0.72rem; letter-spacing: 0.04em; color: var(--muted); text-decoration: underline; text-underline-offset: 3px; padding: 0.4rem 0.2rem; }
+.linkish:hover { color: var(--ink); }
+.drawer a { color: var(--ink); }
