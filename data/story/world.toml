@@ -1,0 +1,58 @@
+# The building at 11:47 PM, before any choice is made.
+# Every character here is fictional.
+
+[chars.player]
+name = "You"
+location = "apt"
+
+[chars.mara]
+name = "Mara"
+location = "hall"
+
+[chars.teo]
+name = "Teo"
+location = "teo_apt"
+
+[objects.pocket]
+# Name is replaced by the player's answer to "What's in your pocket tonight?"
+name = "a ticket stub"
+holder = "player"
+markable = true
+
+[objects.key07]
+name = "the brass key tagged BASEMENT 07"
+holder = "mara"
+markable = true
+opens = "unit07"
+
+[places.apt]
+name = "your apartment, 6C"
+adjacent = ["hall"]
+locked = false
+
+[places.hall]
+name = "the sixth-floor hall"
+adjacent = ["apt", "teo_apt", "stairwell"]
+
+[places.teo_apt]
+name = "Teo's apartment, 6D"
+adjacent = ["hall"]
+locked = true
+
+[places.stairwell]
+name = "the stairwell"
+adjacent = ["hall", "basement", "roof"]
+
+[places.basement]
+name = "the basement"
+adjacent = ["stairwell", "unit07"]
+
+[places.unit07]
+name = "storage unit 07"
+adjacent = ["basement"]
+locked = true
+key = "key07"
+
+[places.roof]
+name = "the roof"
+adjacent = ["stairwell"]
