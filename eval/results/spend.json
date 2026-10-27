@@ -1,0 +1,63 @@
+{
+ "cap_usd": 10.0,
+ "price_in_per_m": 0.18,
+ "price_out_per_m": 0.5,
+ "total_usd": 0.01206616,
+ "calls": 109,
+ "runs": {
+  "lock_basement_open_1001": {
+   "calls": 9,
+   "prompt_tokens": 4245,
+   "output_tokens": 413,
+   "usd": 0.0009706
+  },
+  "lock_roof_erase_1001": {
+   "calls": 8,
+   "prompt_tokens": 3742,
+   "output_tokens": 363,
+   "usd": 0.00085506
+  },
+  "open_basement_open_1001": {
+   "calls": 11,
+   "prompt_tokens": 5373,
+   "output_tokens": 510,
+   "usd": 0.00122214
+  },
+  "open_roof_open_1001": {
+   "calls": 11,
+   "prompt_tokens": 5337,
+   "output_tokens": 473,
+   "usd": 0.00119716
+  },
+  "lock_basement_open_1002": {
+   "calls": 10,
+   "prompt_tokens": 4801,
+   "output_tokens": 460,
+   "usd": 0.00109418
+  },
+  "lock_roof_erase_1002": {
+   "calls": 8,
+   "prompt_tokens": 3720,
+   "output_tokens": 361,
+   "usd": 0.0008501
+  },
+  "open_basement_erase_1002": {
+   "calls": 11,
+   "prompt_tokens": 5360,
+   "output_tokens": 508,
+   "usd": 0.0012188
+  },
+  "open_roof_open_1002": {
+   "calls": 11,
+   "prompt_tokens": 5344,
+   "output_tokens": 486,
+   "usd": 0.00120492
+  },
+  "unattributed": {
+   "calls": 30,
+   "prompt_tokens": 15640,
+   "output_tokens": 1276,
+   "usd": 0.0034532
+  }
+ }
+}

@@ -1,0 +1,92 @@
+{
+ "runs": 8,
+ "model": {
+  "model": "gemma-4-31B-it",
+  "provider": "inference.do-ai.run",
+  "quantization": "provider-managed",
+  "hosted": true
+ },
+ "isolation": {
+  "unintended_crossings": 0,
+  "narrator_leaks": 0,
+  "details": []
+ },
+ "post_fork_evidence": "16/16 (100%)",
+ "provenance": "16/16 (100%)",
+ "replay_reproduces": "8/8 (100%)",
+ "shadow_steps": {
+  "total": 52,
+  "first_try": "45/52 (87%)",
+  "model_committed": "48/52 (92%)",
+  "fallback": "4/52 (8%)",
+  "skipped": "0/52 (0%)"
+ },
+ "validator": {
+  "proposals": 63,
+  "rejections_by_rule": {
+   "R_NOOP": 12,
+   "R_REACH": 2,
+   "R_ADJACENT": 1
+  },
+  "rejected": "15/63 (24%)"
+ },
+ "impossible_give": {
+  "probe_calls": 30,
+  "impossible_proposed": 30,
+  "rejected": "30/30 (100%)",
+  "rules": {
+   "R_HOLDS": 20,
+   "R_REACH": 10
+  }
+ },
+ "narration": {
+  "crossings": 16,
+  "raw_first_attempt_failed_rule_checks": "0/16 (0%)",
+  "raw_failure_kinds": {},
+  "final_text_from_model": "16/16 (100%)",
+  "final_text_fallback": "0/16 (0%)",
+  "hand_labeled": "not labeled"
+ },
+ "intrusion_accuracy_hand_labeled": "not labeled",
+ "variation": {
+  "lock/basement": {
+   "runs": 2,
+   "distinct_chains": 2,
+   "mean_pairwise_event_overlap_jaccard": 0.33
+  },
+  "lock/roof": {
+   "runs": 2,
+   "distinct_chains": 2,
+   "mean_pairwise_event_overlap_jaccard": 0.09
+  },
+  "open/basement": {
+   "runs": 2,
+   "distinct_chains": 2,
+   "mean_pairwise_event_overlap_jaccard": 0.27
+  },
+  "open/roof": {
+   "runs": 2,
+   "distinct_chains": 2,
+   "mean_pairwise_event_overlap_jaccard": 0.4
+  }
+ },
+ "performance": {
+  "model_call_latency_p50_s": 1.43,
+  "model_call_latency_p95_s": 2.23,
+  "shadow_sim_p50_s": 5.47,
+  "shadow_sim_p95_s": 9.41,
+  "crossing_scene_p50_s": 6.96,
+  "crossing_scene_p95_s": 11.66,
+  "crossing_note": "time from click to crossing text with no reading pause; includes waiting for the shadow",
+  "model_calls_per_playthrough_mean": 9.9,
+  "tokens_per_playthrough_mean": 5187
+ },
+ "spend": {
+  "playthroughs": 8,
+  "usd_total": 0.00861,
+  "usd_per_playthrough_mean": 0.00108,
+  "price_in_per_m": 0.18,
+  "price_out_per_m": 0.5,
+  "ledger_total_usd_all_calls": 0.01206616
+ }
+}

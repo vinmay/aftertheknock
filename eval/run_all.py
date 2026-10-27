@@ -298,7 +298,7 @@ def charts(m: dict) -> None:
 def markdown(m: dict) -> str:
     v = m["validator"]
     lines = [f"# Evaluation summary", "", f"Model: {m['model'].get('model')} {m['model'].get('quantization')}, "
-             f"{m['runs']} live playthroughs (every fork path), raw logs in `eval/results/runs/`.", "",
+             f"{m['runs']} live playthroughs (every fork path), raw logs in `{RUNS.relative_to(HERE.parent)}/`.", "",
              "| Measurement | Result |", "|---|---|",
              f"| Unintended state crossings | {m['isolation']['unintended_crossings']} |",
              f"| Narrator saw unreleased shadow text | {m['isolation']['narrator_leaks']} |",
