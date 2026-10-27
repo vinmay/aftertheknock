@@ -412,3 +412,5 @@ body.instant-text main { animation: none !important; }
 .card-title { display: block; }
 .card-sub { display: block; font-size: 0.88rem; color: var(--muted); margin-top: 0.15rem; }
 .rec-badge { display: inline-block; font-family: var(--mono); font-size: 0.66rem; letter-spacing: 0.08em; text-transform: uppercase; color: var(--bg); background: #c9a96a; padding: 0.05rem 0.4rem; border-radius: 2px; vertical-align: 2px; margin-left: 0.4rem; }
+#drawer-body:focus { outline: none !important; }    /* a reading container, focused only so screen readers start at the memory */
+a.cta { display: inline-flex; align-items: center; text-decoration: none; }

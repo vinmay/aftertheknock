@@ -1,14 +1,14 @@
 run,intrusion,shadow_event,shown_to_player,label,note
-open_roof_open_1003,X1,"mara mark key07 ""4421""","Mara turns the key over in the dark. The paper tag catches the storm light.
+open_roof_open_1003,X1,"mara mark key07 ""5101""","Mara turns the key over in the dark. The paper tag catches the storm light.
 
-“4421”
+“5101”
 
 That wasn't on the tag a minute ago. The handwriting isn't yours.
 
-The damp air presses against your skin like cold, wet linen.",,
-lock_roof_erase_1002,X2,"mara mark key07 ""FOURTH FLOOR DOOR""","Something small and heavy clicks against the floor by your feet. The brass key, tagged BASEMENT 07. Nobody threw it.
+The silence presses, thick and cold against your skin.",,
+lock_roof_erase_1002,X2,"mara mark key07 ""LEVEL THREE DOOR""","Something small and heavy clicks against the floor by your feet. The brass key, tagged BASEMENT 07. Nobody threw it.
 
-“FOURTH FLOOR DOOR”
+“LEVEL THREE DOOR”
 
 That wasn't on the tag the last time you saw it, in Mara's hand. The handwriting isn't yours.
 
@@ -19,56 +19,56 @@ open_roof_open_1003,X2,"player mark pocket ""MARA""","You take out the wedding r
 
 That wasn't there when you put it in your pocket. It's your handwriting. You don't remember writing it.
 
-The air tastes metallic and impossibly thin against your skin.",,
+The wind scrapes against the warped shingles with a dry, rasping sound.",,
 lock_basement_open_1004,X2,"mara mark key07 ""ATTIC""","Mara turns the key over in the dark. The paper tag catches the storm light.
 
 “ATTIC”
 
 That wasn't on the tag a minute ago. The handwriting isn't yours.
 
-The damp air presses against your skin like cold velvet.",,
-lock_basement_open_1002,X2,"mara mark key07 ""LEVEL THREE DOOR""","Mara turns the key over in the dark. The paper tag catches the storm light.
+The damp air presses against your skin like cold wet stone.",,
+lock_basement_open_1002,X2,"mara mark key07 ""THIRD FLOOR DOOR""","Mara turns the key over in the dark. The paper tag catches the storm light.
 
-“LEVEL THREE DOOR”
+“THIRD FLOOR DOOR”
 
 That wasn't on the tag a minute ago. The handwriting isn't yours.
 
 The air tastes like wet stone and stagnant water.",,
-open_basement_open_1004,X2,"player mark pocket ""ROOF""","You take out the bus ticket.
+open_basement_open_1004,X2,"player mark pocket ""ROOFTOP""","You take out the bus ticket.
 
-“ROOF”
+“ROOFTOP”
 
 That wasn't there when you put it in your pocket. It's your handwriting. You don't remember writing it.
 
 The damp air presses against your skin like cold wet stone.",,
-lock_basement_open_1001,X1,"mara mark pocket ""8831""","You take out the wedding ring.
+lock_basement_open_1001,X1,"mara mark pocket ""8891""","You take out the wedding ring.
 
-“8831”
+“8891”
 
 That wasn't there when you put it in your pocket. The handwriting isn't yours.
 
 The air tastes thick and metallic against your skin.",,
-lock_roof_erase_1002,X1,"mara mark pocket ""4815""","You take out the photo of my sister.
+lock_roof_erase_1002,X1,"mara mark pocket ""8190""","You take out the photo of my sister.
 
-“4815”
+“8190”
 
 That wasn't there when you put it in your pocket. The handwriting isn't yours.
 
-The air tastes like wet stone and ozone.",,
-lock_roof_erase_1006,X2,"mara mark key07 ""MARKET DOCK""","Something small and heavy clicks against the floor by your feet. The brass key, tagged BASEMENT 07. Nobody threw it.
+The air tastes metallic and impossibly cold against your skin.",,
+lock_roof_erase_1006,X2,"mara mark key07 ""ABANDON SHADOWS""","Something small and heavy clicks against the floor by your feet. The brass key, tagged BASEMENT 07. Nobody threw it.
 
-“MARKET DOCK”
+“ABANDON SHADOWS”
 
 That wasn't on the tag the last time you saw it, in Mara's hand. The handwriting isn't yours.
 
-The air tastes like wet stone and ozone.",,
+The air tastes thick with ozone and damp stone.",,
 open_basement_open_1004,X1,"mara mark key07 ""1147""","Mara turns the key over in the dark. The paper tag catches the storm light.
 
 “1147”
 
 That wasn't on the tag a minute ago. The handwriting isn't yours.
 
-The air tastes of wet stone and a sudden, sharp metallic chill against your skin.",,
+The air grows thick, smelling of wet stone and something metallic.",,
 open_basement_open_1003,X2,"player mark pocket ""MARA""","You take out the folded receipt.
 
 “MARA”
@@ -82,49 +82,49 @@ open_roof_open_1006,X1,"mara mark key07 ""0315""","Mara turns the key over in th
 
 That wasn't on the tag a minute ago. The handwriting isn't yours.
 
-The air grows thick, smelling of wet stone and something metallic.",,
-open_roof_open_1001,X1,"mara mark key07 ""8001""","Mara turns the key over in the dark. The paper tag catches the storm light.
+The air tastes like wet stone and ozone.",,
+open_roof_open_1001,X1,"mara mark key07 ""8815""","Mara turns the key over in the dark. The paper tag catches the storm light.
 
-“8001”
+“8815”
 
 That wasn't on the tag a minute ago. The handwriting isn't yours.
 
-The air grows thick with the metallic scent of ozone and damp stone.",,
+The air tastes thick and metallic against your skin.",,
 open_basement_erase_1005,X1,"mara mark key07 ""8117""","Mara turns the key over in the dark. The paper tag catches the storm light.
 
 “8117”
 
 That wasn't on the tag a minute ago. The handwriting isn't yours.
 
-The air tastes of ozone and old dust.",,
-lock_basement_open_1005,X2,"mara mark key07 ""FOUR SIX""","Mara turns the key over in the dark. The paper tag catches the storm light.
+The air tastes of wet stone and stagnant water.",,
+lock_basement_open_1005,X2,"mara mark key07 ""SEVEN LEVEL DOOR""","Mara turns the key over in the dark. The paper tag catches the storm light.
 
-“FOUR SIX”
+“SEVEN LEVEL DOOR”
 
 That wasn't on the tag a minute ago. The handwriting isn't yours.
 
 The damp air presses against your skin, thick with the smell of wet earth and something metallic.",,
-open_roof_erase_1005,X1,"mara mark key07 ""8117""","Mara turns the key over in the dark. The paper tag catches the storm light.
+open_roof_erase_1005,X1,"teo mark key07 ""8117""","Mara turns the key over in the dark. The paper tag catches the storm light.
 
 “8117”
 
-That wasn't on the tag a minute ago. The handwriting isn't yours.
+That wasn't on the tag a minute ago. The handwriting isn't yours, and it isn't hers.
 
-The air grows thick, tasting of wet stone and ozone.",,
+The air grows thick, tasting of ozone and wet stone.",,
 open_roof_erase_1004,X2,"player mark pocket ""ROOF""","You take out the folded receipt.
 
 “ROOF”
 
 That wasn't there when you put it in your pocket. It's your handwriting. You don't remember writing it.
 
-The damp air presses against your skin like cold linen.",,
-lock_roof_erase_1001,X1,"mara mark pocket ""7890""","You take out the photo of my sister.
+The damp air presses against your skin like wet wool.",,
+lock_roof_erase_1001,X1,"mara mark pocket ""8891""","You take out the photo of my sister.
 
-“7890”
+“8891”
 
 That wasn't there when you put it in your pocket. The handwriting isn't yours.
 
-The air tastes like rusted metal and damp earth.",,
+The air tastes thick, metallic, and impossibly cold against your skin.",,
 lock_roof_open_1004,X2,"mara mark key07 ""ROOF""","Something small and heavy clicks against the floor by your feet. The brass key, tagged BASEMENT 07. Nobody threw it.
 
 “ROOF”
@@ -132,48 +132,48 @@ lock_roof_open_1004,X2,"mara mark key07 ""ROOF""","Something small and heavy cli
 That wasn't on the tag the last time you saw it, in Mara's hand. The handwriting isn't yours.
 
 The damp air presses against your skin like cold velvet.",,
-lock_roof_erase_1003,X2,"mara mark key07 ""VICTOR""","Something small and heavy clicks against the floor by your feet. The brass key, tagged BASEMENT 07. Nobody threw it.
+lock_roof_erase_1003,X2,"mara mark key07 ""MARA""","Something small and heavy clicks against the floor by your feet. The brass key, tagged BASEMENT 07. Nobody threw it.
 
-“VICTOR”
+“MARA”
 
 That wasn't on the tag the last time you saw it, in Mara's hand. The handwriting isn't yours.
 
 The air tastes metallic and impossibly thin against your skin.",,
-lock_roof_open_1004,X1,"mara mark pocket ""8815""","You take out the train ticket.
+lock_roof_open_1004,X1,"mara mark pocket ""8811""","You take out the train ticket.
 
-“8815”
-
-That wasn't there when you put it in your pocket. The handwriting isn't yours.
-
-The air tastes of ozone and stagnant water.",,
-lock_roof_open_1005,X1,"mara mark pocket ""4581""","You take out the lighter.
-
-“4581”
+“8811”
 
 That wasn't there when you put it in your pocket. The handwriting isn't yours.
 
-The air grows thick, tasting of wet stone and stagnant dust.",,
+The air tastes of ozone and old dust.",,
+lock_roof_open_1005,X1,"mara mark pocket ""4819""","You take out the lighter.
+
+“4819”
+
+That wasn't there when you put it in your pocket. The handwriting isn't yours.
+
+The air grows thick, tasting of wet stone and ozone.",,
 open_basement_erase_1006,X2,"player mark pocket ""MARA BASEMENT""","You take out the folded receipt.
 
 “MARA BASEMENT”
 
 That wasn't there when you put it in your pocket. It's your handwriting. You don't remember writing it.
 
-The air grows thick, a damp, metallic chill pressing against your skin.",,
-open_basement_open_1003,X1,"mara mark key07 ""4512""","Mara turns the key over in the dark. The paper tag catches the storm light.
+The air grows thick, a damp, metallic taste coating your tongue.",,
+open_basement_open_1003,X1,"mara mark key07 ""4421""","Mara turns the key over in the dark. The paper tag catches the storm light.
 
-“4512”
+“4421”
 
 That wasn't on the tag a minute ago. The handwriting isn't yours.
 
-The silence presses against your skin like damp, cold linen.",,
+The silence presses, thick and cold against your skin.",,
 lock_basement_open_1005,X1,"mara mark pocket ""4819""","You take out the bus ticket.
 
 “4819”
 
 That wasn't there when you put it in your pocket. The handwriting isn't yours.
 
-The air grows thick, tasting of wet stone and old dust.",,
+The air grows thick, tasting of ozone and wet stone.",,
 lock_basement_open_1001,X2,"mara mark key07 ""ELARA""","Mara turns the key over in the dark. The paper tag catches the storm light.
 
 “ELARA”
@@ -188,24 +188,24 @@ lock_roof_erase_1006,X1,"mara mark pocket ""1988""","You take out the train tick
 That wasn't there when you put it in your pocket. The handwriting isn't yours.
 
 The air grows thick, smelling of wet stone and something metallic.",,
-open_roof_open_1002,X2,"player mark pocket ""BATHROOM A""","You take out the house key.
+open_roof_open_1002,X2,"player mark pocket ""BATHROOM TWO""","You take out the house key.
 
-“BATHROOM A”
+“BATHROOM TWO”
 
 That wasn't there when you put it in your pocket. It's your handwriting. You don't remember writing it.
 
 The air tastes thick with ozone and damp stone.",,
-open_basement_erase_1002,X2,"player mark pocket ""APT WING B""","You take out the folded receipt.
+open_basement_erase_1002,X2,"player mark pocket ""APT HEIGHT THREE""","You take out the folded receipt.
 
-“APT WING B”
+“APT HEIGHT THREE”
 
 That wasn't there when you put it in your pocket. It's your handwriting. You don't remember writing it.
 
-The air tastes like wet stone and stagnant water.",,
-lock_roof_open_1005,X2,"mara mark key07 ""BIM  B TWO""","Something small and heavy clicks against the floor by your feet. The brass key, tagged BASEMENT 07. Nobody threw it.
+The air tastes like wet stone and ozone.",,
+lock_roof_open_1005,X2,"mara mark key07 ""B S""","Something small and heavy clicks against the floor by your feet. The brass key, tagged BASEMENT 07. Nobody threw it.
 
-“BIM  B TWO”
+“B S”
 
 That wasn't on the tag the last time you saw it, in Mara's hand. The handwriting isn't yours.
 
-The damp air presses against your skin, thick and clinging.",,
+The damp air presses against your skin, thick and smelling of wet stone.",,

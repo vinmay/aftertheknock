@@ -7,18 +7,18 @@ lock_basement_erase_1006,X1,final,"pocket now reads ""1988""; written by mara","
 That wasn't there when you put it in your pocket. The handwriting isn't yours.
 
 The air grows thick, smelling of wet stone and something metallic.",,
-lock_basement_erase_1006,X2,raw,"key07 now reads ""SECRETS BASEMENT""; written by mara","The air grows thick, a damp, metallic chill against your skin.",,
-lock_basement_erase_1006,X2,final,"key07 now reads ""SECRETS BASEMENT""; written by mara","Mara turns the key over in the dark. The paper tag catches the storm light.
+lock_basement_erase_1006,X2,raw,"key07 now reads ""MARKET ROOFTOP""; written by mara","The air grows thick, a damp, metallic chill against your skin.",,
+lock_basement_erase_1006,X2,final,"key07 now reads ""MARKET ROOFTOP""; written by mara","Mara turns the key over in the dark. The paper tag catches the storm light.
 
-“SECRETS BASEMENT”
+“MARKET ROOFTOP”
 
 That wasn't on the tag a minute ago. The handwriting isn't yours.
 
 The air grows thick, a damp, metallic chill against your skin.",,
-lock_basement_open_1001,X1,raw,"pocket now reads ""8831""; written by mara",The air tastes thick and metallic against your skin.,,
-lock_basement_open_1001,X1,final,"pocket now reads ""8831""; written by mara","You take out the wedding ring.
+lock_basement_open_1001,X1,raw,"pocket now reads ""8891""; written by mara",The air tastes thick and metallic against your skin.,,
+lock_basement_open_1001,X1,final,"pocket now reads ""8891""; written by mara","You take out the wedding ring.
 
-“8831”
+“8891”
 
 That wasn't there when you put it in your pocket. The handwriting isn't yours.
 
@@ -31,26 +31,26 @@ lock_basement_open_1001,X2,final,"key07 now reads ""ELARA""; written by mara","M
 That wasn't on the tag a minute ago. The handwriting isn't yours.
 
 The air tastes of wet stone and something metallic and ancient.",,
-lock_basement_open_1002,X1,raw,"pocket now reads ""8109""; written by mara",The air tastes like wet stone and ozone.,,
-lock_basement_open_1002,X1,final,"pocket now reads ""8109""; written by mara","You take out the guitar pick.
+lock_basement_open_1002,X1,raw,"pocket now reads ""8315""; written by mara",The air tastes like wet stone and ozone clings to your skin.,,
+lock_basement_open_1002,X1,final,"pocket now reads ""8315""; written by mara","You take out the guitar pick.
 
-“8109”
+“8315”
 
 That wasn't there when you put it in your pocket. The handwriting isn't yours.
 
-The air tastes like wet stone and ozone.",,
-lock_basement_open_1002,X2,raw,"key07 now reads ""LEVEL THREE DOOR""; written by mara",The air tastes like wet stone and stagnant water.,,
-lock_basement_open_1002,X2,final,"key07 now reads ""LEVEL THREE DOOR""; written by mara","Mara turns the key over in the dark. The paper tag catches the storm light.
+The air tastes like wet stone and ozone clings to your skin.",,
+lock_basement_open_1002,X2,raw,"key07 now reads ""THIRD FLOOR DOOR""; written by mara",The air tastes like wet stone and stagnant water.,,
+lock_basement_open_1002,X2,final,"key07 now reads ""THIRD FLOOR DOOR""; written by mara","Mara turns the key over in the dark. The paper tag catches the storm light.
 
-“LEVEL THREE DOOR”
+“THIRD FLOOR DOOR”
 
 That wasn't on the tag a minute ago. The handwriting isn't yours.
 
 The air tastes like wet stone and stagnant water.",,
-lock_basement_open_1003,X1,raw,"pocket now reads ""8112""; written by mara","The damp air presses against your skin like cold, wet linen.",,
-lock_basement_open_1003,X1,final,"pocket now reads ""8112""; written by mara","You take out the folded receipt.
+lock_basement_open_1003,X1,raw,"pocket now reads ""4581""; written by mara","The damp air presses against your skin like cold, wet linen.",,
+lock_basement_open_1003,X1,final,"pocket now reads ""4581""; written by mara","You take out the folded receipt.
 
-“8112”
+“4581”
 
 That wasn't there when you put it in your pocket. The handwriting isn't yours.
 
@@ -63,82 +63,82 @@ lock_basement_open_1003,X2,final,"key07 now reads ""MARA""; written by mara","Ma
 That wasn't on the tag a minute ago. The handwriting isn't yours.
 
 The air tastes like wet stone and stagnant water.",,
-lock_basement_open_1004,X1,raw,"pocket now reads ""8001""; written by mara","The air tastes of wet stone and a sudden, sharp metallic chill against your skin.",,
-lock_basement_open_1004,X1,final,"pocket now reads ""8001""; written by mara","You take out the guitar pick.
+lock_basement_open_1004,X1,raw,"pocket now reads ""4815""; written by mara",The air tastes of wet stone and ozone.,,
+lock_basement_open_1004,X1,final,"pocket now reads ""4815""; written by mara","You take out the guitar pick.
 
-“8001”
+“4815”
 
 That wasn't there when you put it in your pocket. The handwriting isn't yours.
 
-The air tastes of wet stone and a sudden, sharp metallic chill against your skin.",,
-lock_basement_open_1004,X2,raw,"key07 now reads ""ATTIC""; written by mara",The damp air presses against your skin like cold velvet.,,
+The air tastes of wet stone and ozone.",,
+lock_basement_open_1004,X2,raw,"key07 now reads ""ATTIC""; written by mara",The damp air presses against your skin like cold wet stone.,,
 lock_basement_open_1004,X2,final,"key07 now reads ""ATTIC""; written by mara","Mara turns the key over in the dark. The paper tag catches the storm light.
 
 “ATTIC”
 
 That wasn't on the tag a minute ago. The handwriting isn't yours.
 
-The damp air presses against your skin like cold velvet.",,
-lock_basement_open_1005,X1,raw,"pocket now reads ""4819""; written by mara","The air grows thick, tasting of wet stone and old dust.",,
+The damp air presses against your skin like cold wet stone.",,
+lock_basement_open_1005,X1,raw,"pocket now reads ""4819""; written by mara","The air grows thick, tasting of ozone and wet stone.",,
 lock_basement_open_1005,X1,final,"pocket now reads ""4819""; written by mara","You take out the bus ticket.
 
 “4819”
 
 That wasn't there when you put it in your pocket. The handwriting isn't yours.
 
-The air grows thick, tasting of wet stone and old dust.",,
-lock_basement_open_1005,X2,raw,"key07 now reads ""FOUR SIX""; written by mara","The damp air presses against your skin, thick with the smell of wet earth and something metallic.",,
-lock_basement_open_1005,X2,final,"key07 now reads ""FOUR SIX""; written by mara","Mara turns the key over in the dark. The paper tag catches the storm light.
+The air grows thick, tasting of ozone and wet stone.",,
+lock_basement_open_1005,X2,raw,"key07 now reads ""SEVEN LEVEL DOOR""; written by mara","The damp air presses against your skin, thick with the smell of wet earth and something metallic.",,
+lock_basement_open_1005,X2,final,"key07 now reads ""SEVEN LEVEL DOOR""; written by mara","Mara turns the key over in the dark. The paper tag catches the storm light.
 
-“FOUR SIX”
+“SEVEN LEVEL DOOR”
 
 That wasn't on the tag a minute ago. The handwriting isn't yours.
 
 The damp air presses against your skin, thick with the smell of wet earth and something metallic.",,
-lock_roof_erase_1001,X1,raw,"pocket now reads ""7890""; written by mara",The air tastes like rusted metal and damp earth.,,
-lock_roof_erase_1001,X1,final,"pocket now reads ""7890""; written by mara","You take out the photo of my sister.
+lock_roof_erase_1001,X1,raw,"pocket now reads ""8891""; written by mara","The air tastes thick, metallic, and impossibly cold against your skin.",,
+lock_roof_erase_1001,X1,final,"pocket now reads ""8891""; written by mara","You take out the photo of my sister.
 
-“7890”
+“8891”
 
 That wasn't there when you put it in your pocket. The handwriting isn't yours.
 
-The air tastes like rusted metal and damp earth.",,
-lock_roof_erase_1001,X2,raw,"key07 now reads ""ELIAS""; written by mara",The air tastes of ozone and wet stone.,,
+The air tastes thick, metallic, and impossibly cold against your skin.",,
+lock_roof_erase_1001,X2,raw,"key07 now reads ""ELIAS""; written by mara",The air tastes like ozone and wet stone.,,
 lock_roof_erase_1001,X2,final,"key07 now reads ""ELIAS""; written by mara","Something small and heavy clicks against the floor by your feet. The brass key, tagged BASEMENT 07. Nobody threw it.
 
 “ELIAS”
 
 That wasn't on the tag the last time you saw it, in Mara's hand. The handwriting isn't yours.
 
-The air tastes of ozone and wet stone.",,
-lock_roof_erase_1002,X1,raw,"pocket now reads ""4815""; written by mara",The air tastes like wet stone and ozone.,,
-lock_roof_erase_1002,X1,final,"pocket now reads ""4815""; written by mara","You take out the photo of my sister.
+The air tastes like ozone and wet stone.",,
+lock_roof_erase_1002,X1,raw,"pocket now reads ""8190""; written by mara",The air tastes metallic and impossibly cold against your skin.,,
+lock_roof_erase_1002,X1,final,"pocket now reads ""8190""; written by mara","You take out the photo of my sister.
 
-“4815”
+“8190”
 
 That wasn't there when you put it in your pocket. The handwriting isn't yours.
 
-The air tastes like wet stone and ozone.",,
-lock_roof_erase_1002,X2,raw,"key07 now reads ""FOURTH FLOOR DOOR""; written by mara",The air tastes thick with ozone and damp stone.,,
-lock_roof_erase_1002,X2,final,"key07 now reads ""FOURTH FLOOR DOOR""; written by mara","Something small and heavy clicks against the floor by your feet. The brass key, tagged BASEMENT 07. Nobody threw it.
+The air tastes metallic and impossibly cold against your skin.",,
+lock_roof_erase_1002,X2,raw,"key07 now reads ""LEVEL THREE DOOR""; written by mara",The air tastes thick with ozone and damp stone.,,
+lock_roof_erase_1002,X2,final,"key07 now reads ""LEVEL THREE DOOR""; written by mara","Something small and heavy clicks against the floor by your feet. The brass key, tagged BASEMENT 07. Nobody threw it.
 
-“FOURTH FLOOR DOOR”
+“LEVEL THREE DOOR”
 
 That wasn't on the tag the last time you saw it, in Mara's hand. The handwriting isn't yours.
 
 The air tastes thick with ozone and damp stone.",,
-lock_roof_erase_1003,X1,raw,"pocket now reads ""8112""; written by mara",The damp air tastes of old iron and something faintly sweet.,,
+lock_roof_erase_1003,X1,raw,"pocket now reads ""8112""; written by mara","The damp air presses against your skin like cold, wet linen.",,
 lock_roof_erase_1003,X1,final,"pocket now reads ""8112""; written by mara","You take out the lighter.
 
 “8112”
 
 That wasn't there when you put it in your pocket. The handwriting isn't yours.
 
-The damp air tastes of old iron and something faintly sweet.",,
-lock_roof_erase_1003,X2,raw,"key07 now reads ""VICTOR""; written by mara",The air tastes metallic and impossibly thin against your skin.,,
-lock_roof_erase_1003,X2,final,"key07 now reads ""VICTOR""; written by mara","Something small and heavy clicks against the floor by your feet. The brass key, tagged BASEMENT 07. Nobody threw it.
+The damp air presses against your skin like cold, wet linen.",,
+lock_roof_erase_1003,X2,raw,"key07 now reads ""MARA""; written by mara",The air tastes metallic and impossibly thin against your skin.,,
+lock_roof_erase_1003,X2,final,"key07 now reads ""MARA""; written by mara","Something small and heavy clicks against the floor by your feet. The brass key, tagged BASEMENT 07. Nobody threw it.
 
-“VICTOR”
+“MARA”
 
 That wasn't on the tag the last time you saw it, in Mara's hand. The handwriting isn't yours.
 
@@ -151,22 +151,22 @@ lock_roof_erase_1006,X1,final,"pocket now reads ""1988""; written by mara","You 
 That wasn't there when you put it in your pocket. The handwriting isn't yours.
 
 The air grows thick, smelling of wet stone and something metallic.",,
-lock_roof_erase_1006,X2,raw,"key07 now reads ""MARKET DOCK""; written by mara",The air tastes like wet stone and ozone.,,
-lock_roof_erase_1006,X2,final,"key07 now reads ""MARKET DOCK""; written by mara","Something small and heavy clicks against the floor by your feet. The brass key, tagged BASEMENT 07. Nobody threw it.
+lock_roof_erase_1006,X2,raw,"key07 now reads ""ABANDON SHADOWS""; written by mara",The air tastes thick with ozone and damp stone.,,
+lock_roof_erase_1006,X2,final,"key07 now reads ""ABANDON SHADOWS""; written by mara","Something small and heavy clicks against the floor by your feet. The brass key, tagged BASEMENT 07. Nobody threw it.
 
-“MARKET DOCK”
+“ABANDON SHADOWS”
 
 That wasn't on the tag the last time you saw it, in Mara's hand. The handwriting isn't yours.
 
-The air tastes like wet stone and ozone.",,
-lock_roof_open_1004,X1,raw,"pocket now reads ""8815""; written by mara",The air tastes of ozone and stagnant water.,,
-lock_roof_open_1004,X1,final,"pocket now reads ""8815""; written by mara","You take out the train ticket.
+The air tastes thick with ozone and damp stone.",,
+lock_roof_open_1004,X1,raw,"pocket now reads ""8811""; written by mara",The air tastes of ozone and old dust.,,
+lock_roof_open_1004,X1,final,"pocket now reads ""8811""; written by mara","You take out the train ticket.
 
-“8815”
+“8811”
 
 That wasn't there when you put it in your pocket. The handwriting isn't yours.
 
-The air tastes of ozone and stagnant water.",,
+The air tastes of ozone and old dust.",,
 lock_roof_open_1004,X2,raw,"key07 now reads ""ROOF""; written by mara",The damp air presses against your skin like cold velvet.,,
 lock_roof_open_1004,X2,final,"key07 now reads ""ROOF""; written by mara","Something small and heavy clicks against the floor by your feet. The brass key, tagged BASEMENT 07. Nobody threw it.
 
@@ -175,50 +175,50 @@ lock_roof_open_1004,X2,final,"key07 now reads ""ROOF""; written by mara","Someth
 That wasn't on the tag the last time you saw it, in Mara's hand. The handwriting isn't yours.
 
 The damp air presses against your skin like cold velvet.",,
-lock_roof_open_1005,X1,raw,"pocket now reads ""4581""; written by mara","The air grows thick, tasting of wet stone and stagnant dust.",,
-lock_roof_open_1005,X1,final,"pocket now reads ""4581""; written by mara","You take out the lighter.
+lock_roof_open_1005,X1,raw,"pocket now reads ""4819""; written by mara","The air grows thick, tasting of wet stone and ozone.",,
+lock_roof_open_1005,X1,final,"pocket now reads ""4819""; written by mara","You take out the lighter.
 
-“4581”
+“4819”
 
 That wasn't there when you put it in your pocket. The handwriting isn't yours.
 
-The air grows thick, tasting of wet stone and stagnant dust.",,
-lock_roof_open_1005,X2,raw,"key07 now reads ""BIM  B TWO""; written by mara","The damp air presses against your skin, thick and clinging.",,
-lock_roof_open_1005,X2,final,"key07 now reads ""BIM  B TWO""; written by mara","Something small and heavy clicks against the floor by your feet. The brass key, tagged BASEMENT 07. Nobody threw it.
+The air grows thick, tasting of wet stone and ozone.",,
+lock_roof_open_1005,X2,raw,"key07 now reads ""B S""; written by mara","The damp air presses against your skin, thick and smelling of wet stone.",,
+lock_roof_open_1005,X2,final,"key07 now reads ""B S""; written by mara","Something small and heavy clicks against the floor by your feet. The brass key, tagged BASEMENT 07. Nobody threw it.
 
-“BIM  B TWO”
+“B S”
 
 That wasn't on the tag the last time you saw it, in Mara's hand. The handwriting isn't yours.
 
-The damp air presses against your skin, thick and clinging.",,
-open_basement_erase_1002,X1,raw,"key07 now reads ""4042""; written by mara",The air tastes metallic and impossibly cold against your skin.,,
-open_basement_erase_1002,X1,final,"key07 now reads ""4042""; written by mara","Mara turns the key over in the dark. The paper tag catches the storm light.
+The damp air presses against your skin, thick and smelling of wet stone.",,
+open_basement_erase_1002,X1,raw,"key07 now reads ""4192""; written by mara",The air tastes like wet stone and ozone clings to the skin.,,
+open_basement_erase_1002,X1,final,"key07 now reads ""4192""; written by mara","Mara turns the key over in the dark. The paper tag catches the storm light.
 
-“4042”
+“4192”
 
 That wasn't on the tag a minute ago. The handwriting isn't yours.
 
-The air tastes metallic and impossibly cold against your skin.",,
-open_basement_erase_1002,X2,raw,"pocket now reads ""APT WING B""; written by player",The air tastes like wet stone and stagnant water.,,
-open_basement_erase_1002,X2,final,"pocket now reads ""APT WING B""; written by player","You take out the folded receipt.
+The air tastes like wet stone and ozone clings to the skin.",,
+open_basement_erase_1002,X2,raw,"pocket now reads ""APT HEIGHT THREE""; written by player",The air tastes like wet stone and ozone.,,
+open_basement_erase_1002,X2,final,"pocket now reads ""APT HEIGHT THREE""; written by player","You take out the folded receipt.
 
-“APT WING B”
+“APT HEIGHT THREE”
 
 That wasn't there when you put it in your pocket. It's your handwriting. You don't remember writing it.
 
-The air tastes like wet stone and stagnant water.",,
-open_basement_erase_1005,X1,raw,"key07 now reads ""8117""; written by mara",The air tastes of ozone and old dust.,,
+The air tastes like wet stone and ozone.",,
+open_basement_erase_1005,X1,raw,"key07 now reads ""8117""; written by mara",The air tastes of wet stone and stagnant water.,,
 open_basement_erase_1005,X1,final,"key07 now reads ""8117""; written by mara","Mara turns the key over in the dark. The paper tag catches the storm light.
 
 “8117”
 
 That wasn't on the tag a minute ago. The handwriting isn't yours.
 
-The air tastes of ozone and old dust.",,
-open_basement_erase_1005,X2,raw,"pocket now reads ""SEVEN ONE""; written by player","The damp air presses against your skin, thick with the smell of wet earth and something metallic.",,
-open_basement_erase_1005,X2,final,"pocket now reads ""SEVEN ONE""; written by player","You take out the lighter.
+The air tastes of wet stone and stagnant water.",,
+open_basement_erase_1005,X2,raw,"pocket now reads ""ROOF AND UMNS""; written by player","The damp air presses against your skin, thick with the smell of wet earth and something metallic.",,
+open_basement_erase_1005,X2,final,"pocket now reads ""ROOF AND UMNS""; written by player","You take out the lighter.
 
-“SEVEN ONE”
+“ROOF AND UMNS”
 
 That wasn't there when you put it in your pocket. It's your handwriting. You don't remember writing it.
 
@@ -231,11 +231,11 @@ open_basement_erase_1006,X1,final,"key07 now reads ""0315""; written by mara","M
 That wasn't on the tag a minute ago. The handwriting isn't yours.
 
 The air grows thick, smelling of wet stone and something metallic.",,
-open_basement_erase_1006,X2,raw,"pocket now reads ""MARA BASEMENT""; written by player","The air grows thick, a damp, metallic chill pressing against your skin.",,
+open_basement_erase_1006,X2,raw,"pocket now reads ""MARA BASEMENT""; written by player","The air grows thick, a damp, metallic taste coating your tongue.",,
 open_basement_erase_1006,X2,final,"pocket now reads ""MARA BASEMENT""; written by player","You take out the folded receipt.
 
 “MARA BASEMENT”
 
 That wasn't there when you put it in your pocket. It's your handwriting. You don't remember writing it.
 
-The air grows thick, a damp, metallic chill pressing against your skin.",,
+The air grows thick, a damp, metallic taste coating your tongue.",,
