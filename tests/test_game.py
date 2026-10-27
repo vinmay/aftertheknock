@@ -144,14 +144,14 @@ def test_replay_detects_tampering():
     assert not verify_replay(replay(rec), rec)
 
 
-def test_every_shadow_ends_in_a_mark_across_many_seeds():
-    """Random proposals over many seeds: every crossing still carries an inscription."""
+def test_every_shadow_ends_in_its_crossing_across_many_seeds():
+    """Random proposals over many seeds: B always crosses as writing, D always as a voice."""
     from knock.sim import pick_origin
     for seed in range(40):
         f1, f2, end = PATHS[seed % len(PATHS)]
         g = play(f1, f2, end, RandomModel(), seed=seed)
-        for shadow in ("B", "D"):
-            assert pick_origin(g.timeline, shadow).action == "mark", (seed, f1, f2, shadow)
+        assert pick_origin(g.timeline, "B", "mark").action == "mark", (seed, f1, f2)
+        assert pick_origin(g.timeline, "D", "speak").action == "speak", (seed, f1, f2)
 
 
 def test_trace_teaser_comes_from_committed_event():
@@ -161,3 +161,41 @@ def test_trace_teaser_comes_from_committed_event():
     assert o["actor"] == "mara" and o["action"] == "mark"
     assert tr["teaser"] == "Your apartment, with the door open. A pen. Her hand."
     assert o["text"] not in tr["teaser"]           # the teaser never repeats the evidence itself
+
+
+@pytest.mark.parametrize("f1,f2", [("lock", "basement"), ("lock", "roof"), ("open", "basement"), ("open", "roof")])
+def test_second_crossing_uses_a_different_sense(f1, f2):
+    from knock.engine import crossing_senses
+    g = play(f1, f2, "open", RandomModel(), seed=8)
+    x1, x2 = g.timeline.intrusions
+    s1, s2 = crossing_senses(x1.post_fork), crossing_senses(x2.post_fork)
+    assert {k for k, _ in s1} == {"mark"} and {k for k, _ in s2} == {"voice"}
+    assert ("mark", "pocket") not in s2
+    heard = g.timeline.state("C")["chars"]["player"]["heard"]
+    assert heard == [g.timeline.event(x2.origin_event_id).text]
+    assert g.crossings["D"]["parts"]["sense"] == "voice"
+
+
+@pytest.mark.parametrize("f1", ["lock", "open"])
+def test_basement_digits_open_unit07(f1):
+    g = Game("bus ticket", 4, RandomModel(), background=False)
+    want = {"fork1": f1, "fork2": "basement", "final": "erase"}
+    seen = []
+    v = g.view()
+    while v["choices"]:
+        seen.append((g.scene, v))
+        sc = g.story["scenes"][g.scene]
+        w = want.get(sc.get("kind"))
+        v = g.choose(next((i for i, c in enumerate(sc["choices"]) if w in (c.get("fork"), c.get("ending"))), 0))
+    digits = g.timeline.event(g.crossings["B"]["intrusion"]["origin_event_id"]).text
+    scenes = dict(seen)
+    second = "lock_basement_2" if f1 == "lock" else "open_basement_2"
+    assert second in scenes and scenes[second]["choices"] == [f"Dial {digits}"]
+    assert digits in scenes["unit07_open"]["text"]
+    if f1 == "lock":
+        assert "A night," in scenes["lock_basement_2"]["text"]      # "what's in 07" gets an answer
+    c = g.timeline.state("C")
+    assert c["places"]["unit07"]["locked"] is False
+    unlock = next(e for e in g.timeline.branch("C").events if ["set", "places.unit07.locked", False] in [list(d) for d in e.state_delta])
+    assert unlock.evidence_refs == (g.crossings["B"]["intrusion"]["manifestation_event_id"],)
+    assert digits in unlock.summary

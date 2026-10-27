@@ -6,9 +6,12 @@
 # setup:     hand-authored effect of the rejected choice (committed, not simulated)
 # steps:     one model call each (plus retries). `hint` guides the model;
 #            `actions` limits the action enum; `mark` forces a mark event
-#            ("digits" = four digits, "words" = a short phrase in capitals).
+#            ("digits" = four digits); `speak` forces words said aloud.
+#            B ends in a mark (crossing 1: something written); D ends in speech
+#            (crossing 2: something heard), so the two crossings never use the same sense.
 # fallback:  tried in order if the model fails three times. "$holder:<obj>"
-#            means whoever holds that object; "$mark" is a seeded value.
+#            means whoever holds that object; "$mark" / "$speech" are seeded values;
+#            target "$here" is the actor's current place (speaking aloud).
 
 [B.open]
 premise = "In this timeline you opened the door at 11:47, and Mara came inside."
@@ -82,10 +85,9 @@ setup = [["set", "chars.player.location", "stairwell"], ["set", "chars.player.lo
   fallback = [{ actor = "mara", action = "move", target = "roof" }]
 
   [[D.lock.roof.steps]]
-  hint = "Someone writes a short warning on an object they hold."
-  mark = "words"
-  prefer = "pocket"
-  fallback = [{ actor = "$holder:pocket", action = "mark", target = "pocket", text = "$mark" }]
+  hint = "Someone says one short sentence aloud, in this place, that nobody in the other night should hear."
+  speak = "aloud"
+  fallback = [{ actor = "mara", action = "speak", target = "$here", text = "$speech" }]
 
 [D.lock.basement]
 premise = "You locked the door at 11:47. Later you went down to the basement instead of the roof."
@@ -103,10 +105,9 @@ setup = [["set", "chars.player.location", "stairwell"], ["set", "chars.player.lo
   fallback = [{ actor = "mara", action = "open", target = "unit07" }]
 
   [[D.lock.basement.steps]]
-  hint = "Someone writes a short warning on an object they hold."
-  mark = "words"
-  prefer = "pocket"
-  fallback = [{ actor = "$holder:pocket", action = "mark", target = "pocket", text = "$mark" }]
+  hint = "Someone says one short sentence aloud, in this place, that nobody in the other night should hear."
+  speak = "aloud"
+  fallback = [{ actor = "mara", action = "speak", target = "$here", text = "$speech" }]
 
 [D.open.roof]
 premise = "You let Mara in at 11:47. Later you climbed to the roof with her instead of going down."
@@ -125,10 +126,9 @@ setup = [["set", "chars.player.location", "stairwell"], ["set", "chars.mara.loca
   fallback = [{ actor = "mara", action = "give", target = "key07", to = "player" }]
 
   [[D.open.roof.steps]]
-  hint = "Someone writes a short warning on an object they hold."
-  mark = "words"
-  prefer = "key07"
-  fallback = [{ actor = "$holder:key07", action = "mark", target = "key07", text = "$mark" }]
+  hint = "Someone says one short sentence aloud, in this place, that nobody in the other night should hear."
+  speak = "aloud"
+  fallback = [{ actor = "mara", action = "speak", target = "$here", text = "$speech" }]
 
 [D.open.basement]
 premise = "You let Mara in at 11:47. Later you went down to the basement with her instead of the roof."
@@ -147,7 +147,6 @@ setup = [["set", "chars.player.location", "stairwell"], ["set", "chars.mara.loca
   fallback = [{ actor = "mara", action = "move", target = "unit07" }]
 
   [[D.open.basement.steps]]
-  hint = "Someone writes a short warning on an object they hold."
-  mark = "words"
-  prefer = "pocket"
-  fallback = [{ actor = "$holder:pocket", action = "mark", target = "pocket", text = "$mark" }]
+  hint = "Someone says one short sentence aloud, in this place, that nobody in the other night should hear."
+  speak = "aloud"
+  fallback = [{ actor = "mara", action = "speak", target = "$here", text = "$speech" }]

@@ -192,3 +192,30 @@ def test_replay_reproduces_state():
     assert [e.to_dict() for e in t2.lineage("C")] == [e.to_dict() for e in t.lineage("C")]
     for bid in t.branches:
         assert t.replay_state(bid) == t.state(bid)
+
+
+def test_later_crossing_never_repeats_object_or_sense():
+    """Crossing 2 may not show the pocket object again, nor repeat crossing 1's object or sense."""
+    t = forked()
+    mark = signature(t)
+    t.cross("B", mark.event_id)
+    t.fork("A", budget=2)
+    t.author("D", [], "setup", request_id="D:setup")
+    t.commit("D", {"actor": "player", "action": "move", "target": "hall"}, request_id="D:1")
+    again = t.commit("D", {"actor": "player", "action": "mark", "target": "pocket", "text": "AGAIN"}, request_id="D:2")
+    with pytest.raises(IntrusionError, match="different object or sense"):
+        t.cross("D", again.event_id)
+
+
+def test_voice_crossing_is_heard_not_said():
+    t = forked()
+    t.cross("B", signature(t).event_id)
+    t.fork("A", budget=1)
+    t.author("D", [], "setup", request_id="D:setup")
+    words = t.commit("D", {"actor": "mara", "action": "speak", "target": "hall", "text": "Leave the light off."},
+                     request_id="D:1")
+    x = t.cross("D", words.event_id)
+    c = t.state("C")
+    assert c["chars"]["player"]["heard"] == ["Leave the light off."]
+    assert c["chars"]["mara"]["said"] == []          # canonical Mara never said it
+    assert x.post_fork == [["append", "chars.mara.said", "Leave the light off."]]

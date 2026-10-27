@@ -105,6 +105,18 @@ class Intrusion:
         return asdict(self)
 
 
+def crossing_senses(facts) -> set[tuple[str, str]]:
+    """What a crossing shows the player: ("mark", object) or ("voice", speaker)."""
+    out = set()
+    for _, path, _ in facts:
+        kind, eid, fld = path.split(".")
+        if kind == "objects" and fld == "marks":
+            out.add(("mark", eid))
+        elif kind == "chars" and fld == "said":
+            out.add(("voice", eid))
+    return out
+
+
 def _locked(fn):
     """Shadows simulate on a background thread while the canonical timeline advances."""
     @functools.wraps(fn)
@@ -229,7 +241,7 @@ class Timeline:
 
     @_locked
     def author(self, bid: str, delta: list, summary: str, *, request_id: str,
-               actor: str = "story", target: str = "") -> Event:
+               actor: str = "story", target: str = "", evidence: list | None = None) -> Event:
         """Commit a hand-authored story effect (for example the fork choice itself)."""
         b = self.branch(bid)
         prior = self._existing(b, request_id)
@@ -237,12 +249,16 @@ class Timeline:
             return prior
         if b.frozen:
             raise FrozenError(f"branch {bid} is frozen")
+        evidence = list(evidence or [])
+        for ref in evidence:
+            if self.event(ref) not in self.lineage(bid):
+                raise EngineError(f"evidence {ref} is not in the lineage of {bid}")
         ev = self._append(b, actor=actor, action="story", target=target, to="", text="",
-                          pre=[], delta=delta, evidence=[], summary=summary, source="story",
+                          pre=[], delta=delta, evidence=evidence, summary=summary, source="story",
                           request_id=request_id)
         self.ops.append({"op": "author", "branch": bid, "delta": [list(x) for x in delta],
                          "summary": summary, "request_id": request_id, "actor": actor,
-                         "target": target})
+                         "target": target, "evidence": evidence})
         return ev
 
     @_locked
@@ -283,6 +299,10 @@ class Timeline:
                      if not fact_holds(shadow.base_state, *f) and not fact_holds(target.state, *f)]
         if not post_fork:
             raise IntrusionError(f"{origin_event_id} created no fact after the fork")
+        earlier = set().union(*(crossing_senses(x.post_fork) for x in self.intrusions)) if self.intrusions else set()
+        mine = crossing_senses(post_fork)
+        if earlier and (mine & earlier or ("mark", "pocket") in mine):
+            raise IntrusionError("a later crossing must use a different object or sense, never the pocket object again")
         released = [list(f) for f in origin.state_delta] + [["set", f"events.{origin.event_id}.actor", origin.actor]]
 
         delta = self._manifest(target.state, post_fork)
@@ -302,14 +322,17 @@ class Timeline:
     def _manifest(canon: dict, facts: list) -> list:
         """Map released shadow facts onto canonical state.
 
-        Only marks change canonical state: the same mark appears on the same object.
-        If that object is not within the player's reach, it arrives where the player is.
-        Other facts (who held what, who went where) are revealed but change nothing.
+        Marks: the same mark appears on the same object; if that object is not within the
+        player's reach, it arrives where the player is. Words spoken in the shadow are heard
+        by the player. Other facts (who held what, who went where) are revealed but change nothing.
         """
         delta = []
         player_loc = canon["chars"]["player"]["location"]
         for op, path, value in facts:
             kind, oid, fld = path.split(".")
+            if kind == "chars" and fld == "said":
+                delta.append(["append", "chars.player.heard", value])
+                continue
             if kind == "objects" and fld == "marks" and oid in canon["objects"]:
                 delta.append(["append", path, value])
                 if location_of(canon, oid) != player_loc:
@@ -360,7 +383,8 @@ class Timeline:
                 t.commit(op["branch"], op["proposal"], source=op["source"], request_id=op["request_id"])
             elif kind == "author":
                 t.author(op["branch"], op["delta"], op["summary"], request_id=op["request_id"],
-                         actor=op.get("actor", "story"), target=op.get("target", ""))
+                         actor=op.get("actor", "story"), target=op.get("target", ""),
+                         evidence=op.get("evidence"))
             elif kind == "freeze":
                 t.freeze(op["branch"])
             elif kind == "cross":

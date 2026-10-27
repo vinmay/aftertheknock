@@ -47,6 +47,9 @@ def isolation(t: Timeline) -> list[str]:
             for mark in o["marks"]:
                 if any(mark in toks for toks in tokens.values()) and mark not in via_intrusion:
                     problems.append(f"{bid}: mark {mark!r} on {oid} has no intrusion")
+        for heard in s["chars"]["player"]["heard"]:
+            if heard not in via_intrusion:
+                problems.append(f"{bid}: player heard {heard!r} without an intrusion")
         for cid, c in s["chars"].items():
             for said in c["said"]:
                 if any(said in toks for toks in tokens.values()):

@@ -88,7 +88,21 @@ Storage cages in rows, numbered in stencil. At the far end, unit 07, still padlo
 "There you are," she says. "Both of you are late."
 """
 effects = [["set", "chars.player.location", "stairwell"], ["set", "chars.player.location", "basement"]]
-choices = [{ label = "Ask her what's in 07", next = "crossing2" }]
+choices = [{ label = "Ask her what's in 07", next = "lock_basement_2" }]
+
+[scenes.lock_basement_2]
+text = """
+"A night," she says. "Not this one. One somebody put away instead of living it."
+
+She stands and steps aside. The cage door is held by a padlock you have never seen on anything in this building: no keyhole, just four brass dials, green at the edges.
+
+"The key was never for that," Mara says. "I never had the number."
+
+She looks at your pocket.
+
+"You do."
+"""
+choices = [{ label = "Dial {digits}", next = "unit07_open" }]
 
 [scenes.lock_roof]
 text = """
@@ -160,7 +174,19 @@ Storage cages in rows, numbered in stencil. Unit 07 at the far end, padlocked. M
 """
 effects = [["set", "chars.player.location", "stairwell"], ["set", "chars.mara.location", "stairwell"],
            ["set", "chars.player.location", "basement"], ["set", "chars.mara.location", "basement"]]
-choices = [{ label = "Reach for the key", next = "crossing2" }]
+choices = [{ label = "Reach for the key", next = "open_basement_2" }]
+
+[scenes.open_basement_2]
+text = """
+The key turns in the cage door's lock without a sound. The door still doesn't move.
+
+Below the keyhole hangs a second lock you have never seen on anything in this building: a padlock with four brass dials, green at the edges.
+
+Mara holds the paper tag up between you, so the storm light from the high window falls on it. On the digits that weren't there an hour ago.
+
+"Go on," she says.
+"""
+choices = [{ label = "Dial {digits}", next = "unit07_open" }]
 
 [scenes.open_roof]
 text = """
@@ -174,6 +200,22 @@ effects = [["set", "chars.player.location", "stairwell"], ["set", "chars.player.
 choices = [{ label = "Turn around", next = "crossing2" }]
 
 # ---------------------------------------------------------------- shared
+[scenes.unit07_open]
+text = """
+The dials are cold and stiff. {digits}.
+
+The shackle drops open with a sound like a held breath let go.
+
+Inside 07 there is a folding chair, facing the door. On the seat lies a {pocket}. Yours: the same crease, the same small stain. But old, and dry, as if it has been waiting here for years. Whatever was written on it has faded almost to nothing.
+
+Mara doesn't go in. "That's what's in 07," she says. "Every time."
+"""
+effects = [["set", "places.unit07.locked", false]]
+effect_summary = "You dial {digits}. The padlock on 07 opens."
+evidence = "crossing1"
+choices = [{ label = "Step back from the cage", next = "crossing2" }]
+
+
 [scenes.crossing1]
 kind = "crossing"
 shadow = "B"
@@ -238,7 +280,7 @@ Both nights are true now. You will have to live in both of them.
 """
 
 [endings.slots]
-erase_marks = "The writing fades: {fade_list}, like breath off a mirror, and then there is nothing left to read."
+erase_marks = "\"{b_text}\" fades from {b_on} like breath off a mirror. In the stairwell, the voice that said \"{d_text}\" stops halfway through a breath and does not start again."
 erase_mara_present = "When you look up, Mara is gone. Where she stood, the floor is dry."
 erase_mara_absent = "Far below, a metal door closes, gently, and does not open again."
 
@@ -255,7 +297,7 @@ open_teo_hurt = "In 6D, Teo is sitting on the floor of his own kitchen, holding 
 open_teo_dead = "In 6D, there is no sound at all. There won't be, again."
 open_teo_fine = "In 6D, Teo turns off his radio, and you hear him say, to no one, \"Finally.\""
 
-open_marks = "{mark_lines} Written in a night you never lived."
+open_marks = "\"{b_text}\" on {b_on}, in {b_hand}. And in the stairwell, {d_voice}, still saying \"{d_text}\" to no one. Both from a night you never lived."
 
 # ---------------------------------------------------------------- crossings
 # Hand-written lines around each crossing. The engine slots in the committed facts:

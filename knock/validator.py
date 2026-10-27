@@ -138,7 +138,10 @@ def validate(state: dict, proposal: dict, *, frozen: bool = False) -> Decision:
                 delta.append(["set", f"chars.{actor}.location", target])
 
     elif action == "speak":
-        if need_kind("chars") and colocated_char(target):
+        aloud = tkind == "places" and target == here
+        if aloud:
+            c.pre.append(f"{actor} speaks aloud in {here}")
+        if aloud or (need_kind("chars") and colocated_char(target)):
             if c.need(bool(text), "R_TEXT", "speak needs text") and \
                c.need(len(text) <= MAX_SPEECH, "R_TEXT", f"speech longer than {MAX_SPEECH} chars"):
                 delta.append(["append", f"chars.{actor}.said", text])

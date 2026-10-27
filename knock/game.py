@@ -11,7 +11,7 @@ import uuid
 from .describe import describe, teaser
 from .engine import Timeline
 from .narrator import CHAR_NAMES, narrate_crossing
-from .sim import RunLog, load_shadows, pick_origin, simulate_shadow
+from .sim import RunLog, crossing_action, load_shadows, pick_origin, simulate_shadow
 from .state import STORY_DIR, apply_delta, initial_state, state_hash
 
 DEFAULT_POCKET = "ticket stub"
@@ -87,7 +87,11 @@ class Game:
 
     # ---- text -----------------------------------------------------------
     def fmt(self, text: str) -> str:
-        return text.replace("{pocket}", self.pocket).strip()
+        text = text.replace("{pocket}", self.pocket)
+        if "B" in self.crossings:
+            # The number that crossed over is canonical knowledge once it has been released.
+            text = text.replace("{digits}", self.timeline.event(self.crossings["B"]["intrusion"]["origin_event_id"]).text)
+        return text.strip()
 
     def canon(self) -> str:
         return self.timeline.canonical()
@@ -124,9 +128,13 @@ class Game:
     def _enter(self, sid: str) -> None:
         self.scene = sid
         sc = self.story["scenes"][sid]
+        evidence = []
+        if sc.get("evidence") == "crossing1":
+            evidence = [self.crossings["B"]["intrusion"]["manifestation_event_id"]]
         for i, op in enumerate(sc.get("effects", [])):
-            self.timeline.author(self.canon(), [op], self._effect_summary(op),
-                                 request_id=f"{self.canon()}:{sid}:{i}")
+            summary = self.fmt(sc["effect_summary"]) if "effect_summary" in sc else self._effect_summary(op)
+            self.timeline.author(self.canon(), [op], summary, request_id=f"{self.canon()}:{sid}:{i}",
+                                 evidence=evidence)
         if sc.get("kind") == "crossing":
             self._cross(sc["shadow"])
 
@@ -141,7 +149,7 @@ class Game:
 
     def _cross(self, shadow: str) -> None:
         waited = self._wait_shadow(shadow)
-        origin = pick_origin(self.timeline, shadow)
+        origin = pick_origin(self.timeline, shadow, crossing_action(self.specs[self.shadow_time[shadow]["spec"]]))
         x = self.timeline.cross(shadow, origin.event_id)
         t0 = time.perf_counter()
         narration = narrate_crossing(self.timeline, x, self.narrator_model, self.pocket, self.seed, self.log,
@@ -201,22 +209,15 @@ class Game:
     def ending_text(self, which: str) -> str:
         t = self.timeline
         slots = self.story["endings"]["slots"]
-        marks = []
-        for shadow in ("B", "D"):
-            x = self.crossings[shadow]["intrusion"]
-            o = t.event(x["origin_event_id"])
-            marks.append((o.text, o.target, o.actor))
+        b_o = t.event(self.crossings["B"]["intrusion"]["origin_event_id"])
+        d_o = t.event(self.crossings["D"]["intrusion"]["origin_event_id"])
         d = t.state("D")
         c = t.state("C")
         b = t.state("B")
         place = lambda s, pid: s["places"][pid]["name"] if pid else "nowhere"  # noqa: E731
-        fill = {"pocket": self.pocket}
-        if len({oid for _, oid, _ in marks}) == 1:
-            fill["fade_list"] = (" then ".join(f'"{txt}"' for txt, _, _ in marks)
-                                 + f" from {self._on(marks[0][1])}")
-        else:
-            fill["fade_list"] = ", then ".join(f'"{txt}" from {self._on(oid)}' for txt, oid, _ in marks)
-        fill["mark_lines"] = " ".join(f'"{txt}" on {self._on(oid)}, in {self._hand(a)}.' for txt, oid, a in marks)
+        voice = {"player": "your own voice", "mara": "Mara's voice", "teo": "Teo's voice"}.get(d_o.actor, "a voice")
+        fill = {"pocket": self.pocket, "b_text": b_o.text, "b_on": self._on(b_o.target), "b_hand": self._hand(b_o.actor),
+                "d_text": d_o.text, "d_voice": voice}
         here = c["chars"]["player"]["location"]
         fill["erase_mara"] = slots["erase_mara_present" if c["chars"]["mara"]["location"] == here else "erase_mara_absent"]
         key = d["objects"]["key07"]
@@ -234,11 +235,10 @@ class Game:
         rank = {"present": 0, "hurt": 1, "dead": 2, "departed": 0}
         teo = max((b["chars"]["teo"]["status"], d["chars"]["teo"]["status"]), key=lambda s: rank.get(s, 0))
         fill["open_teo"] = slots["open_teo_" + {"hurt": "hurt", "dead": "dead"}.get(teo, "fine")]
-        fill["erase_marks"] = slots["erase_marks"].replace("{fade_list}", fill["fade_list"])
-        fill["open_marks"] = slots["open_marks"].replace("{mark_lines}", fill["mark_lines"])
         text = self.story["endings"][which]["text"]
-        for k, v in fill.items():
-            text = text.replace("{" + k + "}", v)
+        for _ in range(2):              # slots may contain slots
+            for k, v in list(fill.items()) + [(k, v) for k, v in slots.items() if k in ("erase_marks", "open_marks")]:
+                text = text.replace("{" + k + "}", v)
         return re.sub(r"\n{3,}", "\n\n", text).strip()
 
     # ---- views ------------------------------------------------------------

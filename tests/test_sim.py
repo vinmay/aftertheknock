@@ -50,9 +50,9 @@ def test_every_spec_completes_with_fallbacks_only():
     for f1 in ("lock", "open"):
         for f2 in ("basement", "roof"):
             g = play(f1, f2, "open", ScriptedModel([]), seed=3)
-            for shadow in ("B", "D"):
-                o = pick_origin(g.timeline, shadow)
-                assert o.action == "mark" and o.source == "fallback", (f1, f2, shadow)
+            for shadow, action in (("B", "mark"), ("D", "speak")):
+                o = pick_origin(g.timeline, shadow, action)
+                assert o.action == action and o.source == "fallback", (f1, f2, shadow)
 
 
 def test_random_model_runs_vary_by_seed():
@@ -69,4 +69,28 @@ def test_specs_load():
     assert {"B.open", "B.lock", "D.lock.roof", "D.lock.basement", "D.open.roof", "D.open.basement"} <= set(specs)
     for k, v in specs.items():
         assert 2 <= len(v["steps"]) <= 4, k
-        assert v["steps"][-1].get("mark"), k
+        last = v["steps"][-1]
+        assert last.get("mark") if k.startswith("B") else last.get("speak"), k
+
+
+def test_banned_phrases_are_rejected():
+    """A proposal using a cliche is rejected even when the world allows it."""
+    cliche = {"summary": "Mara says it.", "actor": "mara", "action": "speak", "target": "player",
+              "recipient": "", "text": "Help me, please."}
+    fine = {"summary": "Mara says it.", "actor": "mara", "action": "speak", "target": "player",
+            "recipient": "", "text": "You kept the receipt."}
+    t = forked()
+    log = RunLog(1, {})
+    simulate_shadow(t, "B", "B.open", ScriptedModel([cliche, fine, "{}", "{}", "{}", "{}", "{}", "{}"]), 1, log)
+    first, second = [r for r in log.records if r["kind"] == "proposal"][:2]
+    assert not first["decision"]["accepted"]
+    assert any("banned phrase" in v["detail"] for v in first["decision"]["violations"])
+    assert second["decision"]["accepted"]
+
+
+def test_banned_phrase_matching():
+    from knock.narrator import banned_in
+    assert banned_in("HELP ME") == ["help me"]
+    assert banned_in("You\u2019re next.") == ["you're next"]
+    assert banned_in("It's not over yet") == ["it's not over"]
+    assert banned_in("Helpme") == [] and banned_in("whelp merely") == []

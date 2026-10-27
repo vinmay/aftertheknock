@@ -17,7 +17,7 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parent.parent
 STORY_DIR = ROOT / "data" / "story"
 
-CHAR_DEFAULTS = {"status": "present", "said": []}
+CHAR_DEFAULTS = {"status": "present", "said": [], "heard": []}
 OBJECT_DEFAULTS = {"holder": None, "location": None, "marks": [], "markable": False,
                    "hidden": False, "opens": None, "found_by": None}
 PLACE_DEFAULTS = {"locked": False, "key": None, "adjacent": []}
