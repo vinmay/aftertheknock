@@ -245,11 +245,13 @@ class Game:
     def view(self) -> dict:
         if self.ending:
             return {"scene": self.scene, "kind": "ending", "text": self.ending["text"], "choices": [],
-                    "ending": self.ending["which"]}
+                    "ending": self.ending["which"],
+                    "clock": self.story["endings"][self.ending["which"]].get("clock")}
         sc = self.story["scenes"][self.scene]
         v = {"scene": self.scene, "kind": sc.get("kind", "scene"),
              "text": self.fmt(sc.get("text", "")),
-             "choices": [self.fmt(c["label"]) for c in sc.get("choices", [])]}
+             "choices": [self.fmt(c["label"]) for c in sc.get("choices", [])],
+             "clock": sc.get("clock"), "power": sc.get("power")}
         if v["kind"] == "crossing":
             cr = self.crossings[sc["shadow"]]
             v["text"] = cr["narration"]

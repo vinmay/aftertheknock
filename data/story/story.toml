@@ -7,6 +7,7 @@
 start = "opening"
 
 [scenes.opening]
+clock = "11:47"
 text = """
 11:47 PM. The storm has been working at the windows for an hour.
 
@@ -26,6 +27,7 @@ choices = [
 
 # ---------------------------------------------------------------- lock path
 [scenes.lock_1]
+clock = "11:48"
 text = """
 You turn the deadbolt. It is loud in the narrow entry, louder than it should be.
 
@@ -38,6 +40,7 @@ Water runs out from under the door in a thin, straight line, as if it has somewh
 choices = [{ label = "Keep watching", next = "lock_2" }]
 
 [scenes.lock_2]
+clock = "11:52"
 text = """
 She crosses the hall to 6D and knocks. Teo's door. Teo, who has lived across from you for six years and has never once opened his door to anyone. Not the super, not the police that night in March, not you.
 
@@ -49,6 +52,8 @@ effects = [["set", "chars.mara.location", "stairwell"]]
 choices = [{ label = "Step away from the door", next = "lock_3" }]
 
 [scenes.lock_3]
+clock = "11:58"
+power = "out"
 text = """
 The lights go out at 11:58. The fridge stops humming, and in the quiet you hear the building the way you never do: pipes, wind in the elevator shaft, something settling in the walls.
 
@@ -62,6 +67,7 @@ effects = [["set", "chars.mara.location", "basement"]]
 choices = [{ label = "Take out the {pocket}", next = "crossing1" }]
 
 [scenes.lock_fork2]
+clock = "12:06"
 text = """
 At 12:06 there is a sound at Teo's door: the chain, the bolt, the chain again. It opens two inches. One eye. A strip of grey cardigan.
 
@@ -80,6 +86,7 @@ choices = [
 ]
 
 [scenes.lock_basement]
+clock = "12:13"
 text = """
 Six flights in the dark, one hand on the rail. The basement is dry, which is wrong; the storm is everywhere else.
 
@@ -91,6 +98,7 @@ effects = [["set", "chars.player.location", "stairwell"], ["set", "chars.player.
 choices = [{ label = "Ask her what's in 07", next = "lock_basement_2" }]
 
 [scenes.lock_basement_2]
+clock = "12:15"
 text = """
 "A night," she says. "Not this one. One somebody put away instead of living it."
 
@@ -105,6 +113,7 @@ She looks at your pocket.
 choices = [{ label = "Dial {digits}", next = "unit07_open" }]
 
 [scenes.lock_roof]
+clock = "12:13"
 text = """
 The roof door sticks, then gives, and the storm takes the breath out of you. The city is dark to the river. The whole grid, not just your building. Water stands on the tar in sheets.
 
@@ -117,6 +126,7 @@ choices = [{ label = "Turn around", next = "crossing2" }]
 
 # ---------------------------------------------------------------- open path
 [scenes.open_1]
+clock = "11:48"
 text = """
 You open the door. She steps past you before you have decided to step aside, and the cold comes in with her.
 
@@ -127,6 +137,7 @@ Up close she is younger than you thought, and older. Water runs off her coat and
 choices = [{ label = "Ask who she is", next = "open_2" }]
 
 [scenes.open_2]
+clock = "11:51"
 text = """
 "Mara," she says, as though you have asked her that many times. She sits at your table without taking off the coat.
 
@@ -139,6 +150,8 @@ A pause.
 choices = [{ label = "\"Somewhere else?\"", next = "open_3" }]
 
 [scenes.open_3]
+clock = "11:58"
+power = "out"
 text = """
 The lights go out at 11:58. Mara doesn't react. In the dark you can hear the water leaving her coat, steady as a clock.
 
@@ -151,6 +164,7 @@ The key stops turning.
 choices = [{ label = "Look at the key", next = "crossing1" }]
 
 [scenes.open_fork2]
+clock = "12:06"
 text = """
 Mara stands. "So. Down with me, or up without me."
 
@@ -165,6 +179,7 @@ choices = [
 ]
 
 [scenes.open_basement]
+clock = "12:13"
 text = """
 She goes first. Six flights, and her hand never touches the rail. The basement is dry, which is wrong; the storm is everywhere else.
 
@@ -177,6 +192,7 @@ effects = [["set", "chars.player.location", "stairwell"], ["set", "chars.mara.lo
 choices = [{ label = "Reach for the key", next = "open_basement_2" }]
 
 [scenes.open_basement_2]
+clock = "12:15"
 text = """
 The key turns in the cage door's lock without a sound. The door still doesn't move.
 
@@ -189,6 +205,7 @@ Mara holds the paper tag up between you, so the storm light from the high window
 choices = [{ label = "Dial {digits}", next = "unit07_open" }]
 
 [scenes.open_roof]
+clock = "12:13"
 text = """
 You leave her at your table. She doesn't argue. "I'll be here," she says. "I'm very good at it."
 
@@ -201,6 +218,7 @@ choices = [{ label = "Turn around", next = "crossing2" }]
 
 # ---------------------------------------------------------------- shared
 [scenes.unit07_open]
+clock = "12:16"
 text = """
 The dials are cold and stiff. {digits}.
 
@@ -217,16 +235,19 @@ choices = [{ label = "Step back from the cage", next = "crossing2" }]
 
 
 [scenes.crossing1]
+clock = "12:01"
 kind = "crossing"
 shadow = "B"
 choices = [{ label = "Keep going", next = "$fork2" }]
 
 [scenes.crossing2]
+clock = "12:18"
 kind = "crossing"
 shadow = "D"
 choices = [{ label = "Keep going", next = "map" }]
 
 [scenes.map]
+clock = "12:19"
 kind = "map"
 text = """
 The night comes apart in your hands, and for a moment you can see all of it: the night you lived, and the nights you didn't.
@@ -236,6 +257,7 @@ Everything that crossed over came from somewhere. Touch a thread to see where.
 choices = [{ label = "Close the map", next = "final" }]
 
 [scenes.final]
+clock = "12:20"
 kind = "final"
 text = """
 Somewhere below you, or behind you, or inside the walls, a door is waiting to be opened. You know which one. It is the one you didn't choose.
@@ -250,6 +272,7 @@ choices = [
 # ---------------------------------------------------------------- endings
 # Slots are filled by the engine from committed shadow facts.
 [endings.erase]
+clock = "12:30"
 text = """
 You choose this night. Only this one.
 
@@ -263,6 +286,7 @@ You will never know what happened in the night you didn't choose. You will think
 """
 
 [endings.open]
+clock = "12:31"
 text = """
 You open the door.
 
