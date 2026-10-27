@@ -1083,28 +1083,53 @@ async function loadEvidence() {
     ? `<div class="ev-summary"><p><b>${crossed.length === 1 ? "One thing has" : "Two things"} crossed into your night.</b></p><ol>${crossed.map((c) =>
         `<li>\u201c${esc(c.inscription)}\u201d on ${esc(c.object)}, from ${esc(c.source.replace(/^Written there: /, "").split(",")[0])}.</li>`).join("")}</ol></div>`
     : `<div class="ev-summary"><p><b>Nothing has crossed into your night yet.</b></p></div>`;
-  $("#evidence-body").innerHTML = summary + `<p class="small muted">model ${esc(d.model.model)} ${esc(d.model.quantization || "")} · seed ${esc(d.seed)} · ${d.log.length} records</p>` +
-    d.log.map((r) => {
-      if (r.kind === "proposal") {
-        const dec = r.decision || {};
-        const verdict = dec.accepted ? `<span class="ok">COMMITTED ${esc(r.event_id || "")}</span>` : `<span class="bad">REJECTED</span> ${esc((dec.violations || []).map((v) => v.rule + ": " + v.detail).join("; "))}`;
-        return `<div class="ev"><div class="head">${esc(r.branch)} step ${r.step + 1} · attempt ${r.attempt + 1} · prompt ${esc(r.prompt_hash)} · ${((r.meta || {}).latency_s || 0).toFixed(2)} s</div>${verdict}<pre>${esc(JSON.stringify(r.proposal))}</pre></div>`;
-      }
-      if (r.kind === "fallback") return `<div class="ev"><div class="head">${esc(r.branch)} step ${r.step + 1}</div><span class="fb">FALLBACK COMMITTED ${esc(r.event_id)}</span><pre>${esc(JSON.stringify(r.proposal))}</pre></div>`;
-      if (r.kind === "narration") return `<div class="ev"><div class="head">narration ${esc(r.intrusion)} · attempt ${r.attempt + 1}</div>${r.problems.length ? `<span class="bad">FAILED CHECKS</span> ${esc(r.problems.join("; "))}` : `<span class="ok">PASSED CHECKS</span>`}<pre>${esc(r.raw ?? r.text)}</pre></div>`;
-      if (r.kind === "narration_fallback") return `<div class="ev"><div class="head">narration ${esc(r.intrusion)}</div><span class="fb">FALLBACK TEXT</span><pre>${esc(r.text)}</pre></div>`;
-      return `<div class="ev"><div class="head">${esc(r.kind)}</div><pre>${esc(JSON.stringify(r))}</pre></div>`;
-    }).join("");
+  const row = (r) => {
+    if (r.kind === "proposal") {
+      const dec = r.decision || {};
+      const verdict = dec.accepted ? `<span class="ok">COMMITTED ${esc(r.event_id || "")}</span>` : `<span class="bad">REJECTED</span> ${esc((dec.violations || []).map((v) => v.rule + ": " + v.detail).join("; "))}`;
+      return `<div class="ev"><div class="head">step ${r.step + 1} · attempt ${r.attempt + 1} · prompt ${esc(r.prompt_hash)} · ${((r.meta || {}).latency_s || 0).toFixed(2)} s</div>${verdict}<pre>${esc(JSON.stringify(r.proposal))}</pre></div>`;
+    }
+    if (r.kind === "fallback") return `<div class="ev"><div class="head">step ${r.step + 1}</div><span class="fb">FALLBACK COMMITTED ${esc(r.event_id)}</span><pre>${esc(JSON.stringify(r.proposal))}</pre></div>`;
+    if (r.kind === "narration") return `<div class="ev"><div class="head">crossing ${esc(r.intrusion)} · attempt ${r.attempt + 1}</div>${r.problems.length ? `<span class="bad">FAILED CHECKS</span> ${esc(r.problems.join("; "))}` : `<span class="ok">PASSED CHECKS</span>`}<pre>${esc(r.raw ?? r.text)}</pre></div>`;
+    if (r.kind === "narration_fallback") return `<div class="ev"><div class="head">crossing ${esc(r.intrusion)}</div><span class="fb">NO MODEL SENTENCE</span><pre>${esc(r.text)}</pre></div>`;
+    return `<div class="ev"><div class="head">${esc(r.kind)}</div><pre>${esc(JSON.stringify(r))}</pre></div>`;
+  };
+  // Collapsible groups: one per other night, plus the crossing-text checks. Open state survives refreshes.
+  const groups = [
+    ["B", "The other night after the door", (r) => r.branch === "B" && r.kind !== "narration" && r.kind !== "narration_fallback"],
+    ["D", "The other night after the stairs", (r) => r.branch === "D" && r.kind !== "narration" && r.kind !== "narration_fallback"],
+    ["N", "Crossing text checks", (r) => r.kind === "narration" || r.kind === "narration_fallback"],
+  ];
+  S.evOpen ||= new Set();
+  const body = groups.map(([key, title, pick]) => {
+    const rs = d.log.filter(pick);
+    if (!rs.length) return "";
+    const ok = rs.filter((r) => r.kind === "proposal" && r.decision?.accepted).length;
+    const bad = rs.filter((r) => r.kind === "proposal" && !r.decision?.accepted).length;
+    const fb = rs.filter((r) => r.kind === "fallback").length;
+    const counts = key === "N" ? `${rs.length} records` : `${ok} committed · ${bad} rejected${fb ? ` · ${fb} fallback` : ""}`;
+    return `<details class="ev-group" data-key="${key}"${S.evOpen.has(key) ? " open" : ""}>
+      <summary><span>${esc(title)}</span><span class="ev-counts">${counts}</span></summary>${rs.map(row).join("")}</details>`;
+  }).join("");
+  $("#evidence-body").innerHTML = summary + `<p class="small muted">model ${esc(d.model.model)} ${esc(d.model.quantization || "")} · seed ${esc(d.seed)} · ${d.log.length} records</p>` + body;
+  $("#evidence-body").querySelectorAll(".ev-group").forEach((g) => g.addEventListener("toggle", () => {
+    if (g.open) S.evOpen.add(g.dataset.key); else S.evOpen.delete(g.dataset.key);
+  }));
 }
-function toggleEvidence() {
+function toggleEvidence(force) {
   const el = $("#evidence");
-  el.hidden = !el.hidden;
+  const open = typeof force === "boolean" ? force : el.hidden;
+  el.hidden = !open;
+  const b = $("#evidence-toggle");
+  b.setAttribute("aria-pressed", String(open));
+  b.setAttribute("aria-expanded", String(open));
+  b.textContent = open ? "hide evidence" : "evidence";
   if (!$("#map").hidden && S.mapData) drawMap(S.mapData);
-  $("#evidence-toggle").setAttribute("aria-pressed", String(!el.hidden));
-  if (!el.hidden) loadEvidence();
+  if (open) loadEvidence();
 }
-$("#evidence-toggle").addEventListener("click", toggleEvidence);
-$("#evidence-close").addEventListener("click", toggleEvidence);
+$("#evidence-toggle").addEventListener("click", () => toggleEvidence());
+$("#evidence-close").addEventListener("click", () => { toggleEvidence(false); $("#evidence-toggle").focus(); });
+$("#evidence-title").addEventListener("click", () => { toggleEvidence(false); $("#evidence-toggle").focus(); });
 $("#sound-toggle").addEventListener("click", () => { Sound.init(); Sound.toggle(); });
 $("#sound-toggle").setAttribute("aria-pressed", String(Sound.on));
 $("#instant-toggle").addEventListener("click", () => { INSTANT = !INSTANT; Prefs.set("instant", INSTANT ? "1" : "0"); applyInstant(); });

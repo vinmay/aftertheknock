@@ -17,7 +17,7 @@
   <span class="clock" id="clock" hidden aria-label="Time"></span>
   <span class="tools">
     <button class="tool" id="settings-toggle" aria-expanded="false" aria-controls="settings">settings</button>
-    <button class="tool" id="evidence-toggle" aria-pressed="false" title="Evidence view (E)">evidence</button>
+    <button class="tool" id="evidence-toggle" aria-pressed="false" aria-expanded="false" aria-controls="evidence" title="Show or hide the evidence (E)">evidence</button>
     <span id="settings" class="settings" hidden role="group" aria-label="Settings">
       <button class="tool" id="instant-toggle" aria-pressed="false">show text immediately</button>
       <button class="tool" id="sound-toggle" aria-pressed="true">sound</button>
@@ -107,7 +107,7 @@
 
 <aside id="evidence" class="evidence" hidden aria-label="Evidence view">
   <div class="ev-head">
-    <h2>Evidence</h2>
+    <h2><button class="ev-title" id="evidence-title" title="Hide evidence">Evidence <span aria-hidden="true">▴</span></button></h2>
     <p class="small muted">Every model proposal, validator decision and commit in this run.</p>
     <button class="close" id="evidence-close" aria-label="Close">×</button>
   </div>

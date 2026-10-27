@@ -455,3 +455,19 @@ body.instant-text .stage-color, body.instant-text .trace-hint { opacity: 1 !impo
 @media (prefers-reduced-motion: reduce) {
   .choices, .text p, .stage-after, .stage-color, .trace-hint { opacity: 1 !important; transform: none !important; }
 }
+
+/* Evidence: a toggle, with collapsible groups */
+.ev-title { font: inherit; color: inherit; padding: 0; display: inline-flex; gap: 0.4rem; align-items: center; min-height: 44px; }
+.ev-title span { font-size: 0.8rem; color: var(--muted); }
+.ev-group { border-top: 1px solid var(--faint); }
+.ev-group summary {
+  cursor: pointer; list-style: none; display: flex; justify-content: space-between; align-items: center; gap: 1rem;
+  min-height: 44px; padding: 0.4rem 0; font-size: 0.95rem;
+}
+.ev-group summary::-webkit-details-marker { display: none; }
+.ev-group summary::before { content: "\25B8"; color: var(--muted); margin-right: 0.5rem; transition: transform 0.15s; }
+.ev-group[open] summary::before { transform: rotate(90deg); }
+.ev-group summary span:first-child { flex: 1; }
+.ev-counts { font-family: var(--mono); font-size: 0.72rem; color: var(--muted); white-space: nowrap; }
+#evidence-toggle[aria-pressed="true"] { color: var(--ink); text-decoration: underline; text-underline-offset: 3px; }
+.evidence { padding-top: 3.6rem; }   /* the panel's title sits below the header bar, so it can be clicked */
