@@ -230,7 +230,10 @@ class OpenAICompatModel:
         ledger = SpendLedger(e.get("KNOCK_SPEND_FILE", "eval/results/spend.json"),
                              float(e.get("KNOCK_SPEND_CAP_USD", "10")),
                              float(e["KNOCK_PRICE_IN_PER_M"]), float(e["KNOCK_PRICE_OUT_PER_M"]))
-        return cls(e["KNOCK_OPENAI_BASE_URL"], e["KNOCK_OPENAI_MODEL"], e["KNOCK_OPENAI_API_KEY"], ledger)
+        key = e.get("KNOCK_OPENAI_API_KEY") or e.get("DIGITALOCEAN_INFERENCE_KEY")
+        if not key:
+            raise SystemExit("set KNOCK_OPENAI_API_KEY (or DIGITALOCEAN_INFERENCE_KEY) for the hosted provider")
+        return cls(e["KNOCK_OPENAI_BASE_URL"], e["KNOCK_OPENAI_MODEL"], key, ledger)
 
     def for_run(self, run_id: str) -> "OpenAICompatModel":
         m = OpenAICompatModel(self.url, self.name, self._key, self.ledger, self.temperature, self.timeout, run_id)
