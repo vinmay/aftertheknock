@@ -157,10 +157,9 @@ pre { white-space: pre-wrap; overflow-wrap: anywhere; margin: 0.3rem 0 0; color:
 #map-svg .node.fallback .dot { stroke-dasharray: 3 2; }
 #map-svg .node.intrusion .dot, #map-svg .node.origin .dot { stroke: var(--blood); }
 #map-svg .node.intrusion .dot { fill: var(--blood); }
-#map-svg .eid { fill: var(--muted); font-size: 10px; }
+#map-svg .eid { fill: var(--muted); font-size: 13px; }
 #map-svg .thread { stroke: var(--blood); stroke-width: 2; fill: none; stroke-dasharray: 1; stroke-dashoffset: 0; }
-#map-svg.draw .thread { stroke-dashoffset: 1; animation: thread-draw 1.4s ease-in-out forwards; animation-delay: calc(0.8s + var(--i) * 1.6s); }
-@keyframes thread-draw { to { stroke-dashoffset: 0; } }
+@keyframes thread-draw { from { stroke-dashoffset: 1; } to { stroke-dashoffset: 0; } }
 .map-tip {
   position: absolute; z-index: 2; max-width: 250px; padding: 0.45rem 0.6rem; font-size: 0.9rem; line-height: 1.4;
   background: var(--bg-raised); border: 1px solid var(--faint); border-radius: 3px; pointer-events: none;
@@ -221,7 +220,6 @@ body.staged main { filter: blur(2px) brightness(0.5); }
 .stage-go { opacity: 0; animation: in 0.6s ease 3.8s forwards; justify-self: center; }
 .crossing-stage.instant *, .crossing-stage.instant .hand text { animation: none !important; opacity: 1 !important; }
 .crossing-stage.instant .hand text { fill: currentColor; stroke-dashoffset: 0; }
-.drawer .tease { font-style: italic; font-size: 1.15rem; }
 
 .play-live { margin: 2.5rem 0 1rem; }
 .play-live a { color: var(--ink); text-decoration: none; display: inline-block; }
@@ -279,4 +277,90 @@ body::after {
     display: block; position: absolute; top: 2.6rem; left: 0; width: min(20rem, calc(100vw - 2rem));
     background: var(--bg-raised); border: 1px solid var(--faint); padding: 0.6rem 0.7rem; line-height: 1.5; z-index: 6;
   }
+}
+
+/* Memory-first crossing details */
+.drawer .memory { font-size: 1.12rem; line-height: 1.65; font-style: normal; }
+.route { list-style: none; padding: 0; margin: 1rem 0 1.2rem; }
+.route li { padding: 0.45rem 0 0.45rem 1.4rem; position: relative; }
+.route li::before { content: ""; position: absolute; left: 0.3rem; top: 0.95rem; width: 0.5rem; height: 0.5rem; border-radius: 50%; border: 1.5px solid var(--shadow); }
+.route li + li::before { background: var(--blood); border-color: var(--blood); }
+.route li + li::after { content: ""; position: absolute; left: 0.52rem; top: -0.35rem; height: 1.1rem; border-left: 1.5px dashed var(--blood); }
+.route-k { display: block; font-family: var(--mono); font-size: 0.7rem; letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted); }
+.proof { margin-top: 1rem; border-top: 1px solid var(--faint); padding-top: 0.6rem; }
+.proof summary { cursor: pointer; font-family: var(--mono); font-size: 0.8rem; color: var(--muted); padding: 0.6rem 0; min-height: 44px; display: flex; align-items: center; }
+.proof summary:hover { color: var(--ink); }
+.ev-summary { border: 1px solid var(--faint); padding: 0.6rem 0.9rem; margin-bottom: 1rem; font-size: 0.95rem; }
+.ev-summary p { margin: 0 0 0.4rem; }
+.ev-summary ol { margin: 0; padding-left: 1.2rem; }
+
+/* Replay presentation */
+.choices .recorded { color: var(--ink); }
+.choices .recorded::after { content: none; }
+.rec-k { display: block; font-family: var(--mono); font-size: 0.68rem; letter-spacing: 0.1em; text-transform: uppercase; color: var(--shadow); }
+.not-taken-note { margin: 0.4rem 0 0 2rem; font-size: 0.9rem; color: #8a8378; }
+.mode .detail a { color: var(--ink); }
+.card-night { border-top: 1px solid var(--faint); }
+.card-night:last-child { border-bottom: 1px solid var(--faint); }
+.card-head { width: 100%; display: flex; justify-content: space-between; align-items: center; gap: 1rem; min-height: 52px; text-align: left; color: var(--ink); }
+.card-head:hover .card-title { text-decoration: underline; text-underline-offset: 4px; }
+.card-meta { font-family: var(--mono); font-size: 0.7rem; letter-spacing: 0.06em; color: var(--muted); text-transform: uppercase; white-space: nowrap; }
+.card-body { padding: 0 0 1rem; }
+.card-body p { margin: 0.2rem 0 0.8rem; color: var(--muted); }
+.tech summary { cursor: pointer; font-size: 0.85rem; color: var(--muted); min-height: 44px; display: flex; align-items: center; }
+
+/* Primary call to action */
+.cta {
+  justify-self: start; margin-top: 0.8rem; min-height: 48px; padding: 0.6rem 1.4rem;
+  background: #2a1210; border: 1px solid var(--blood); color: var(--ink); border-radius: 3px; letter-spacing: 0.02em;
+}
+.cta:hover { background: #3a1612; }
+.cta:disabled { opacity: 0.5; cursor: default; }
+input::placeholder { color: #a39c90; }
+label[for="pocket"] { color: var(--ink); }
+
+/* Motion: routine transitions are quick; long effects are kept for crossings and the map reveal */
+.text p { animation-duration: 0.35s !important; }
+.choices { animation-duration: 0.3s; }
+.current.fade-in { animation-duration: 0.35s; }
+.trace-hint { animation-delay: 0s; animation-duration: 0.3s; }
+
+/* Map reveal */
+.map [data-stage] { transition: opacity 0.9s ease; }
+.map.revealing [data-stage]:not(.on) { opacity: 0; }
+.map.revealing .thread:not(.on) { stroke-dashoffset: 1; }
+.map.revealing .thread.on { animation: thread-draw 1.5s ease-in-out both; }
+.map-intro {
+  position: absolute; inset: 0; display: grid; place-content: center; text-align: center; gap: 1.2rem; z-index: 3;
+  background: var(--bg); animation: in 1s ease both;
+}
+.map-intro p { font-size: clamp(1.3rem, 3vw, 1.9rem); font-style: italic; margin: 0; }
+#map-svg .fork-label { fill: var(--ink); font-size: 13px; font-family: var(--serif); font-style: italic; opacity: 0.85; }
+#map-svg .lane-label { font-size: 14px; }
+
+/* Map on phones: nights as cards */
+.map-list { width: 100%; max-width: 32rem; margin: 0 auto; padding-bottom: 3rem; }
+.night-card { border-left: 2px solid var(--ink); padding: 0.2rem 0 0.2rem 0.9rem; margin: 0 0 1rem; }
+.night-card.other { border-left: 2px dashed var(--shadow); }
+.night-card h3 { font-weight: normal; font-style: italic; font-size: 1rem; margin: 0 0 0.3rem; color: var(--muted); }
+.night-card ol { list-style: none; margin: 0; padding: 0; }
+.ev-row { width: 100%; text-align: left; min-height: 44px; padding: 0.5rem 0; color: var(--ink); line-height: 1.4; border-bottom: 1px solid var(--faint); }
+.night-card.other .ev-row { color: #c9c2b6; }
+.ev-row.crossing { color: var(--blood-text); }
+.xmark { display: block; font-family: var(--mono); font-size: 0.72rem; letter-spacing: 0.06em; text-transform: uppercase; margin-top: 0.2rem; }
+.fork-note { font-style: italic; color: var(--muted); margin: 0.2rem 0 1rem; font-size: 0.95rem; }
+.afterword button { color: var(--ink); }
+#map-svg[hidden] { display: none; }
+
+/* Landing: one closed door, light under it, a peephole that catches the light */
+.door { display: block; width: 7.5rem; height: auto; margin: 0 0 -1rem; }
+.door .seam { animation: seam 6s ease-in-out infinite; }
+.door .glint { animation: glint 9s ease-in-out infinite; }
+@keyframes seam { 0%, 100% { opacity: 0.55; } 50% { opacity: 1; } }
+@keyframes glint { 0%, 88%, 100% { opacity: 0.25; } 92% { opacity: 1; } }
+@media (max-width: 40rem) { .door { width: 5.5rem; margin-bottom: -0.5rem; } }
+@media (prefers-reduced-motion: reduce) { .door .seam, .door .glint { animation: none; } }
+input::placeholder { color: #8f887c; font-style: italic; }
+@media (max-width: 40rem) {
+  .foot { position: static; text-align: center; padding: 0 1rem 2rem; }
 }

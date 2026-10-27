@@ -31,7 +31,12 @@ async function staticApi(path, body) {
     return { view: d.steps[Static.step].view };
   }
   if (route === "/api/map") return d.map;
-  if (route === "/api/evidence") return { log: d.log.slice(0, d.steps[Static.step].log_len), ops: d.ops, model: d.model, seed: d.seed };
+  if (route === "/api/evidence") {
+    const seen = d.steps.slice(0, Static.step + 1).filter((st) => st.view.kind === "crossing").length;
+    return { log: d.log.slice(0, d.steps[Static.step].log_len), ops: d.ops, model: d.model, seed: d.seed,
+             crossings: d.map.intrusions.slice(0, seen).map((x) => x.memory) };
+  }
+  if (route === "/api/verify") return { verified: true, hashes: d.state_hashes, replayed: d.state_hashes, against: "recording, when this site was built" };
   throw new Error("not available in the static replay");
 }
 
@@ -102,6 +107,14 @@ const LINKS = {
   repo: "https://github.com/vinmay/aftertheknock",
 };
 const article = (w) => (/^[aeiou]/i.test(w) ? "an " : "a ") + w;
+/* "lock / roof / erase" -> plain words. Shown only after a card is opened (no spoilers in the list). */
+function pathWords(path) {
+  const [f1, f2, end] = path.split(" / ");
+  const a = { lock: "kept the door locked", open: "opened the door" }[f1] || f1;
+  const b = { basement: "went down to the basement", roof: "went up to the roof" }[f2] || f2;
+  const c = { erase: "erased the other night", open: "let the other night in" }[end] || end;
+  return `Someone ${a}, ${b}, and ${c}.`;
+}
 
 async function boot() {
   try {
@@ -117,9 +130,22 @@ async function boot() {
     if (list.length) {
       $("#replays").hidden = false;
       $("#replays-head").textContent = st.static || !st.live ? "Watch a night" : "Or watch a recorded night";
-      $("#replay-list").innerHTML = list.map((r, i) =>
-        `<li><button data-id="${esc(r.id)}">Night ${i + 1} · ${esc(article(r.pocket))}</button></li>`).join("");
-      $("#replay-list").querySelectorAll("button").forEach((b) => b.addEventListener("click", () => startReplay(b.dataset.id)));
+      $("#replay-list").innerHTML = list.map((r, i) => `
+        <li class="card-night">
+          <button class="card-head" aria-expanded="false" aria-controls="night-${i}">
+            <span class="card-title">Night ${i + 1} · ${esc(article(r.pocket))}</span><span class="card-meta">Recorded run</span>
+          </button>
+          <div class="card-body" id="night-${i}" hidden>
+            <p>${esc(pathWords(r.path))}</p>
+            <button class="primary watch" data-id="${esc(r.id)}">Watch this night</button>
+            <details class="tech"><summary>Technical details</summary><p class="small muted">Seed ${esc(r.seed)} · recorded with ${esc(r.model)} · re-verified against its recorded state</p></details>
+          </div>
+        </li>`).join("");
+      $("#replay-list").querySelectorAll(".card-head").forEach((h) => h.addEventListener("click", () => {
+        const body = h.nextElementSibling, open = body.hidden;
+        body.hidden = !open; h.setAttribute("aria-expanded", String(open));
+      }));
+      $("#replay-list").querySelectorAll(".watch").forEach((b) => b.addEventListener("click", () => startReplay(b.dataset.id)));
     }
   } catch (e) {
     $("#status-line").textContent = "Could not reach the server.";
@@ -161,7 +187,7 @@ $("#start").addEventListener("submit", async (ev) => {
     if (e.fallback === "replay") fallBackToReplays(`${e.message} These are replays of real recorded runs; the model is not running live.`);
     else $("#status-line").textContent = e.message;
   } finally {
-    S.busy = false; $("#begin").disabled = false; $("#begin").textContent = "Begin";
+    S.busy = false; $("#begin").disabled = false; $("#begin").textContent = "Begin your night";
   }
 });
 
@@ -169,7 +195,9 @@ async function startReplay(id) {
   Sound.init();
   const d = await api("/api/replay/start", { id });
   S.game = d.game; S.replay = d.replay; S.step = 0; S.pocket = d.pocket;
-  setMode(`<span class="tag replay">replay</span>`, d.seed, `${esc(REPLAY_LABEL)} · recorded with ${esc(d.replay.model.model)}`);
+  const liveHref = STATIC ? LINKS.live : location.pathname;
+  setMode(`<span class="tag replay">recorded night</span>`, d.seed,
+    `following a path someone already took · ${esc(REPLAY_LABEL.split("— ")[1] || REPLAY_LABEL)} · <a href="${liveHref}">Start a live night</a>`);
   show(d.view);
   Sound.knock();
 }
@@ -207,12 +235,7 @@ function sceneHtml(v) {
       return `<p>${t}</p>`;
     }).join("") + `<p><button class="trace-hint">where did this come from? ↗</button></p>`;
   }
-  let html = paragraphs(v.text).map((p) => `<p>${esc(p)}</p>`).join("");
-  if (v.kind === "ending" && v.verified !== undefined) {
-    const how = STATIC ? "Verified when this site was built: re-running" : "Replay verified: re-running";
-    html += `<p class="small muted">${v.verified ? `${how} the recorded model outputs through the engine reproduced every timeline's state hash.` : "Replay did not reproduce the recorded state."}</p>`;
-  }
-  return html;
+  return paragraphs(v.text).map((p) => `<p>${esc(p)}</p>`).join("");
 }
 
 /* Reveal text nodes character by character. Resolves when done or skipped. */
@@ -268,26 +291,41 @@ async function show(v) {
   if (S.history?.length) cur.scrollIntoView({ behavior: REDUCED ? "auto" : "smooth", block: "start" });
   else window.scrollTo({ top: 0 });
 
-  if (v.kind === "crossing") stageCrossing(v.crossing);
+  if (v.kind === "crossing") stageCrossing(v.crossing, v.scene === "crossing2");
   else await typeOut(text);
   if (S.view !== v) return;
 
   const recorded = S.replay ? S.replay.choices[S.step] : null;
-  v.choices.forEach((label, i) => {
+  if (S.replay && recorded != null && v.choices.length) {
+    // A replay follows its recording: show the decision that was made, and name the one that wasn't.
     const b = document.createElement("button");
-    b.innerHTML = `<span class="num">${i + 1}</span>${esc(label)}`;
-    b.dataset.index = i;
-    if (S.replay) { if (i === recorded) b.classList.add("recorded"); else b.disabled = true; }
-    b.addEventListener("click", () => choose(i));
+    b.className = "recorded";
+    b.innerHTML = `<span class="num">${recorded + 1}</span><span><span class="rec-k">Recorded choice</span> ${esc(v.choices[recorded])}</span>`;
+    b.dataset.index = recorded;
+    b.addEventListener("click", () => choose(recorded));
     ch.appendChild(b);
-  });
-  if (v.kind === "ending") {
-    [["Play again — it won't be the same night", () => (location.href = location.pathname)],
-     ["See how this was made", () => howItWorks()],
-     ["Open the map", () => openMap()]].forEach(([label, fn]) => {
-      const b = document.createElement("button"); b.textContent = label; b.addEventListener("click", fn); ch.appendChild(b);
+    const others = v.choices.filter((_, i) => i !== recorded);
+    if (others.length) ch.insertAdjacentHTML("beforeend", `<p class="not-taken-note">Not taken in this recording: ${others.map(esc).join(", ")}</p>`);
+  } else {
+    v.choices.forEach((label, i) => {
+      const b = document.createElement("button");
+      b.innerHTML = `<span class="num">${i + 1}</span>${esc(label)}`;
+      b.dataset.index = i;
+      b.addEventListener("click", () => choose(i));
+      ch.appendChild(b);
     });
   }
+  if (v.kind === "ending") {
+    ch.classList.add("afterword");
+    [["Explore the nights you didn't live", () => openMap()],
+     ["Verify this run", () => openVerify()],
+     ["Begin another night", () => (location.href = location.pathname)]].forEach(([label, fn], i) => {
+      const b = document.createElement("button");
+      b.innerHTML = `<span class="num">${i + 1}</span>${esc(label)}`;
+      b.dataset.index = i;
+      b.addEventListener("click", fn); ch.appendChild(b);
+    });
+  } else ch.classList.remove("afterword");
   ch.hidden = false;
   if (v.kind === "map") setTimeout(openMap, 900);
 }
@@ -361,11 +399,10 @@ function setClock(t) {
 /* ---------------------------------------------------------------- the crossing */
 const REDUCED = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 
-function stageCrossing(c) {
+function stageCrossing(c, second = false) {
   const el = $("#crossing-stage");
-  const voice = c.sense === "voice";
-  const kind = voice ? "voice" : c.object === "key07" ? "tag" : "paper";
-  const label = voice ? "" : c.object === "key07" ? "BASEMENT 07" : esc(S.pocket || "");
+  const kind = c.object === "key07" ? "tag" : "paper";
+  const label = c.object === "key07" ? "BASEMENT 07" : esc(S.pocket || "");
   el.innerHTML = `
     <div class="stage-inner">
       <p class="stage-before">${esc(c.before)}</p>
@@ -386,7 +423,9 @@ function stageCrossing(c) {
     document.body.classList.add("flicker");
     setTimeout(() => document.body.classList.remove("flicker"), 1000);
   }
-  voice ? Sound.crossing() : Sound.pen(c.inscription.length);
+  // The second crossing escalates: a low swell under the pen, not the pen alone.
+  if (second) Sound.crossing();
+  Sound.pen(c.inscription.length);
   const close = () => { el.hidden = true; document.body.classList.remove("staged"); $("#current .ink")?.focus(); };
   $("#stage-go").addEventListener("click", close);
   setTimeout(() => $("#stage-go")?.focus(), REDUCED ? 0 : 3200);
@@ -409,37 +448,39 @@ function attemptsHtml(attempts) {
   }).join("") + `</ul>`;
 }
 
-function fullRecordUnlocked() {
-  return S.mapSeen || !$("#evidence").hidden;
+/* Story -> memory -> proof. The memory and labels are built by the engine from committed events;
+   raw ids, state paths and the model's own words stay inside "View proof". */
+function memoryHtml(mem, kicker = "where it came from") {
+  return `<p class="kicker">${esc(kicker)}</p>
+    <div class="quote shadowq memory">${esc(mem.memory)}</div>
+    <ol class="route">
+      <li><span class="route-k">Written there</span> ${esc(mem.source.replace(/^Written there: /, ""))}</li>
+      <li><span class="route-k">Appeared here</span> ${esc(mem.dest.replace(/^Appeared here: /, ""))}</li>
+    </ol>`;
 }
 
-function openTrace(tr) {
-  if (!fullRecordUnlocked()) {
-    openDrawer(`<p class="kicker">where it came from</p>
-      <div class="quote shadowq tease">${esc(tr.teaser)}</div>
-      <p class="small muted">The full record opens with the map, at the end of the night. (Judges: the <b>evidence</b> switch at the top shows everything now.)</p>`);
-    return;
-  }
-  const o = tr.origin, x = tr.intrusion, m = tr.manifestation;
-  const body = `
-    <p class="kicker">intrusion ${esc(x.intrusion_id)} · from timeline ${esc(x.origin_branch)} into ${esc(x.target_branch)}</p>
-    <h3>It came from here</h3>
-    <div class="quote shadowq">${esc(o.desc)}</div>
-    ${o.summary && o.source === "model" ? `<p class="small muted">The model's own words: "${esc(o.summary)}"</p>` : ""}
+function proofHtml(rows, open = false) {
+  return `<details class="proof"${open ? " open" : ""}><summary>View proof</summary>${rows}</details>`;
+}
+
+function crossingProof(o, x, m, attempts) {
+  return `
     <ul class="facts">
-      <li>event <b>${esc(o.event_id)}</b> in timeline ${esc(o.branch)} (the night you didn't choose)</li>
+      <li>intrusion <b>${esc(x.intrusion_id)}</b>: event <b>${esc(o.event_id)}</b> (timeline ${esc(o.branch)}) → <b>${esc(m.event_id)}</b> (timeline ${esc(m.branch)})</li>
       <li>${esc(o.actor)} · ${esc(o.action)} · ${esc(o.target)}${o.text ? ` · "${esc(o.text)}"` : ""}</li>
       <li>proposed by ${o.source === "model" ? "the model" : "a hand-written fallback"}; committed by the engine</li>
       <li>preconditions: ${esc((o.preconditions || []).join("; ") || "none")}</li>
       <li>evidence: ${esc((o.evidence_refs || []).join(", ") || "none")}</li>
+      ${o.summary && o.source === "model" ? `<li>the model's own summary: "${esc(o.summary)}"</li>` : ""}
+      ${x.post_fork.map((f) => `<li>crossed: ${factLine(f)} <span class="muted">(created after the fork)</span></li>`).join("")}
+      ${m.state_delta.map((f) => `<li>appeared: ${factLine(f)}</li>`).join("")}
     </ul>
-    ${attemptsHtml(tr.attempts)}
-    <h3>What crossed</h3>
-    <ul class="facts">${x.post_fork.map((f) => `<li>${factLine(f)} <span class="muted">(created after the fork)</span></li>`).join("")}</ul>
-    <h3>Where it appeared</h3>
-    <ul class="facts"><li>event <b>${esc(m.event_id)}</b> in your timeline, citing ${esc(m.origin)}</li>
-    ${m.state_delta.map((f) => `<li>${factLine(f)}</li>`).join("")}</ul>`;
-  openDrawer(body);
+    ${attemptsHtml(attempts)}`;
+}
+
+function openTrace(tr) {
+  const evidence = !$("#evidence").hidden;
+  openDrawer(memoryHtml(tr.memory) + proofHtml(crossingProof(tr.origin, tr.intrusion, tr.manifestation, tr.attempts), evidence));
 }
 
 function openDrawer(html) {
@@ -449,20 +490,67 @@ function openDrawer(html) {
 }
 $("#drawer-close").addEventListener("click", () => ($("#drawer").hidden = true));
 
+/* ---------------------------------------------------------------- verification */
+async function openVerify() {
+  let d;
+  try { d = await api(`/api/verify?game=${encodeURIComponent(S.game)}`); }
+  catch (e) { openDrawer(`<p class="bad">${esc(e.message)}</p>`); return; }
+  const rows = Object.keys(d.hashes).map((b) =>
+    `<li>timeline ${esc(b)} · ${esc(d.hashes[b])} ${d.replayed[b] === d.hashes[b] ? `<span class="ok">matches</span>` : `<span class="bad">differs: ${esc(d.replayed[b])}</span>`}</li>`).join("");
+  openDrawer(`<p class="kicker">verify this run</p>
+    <h3>${d.verified ? "Reproduced exactly." : "Did not reproduce."}</h3>
+    <p>Every model output from this night was fed back through the engine, which re-validated and re-committed every event from the start. The resulting state of every timeline was compared with the ${esc(d.against)}.</p>
+    <ul class="facts">${rows}</ul>
+    <p class="small muted">The same check runs on every recorded night in the test suite, and fails if a single recorded model output is changed.</p>`);
+}
+
 /* ---------------------------------------------------------------- map */
 async function openMap() {
+  if (!$("#map").hidden && $("#map").classList.contains("revealing")) return;
   try {
     S.mapData = await api(`/api/map?game=${encodeURIComponent(S.game)}`);
   } catch (e) { return; }
-  drawMap(S.mapData);
   $("#map").hidden = false;
+  drawMap(S.mapData);
+  if (!S.mapRevealed) { S.mapRevealed = true; reveal(); }
+  else showAll();
 }
+
+/* The reveal: a line of text, then your path, each rejected branch at its fork, then the threads.
+   A presentation of committed data only; skippable, and instant under reduced motion. */
+const Reveal = { timers: [] };
+function showAll() {
+  Reveal.timers.forEach(clearTimeout); Reveal.timers = [];
+  $("#map").classList.remove("revealing");
+  $("#map-intro").hidden = true;
+  $("#map").querySelectorAll("[data-stage]").forEach((el) => el.classList.add("on"));
+}
+function reveal() {
+  if (REDUCED) return showAll();
+  const map = $("#map");
+  map.classList.add("revealing");
+  map.querySelectorAll("[data-stage]").forEach((el) => el.classList.remove("on"));
+  $("#map-intro").hidden = false;
+  const at = (ms, fn) => Reveal.timers.push(setTimeout(fn, ms));
+  const stage = (n) => map.querySelectorAll(`[data-stage="${n}"]`).forEach((el) => el.classList.add("on"));
+  at(2200, () => { $("#map-intro").hidden = true; stage(1); });
+  at(3200, () => stage(2));
+  at(4400, () => stage(3));
+  at(5600, () => { stage(4); Sound.crossing(); });
+  at(7400, () => { stage(5); });
+  at(9000, showAll);
+}
+$("#map-skip").addEventListener("click", showAll);
 $("#map-close").addEventListener("click", () => ($("#map").hidden = true));
 
 function drawMap(d) {
   const svg = $("#map-svg");
   const box = $("#map .map-scroll").clientWidth || window.innerWidth;
-  const vertical = box < 640;
+  const narrow = window.matchMedia("(max-width: 40rem)").matches;
+  svg.toggleAttribute("hidden", narrow);
+  $("#map-list").hidden = !narrow;
+  if (narrow) return drawMapList(d);
+  const vertical = false;
   const evidence = !$("#evidence").hidden;
   const br = Object.fromEntries(d.branches.map((b) => [b.id, b]));
   // Causal x order: shadows start right after their fork; a crossing lands after its origin.
@@ -504,10 +592,13 @@ function drawMap(d) {
     ? `M${x1},${y1} C${x1},${(y1 + y2) / 2} ${x2},${(y1 + y2) / 2} ${x2},${y2}`
     : `M${x1},${y1} C${(x1 + x2) / 2},${y1} ${(x1 + x2) / 2},${y2} ${x2},${y2}`;
   let out = "";
+  const stageOf = { S: 1, A: 1, C: 1, B: 2, D: 3 };
+  const forkAt = Object.fromEntries((d.forks || []).map((f) => [f.at === "S" ? "B" : "D", f]));
   for (const b of d.branches) {
     const evs = d.events.filter((e) => e.branch === b.id);
     if (!evs.length) continue;
     const cls = br[b.id].kind === "shadow" ? "lane shadow" : "lane";
+    out += `<g data-stage="${stageOf[b.id]}">`;
     const first = pos[evs[0].event_id], last = pos[evs[evs.length - 1].event_id];
     if (b.parent) out += `<path class="${cls}" d="${curve(P(lastColAt(b.parent, b.fork_seq), b.parent), first)}"/>`;
     out += `<path class="${cls}" d="M${first[0]},${first[1]} L${last[0]},${last[1]}"/>`;
@@ -516,28 +607,39 @@ function drawMap(d) {
     out += vertical
       ? `<text class="lane-label" transform="translate(${first[0] - 16},${first[1] + 14}) rotate(90)">${label}</text>`
       : `<text class="lane-label" x="${first[0] - 8}" y="${first[1] + (b.id === "B" ? -26 : b.id === "D" ? 38 : b.id === "A" ? 58 : 38)}">${label}</text>`;
+    const f = forkAt[b.id];
+    if (f && !vertical) {
+      const [fx, fy] = P(lastColAt(b.parent, b.fork_seq), b.parent);
+      out += `<text class="fork-label" x="${fx}" y="${fy + (b.id === "B" ? -16 : 22)}" text-anchor="middle">\u201c${esc(f.not_taken)}\u201d</text>`;
+    }
+    out += `</g>`;
   }
   d.intrusions.forEach((x, i) => {
-    out += `<path class="thread" style="--i:${i}" pathLength="1" d="${curve(pos[x.origin_event_id], pos[x.manifestation_event_id])}"/>`;
+    out += `<path class="thread" data-stage="${4 + i}" pathLength="1" d="${curve(pos[x.origin_event_id], pos[x.manifestation_event_id])}"/>`;
   });
   for (const e of d.events) {
     const [x, y] = pos[e.event_id];
     const kind = br[e.branch].kind === "shadow" ? "shadow" : "canonical";
     const cls = ["node", kind, e.source, origins.has(e.event_id) ? "origin" : ""].join(" ");
     const r = e.source === "story" ? 5 : 9;
-    out += `<g class="${cls}" tabindex="0" role="button" aria-label="${esc(e.desc)}" data-id="${esc(e.event_id)}">` +
+    const xo = d.intrusions.find((i) => i.origin_event_id === e.event_id);
+    const xm = d.intrusions.find((i) => i.manifestation_event_id === e.event_id);
+    const role = xo ? ` This is where \u201c${xo.memory.inscription}\u201d was written.` : xm ? ` \u201c${xm.memory.inscription}\u201d appeared here, from another night.` : "";
+    const name = `${d.labels[e.branch] || ""}. ${e.desc}${role}`;
+    out += `<g class="${cls}" data-stage="${stageOf[e.branch]}" tabindex="0" role="button" aria-label="${esc(name)}" data-id="${esc(e.event_id)}">` +
       `<circle cx="${x}" cy="${y}" r="14" class="hit"/><circle cx="${x}" cy="${y}" r="${r}" class="dot"/>` +
       (evidence ? `<text x="${x}" y="${y + (vertical ? 4 : 26)}" dx="${vertical ? 16 : 0}" text-anchor="${vertical ? "start" : "middle"}" class="eid">${esc(e.event_id)}</text>` : "") +
       `</g>`;
   }
   svg.innerHTML = out;
-  svg.classList.toggle("draw", !REDUCED);
   const tip = $("#map-tip");
   svg.querySelectorAll(".node").forEach((n) => {
     const e = d.events.find((x) => x.event_id === n.dataset.id);
     const show = () => {
       const r = n.getBoundingClientRect(), host = $("#map").getBoundingClientRect();
-      tip.textContent = e.desc;
+      const xo = d.intrusions.find((i) => i.origin_event_id === e.event_id);
+      const xm = d.intrusions.find((i) => i.manifestation_event_id === e.event_id);
+      tip.textContent = e.desc + (xo ? " (written there)" : xm ? " (appeared here)" : "");
       tip.hidden = false;
       tip.style.left = `${Math.min(r.left - host.left, host.width - 260)}px`;
       tip.style.top = `${r.bottom - host.top + 8}px`;
@@ -551,37 +653,61 @@ function drawMap(d) {
   });
 }
 
+/* Phones: the same data as a vertical list of nights, linked by crossing markers. */
+function drawMapList(d) {
+  const by = (id) => d.events.filter((e) => e.branch === id && e.source !== "story" || (e.branch === id && e.source === "story" && e.seq === 0));
+  const forks = Object.fromEntries((d.forks || []).map((f) => [f.at, f]));
+  const evBtn = (e) => {
+    const xo = d.intrusions.find((i) => i.origin_event_id === e.event_id);
+    const xm = d.intrusions.find((i) => i.manifestation_event_id === e.event_id);
+    const mark = xo ? `<span class="xmark">written there \u2198</span>` : xm ? `<span class="xmark">appeared here</span>` : "";
+    return `<li><button class="ev-row${xo || xm ? " crossing" : ""}" data-id="${esc(e.event_id)}" data-stage="1">${esc(e.desc)}${mark}</button></li>`;
+  };
+  const card = (id, title, cls) => {
+    const evs = d.events.filter((e) => e.branch === id && (e.source !== "story" || id === "S"));
+    if (!evs.length) return "";
+    return `<section class="night-card ${cls}" data-stage="1"><h3>${esc(title)}</h3><ol>${evs.map(evBtn).join("")}</ol></section>`;
+  };
+  const fork = (f) => f ? `<p class="fork-note" data-stage="1">You chose \u201c${esc(f.taken)}\u201d. Somewhere else, someone chose \u201c${esc(f.not_taken)}\u201d.</p>` : "";
+  const L = d.labels;
+  $("#map-list").innerHTML = card("S", "Before the choice", "") + fork(forks.S) +
+    card("B", L.B || "The other night", "other") + card("A", L.A || "Your night", "yours") + fork(forks.A) +
+    card("D", L.D || "The other night", "other") + card("C", L.C || "Your night", "yours");
+  $("#map-list").querySelectorAll(".ev-row").forEach((b) => b.addEventListener("click", () => openEvent(b.dataset.id)));
+}
+
 function openEvent(id) {
   const d = S.mapData, e = d.events.find((x) => x.event_id === id);
   const x = d.intrusions.find((i) => i.manifestation_event_id === id || i.origin_event_id === id);
-  const ids = !$("#evidence").hidden;
-  let html = `<p class="kicker">${ids ? esc(e.event_id) + " · " : ""}${esc(d.labels[e.branch] || e.branch)}</p>
-    <div class="quote ${e.branch === "B" || e.branch === "D" ? "shadowq" : ""}">${esc(e.desc)}</div>
-    <ul class="facts">
-      <li>source: ${esc({ model: "proposed by the model, validated, committed", fallback: "hand-written fallback (model proposals were rejected)", story: "hand-written story event", intrusion: "intrusion from another timeline" }[e.source])}</li>
-      ${e.summary && e.source === "model" ? `<li>the model's own words: "${esc(e.summary)}"</li>` : ""}
+  const evidence = !$("#evidence").hidden;
+  const raw = `<ul class="facts">
+      <li>event <b>${esc(e.event_id)}</b> · ${esc({ model: "proposed by the model, validated, committed", fallback: "hand-written fallback after rejected model proposals", story: "hand-written story event", intrusion: "a crossing from another timeline" }[e.source])}</li>
+      ${e.summary && e.source === "model" ? `<li>the model's own summary: "${esc(e.summary)}"</li>` : ""}
       ${e.preconditions.length ? `<li>preconditions: ${esc(e.preconditions.join("; "))}</li>` : ""}
       ${e.evidence_refs.length ? `<li>evidence: ${esc(e.evidence_refs.join(", "))}</li>` : ""}
       ${e.state_delta.map((f) => `<li>${factLine(f)}</li>`).join("")}
-    </ul>`;
-  html += attemptsHtml(e.attempts);
+    </ul>${attemptsHtml(e.attempts)}`;
   if (x) {
-    html += `<h3>Crossing ${esc(x.intrusion_id)}</h3><ul class="facts">
-      <li>${esc(x.origin_event_id)} (timeline ${esc(x.origin_branch)}) → ${esc(x.manifestation_event_id)} (timeline ${esc(x.target_branch)})</li>
-      ${x.post_fork.map((f) => `<li>${factLine(f)} <span class="muted">(created after the fork)</span></li>`).join("")}</ul>`;
-    const nar = d.narration[x.origin_branch];
-    if (nar && x.manifestation_event_id === id) {
-      html += `<h3>Narration</h3><div class="quote">${esc(nar.text)}</div><p class="small muted">${nar.source === "model" ? "Written by the model from released facts only; passed the rule checks." : "The model's text failed the rule checks twice; this is the hand-written fallback."}</p>`;
-    }
+    const o = d.events.find((y) => y.event_id === x.origin_event_id);
+    const m = d.events.find((y) => y.event_id === x.manifestation_event_id);
+    openDrawer(memoryHtml(x.memory, x.origin_event_id === id ? "the other night" : "your night") +
+      proofHtml(crossingProof(o, x, m, o.attempts), evidence));
+    return;
   }
-  openDrawer(html);
+  openDrawer(`<p class="kicker">${esc(d.labels[e.branch] || e.branch)}</p>
+    <div class="quote ${e.branch === "B" || e.branch === "D" ? "shadowq" : ""}">${esc(e.desc)}</div>` + proofHtml(raw, evidence));
 }
 
 /* ---------------------------------------------------------------- evidence */
 async function loadEvidence() {
   if (!S.game) { $("#evidence-body").innerHTML = `<p class="small muted">Start a night first.</p>`; return; }
   const d = await api(`/api/evidence?game=${encodeURIComponent(S.game)}`);
-  $("#evidence-body").innerHTML = `<p class="small muted">model ${esc(d.model.model)} ${esc(d.model.quantization || "")} · seed ${esc(d.seed)} · ${d.log.length} records</p>` +
+  const crossed = d.crossings || [];
+  const summary = crossed.length
+    ? `<div class="ev-summary"><p><b>${crossed.length === 1 ? "One thing has" : "Two things"} crossed into your night.</b></p><ol>${crossed.map((c) =>
+        `<li>\u201c${esc(c.inscription)}\u201d on ${esc(c.object)}, from ${esc(c.source.replace(/^Written there: /, "").split(",")[0])}.</li>`).join("")}</ol></div>`
+    : `<div class="ev-summary"><p><b>Nothing has crossed into your night yet.</b></p></div>`;
+  $("#evidence-body").innerHTML = summary + `<p class="small muted">model ${esc(d.model.model)} ${esc(d.model.quantization || "")} · seed ${esc(d.seed)} · ${d.log.length} records</p>` +
     d.log.map((r) => {
       if (r.kind === "proposal") {
         const dec = r.decision || {};

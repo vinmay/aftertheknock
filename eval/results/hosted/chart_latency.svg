@@ -2,15 +2,15 @@
 <rect width="100%" height="100%" fill="#0e0d0c"/>
 <text x="16" y="24" fill="#e6dfd2" font-size="14">Latency on a GTX 1660 Ti (seconds)</text>
 <text x="16" y="59" fill="#8d867b">model call p50</text>
-<rect x="230" y="44" width="50.9" height="20" fill="#e6dfd2"/>
-<text x="286.9" y="59" fill="#e6dfd2">1.67 s</text>
+<rect x="230" y="44" width="56.3" height="20" fill="#e6dfd2"/>
+<text x="292.3" y="59" fill="#e6dfd2">1.46 s</text>
 <text x="16" y="93" fill="#8d867b">model call p95</text>
-<rect x="230" y="78" width="88.4" height="20" fill="#8d867b"/>
-<text x="324.4" y="93" fill="#e6dfd2">2.9 s</text>
+<rect x="230" y="78" width="76.8" height="20" fill="#8d867b"/>
+<text x="312.8" y="93" fill="#e6dfd2">1.99 s</text>
 <text x="16" y="127" fill="#8d867b">shadow timeline p50</text>
-<rect x="230" y="112" width="208.2" height="20" fill="#7f8d99"/>
-<text x="444.2" y="127" fill="#e6dfd2">6.83 s</text>
+<rect x="230" y="112" width="196.8" height="20" fill="#7f8d99"/>
+<text x="432.8" y="127" fill="#e6dfd2">5.1 s</text>
 <text x="16" y="161" fill="#8d867b">shadow timeline p95</text>
 <rect x="230" y="146" width="360.0" height="20" fill="#7f8d99"/>
-<text x="596.0" y="161" fill="#e6dfd2">11.81 s</text>
+<text x="596.0" y="161" fill="#e6dfd2">9.33 s</text>
 </svg>

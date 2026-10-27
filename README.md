@@ -8,7 +8,7 @@ A short horror story where the choice you didn't make keeps happening in a hidde
 
 Branching horror, timelines that remember, and AI-generated branching stories all exist already (see [Prior art](#prior-art)). This project combines three things: rejected branches that keep simulating, intrusions that carry facts created after the fork, and inspectable provenance for every intrusion.
 
-It is 11:47 PM. A storm. A woman you have never met knocks on your door and says, *"Please. You already let me in."* Lock the door, and later you find four digits written on the thing in your pocket. Mara wrote them, in the night where you opened the door. Later, in the basement, those digits open the padlock on unit 07. And once more before the night ends, you hear a voice from the stairwell saying words that were only ever spoken in the other night. Both crossings trace back to the exact events that made them.
+It is 11:47 PM. A storm. A woman you have never met knocks on your door and says, *"Please. You already let me in."* Lock the door, and later you find four digits written on the thing in your pocket. Mara wrote them, in the night where you opened the door. Later, in the basement, those digits open the padlock on unit 07. And once more before the night ends, a second object turns up with words on it that were only ever written in the other night. Both crossings trace back to the exact events that made them.
 
 <!-- GIF: owner records from scripts/demo -->
 
@@ -73,11 +73,13 @@ flowchart LR
 
 **The model proposes; the engine commits.** For each shadow event, Gemma gets the shadow's current state and a one-line story beat, and must answer in a JSON schema: actor, action (one of move, speak, give, take, mark, open, hide, discover, harm), target, recipient, text, summary. It never writes state. A deterministic validator checks the proposal against the shadow's state: people and things exist in that branch, you can only give, mark or hide what you hold, you must be in the same place, moves go one step to an adjacent place, locked places need their key, the dead and departed don't act. If the proposal passes, the engine derives the state change from the action's rules and commits it. If it fails, the model gets the reason and tries again, up to three times. After that a hand-written fallback event is committed. Every rule has a unit test.
 
-**Intrusions cite their origin.** An intrusion links one committed shadow event to a change in your timeline. The engine refuses an intrusion unless the origin is a committed, simulated event of that shadow and it reveals at least one fact that did not exist at the fork, such as the digits that were written on your object. Echoing your own input back does not count. The two crossings must differ: the first is something *written* (a mark on an object) and the second is something *heard* (words spoken in the shadow). The engine refuses a later crossing that repeats an earlier crossing's object or sense, or that shows the pocket object again. During play, asking where a crossing came from gives only a short hint built from the source event ("Your apartment, with the door open. A pen. Her hand."). At the end, the map draws a thread from every crossing to its origin event. Click either end to see the proposal, every rejected attempt, the validator's decision and the facts that crossed. The **evidence** switch shows all of this at any time.
+**Intrusions cite their origin.** An intrusion links one committed shadow event to a change in your timeline. The engine refuses an intrusion unless the origin is a committed, simulated event of that shadow and it reveals at least one fact that did not exist at the fork, such as the digits that were written on your object. Echoing your own input back does not count. Only marks manifest: a crossing is always something written on an object. The two crossings must land on different objects, and the engine refuses a later crossing that marks an object an earlier one already used. The first lands on your pocket object if you locked the door, or on the brass key's paper tag if you opened it; the second uses the other one. Click a crossing, during play or on the map, and you first get a short memory of where it came from, written by the engine from committed events only ("In the night where you opened the door, Mara took the folded receipt and wrote “4102” on it. This is where the numbers came from."), with *written there → appeared here*. A **View proof** disclosure underneath holds the event IDs, every rejected attempt, the validator's decisions and the raw proposals. At the end of the night, the map reveals every branch and draws a thread from each crossing to its origin event. The **evidence** switch shows the full audit at any time.
 
-**Crossings are told with hand-written lines; the model adds at most one sentence.** The words around each crossing are hand-written templates with the committed facts slotted in: the inscription, the object, whose hand or voice. The model may add one sentence of atmosphere. The prompt for that sentence is built only from your timeline (where you are, who is with you). It never sees the shadow log or the inscription, so it cannot contradict or leak either. The sentence is rule-checked (one sentence, no numbers, names, quotes, ALL-CAPS words or banned phrases), retried once, and dropped if it still fails.
+**Crossings are told with hand-written lines; the model adds at most one sentence.** The words around each crossing are hand-written templates with the committed facts slotted in: the inscription, the object, whose handwriting. The model may add one sentence of atmosphere. The prompt for that sentence is built only from your timeline (where you are, who is with you). It never sees the shadow log or the inscription, so it cannot contradict or leak either. The sentence is rule-checked (one sentence, no numbers, names, quotes, ALL-CAPS words or banned phrases), retried once, and dropped if it still fails.
 
-**Banned phrases.** Horror clichés such as "help me", "get out" and "you're next" are rejected wherever the model writes text, both in shadow proposals and in the atmosphere sentence.
+**Banned phrases.** Horror clichés such as "HELP ME", "GET OUT", "YOU'RE NEXT", "RUN" and "BEHIND YOU" are rejected (`R_BEAT`) wherever the model writes text, both in shadow proposals and in the atmosphere sentence. The words on the second object are steered instead by a seeded meaning: a name, a place in the building, an instruction.
+
+**Endings agree with committed state.** Every sentence in an ending about where an object is comes from that object's committed final holder in your night and in the other night. When the two differ, the ending says so outright ("The brass key is at your feet. In the other night, it is in Mara's hand. Both are true now."). A test checks this over every recorded and evaluated run, and another checks that no internal identifier ever reaches player-facing text. "Verify this run", after the ending, re-runs the night's log through the engine and compares every timeline's state hash.
 
 **Reproducible.** Each run records the seed, model and quantization, a hash of every prompt, every proposal and validator decision, and every committed event. Replaying a log through the engine reproduces every timeline's state hash. The test suite checks this, and checks that a tampered log fails.
 
@@ -93,37 +95,37 @@ Model: gemma4:e2b Q4_K_M, 24 live playthroughs (every fork path), raw logs in `e
 | Intrusions revealing a post-fork fact | 48/48 (100%) |
 | Intrusions with valid origin event | 48/48 (100%) |
 | Replays reproducing every state hash | 24/24 (100%) |
-| Shadow events accepted on the model's first proposal | 114/156 (73%) |
+| Shadow events accepted on the model's first proposal | 141/156 (90%) |
 | Shadow events committed from the model | 146/156 (94%) |
-| Shadow events from hand-written fallback | 9/156 (6%) |
-| Proposals rejected by the validator | 67/213 (31%) |
+| Shadow events from hand-written fallback | 7/156 (4%) |
+| Proposals rejected by the validator | 37/183 (20%) |
 | Deliberate impossible give rejected | 30/30 (100%) |
 | Model's atmosphere sentence failing rule checks (first attempt) | 0/48 (0%) |
 | Crossings that kept a model sentence (rest: hand-written lines only) | 48/48 (100%) |
 | Narration contradictions, hand-labeled | not labeled |
 | Intrusion accuracy, hand-labeled | not labeled |
-| Model call latency p50 / p95 | 1.78 s / 2.09 s |
-| Whole shadow timeline p50 / p95 | 7.15 s / 9.52 s |
-| Model calls per playthrough (mean) | 10.9 |
-| Tokens per playthrough (mean) | 6389 |
+| Model call latency p50 / p95 | 1.65 s / 2.16 s |
+| Whole shadow timeline p50 / p95 | 6.12 s / 8.3 s |
+| Model calls per playthrough (mean) | 9.6 |
+| Tokens per playthrough (mean) | 5393 |
 
 Variation (same choices, different seeds):
 
 | Path | Runs | Distinct event chains | Mean pairwise overlap (Jaccard) |
 |---|---|---|---|
-| lock/basement | 6 | 6 | 0.31 |
+| lock/basement | 6 | 6 | 0.22 |
 | lock/roof | 6 | 6 | 0.23 |
 | open/basement | 6 | 6 | 0.28 |
-| open/roof | 6 | 6 | 0.37 |
+| open/roof | 6 | 6 | 0.41 |
 
-Rejections by rule: R_REACH 28, R_NOOP 18, R_ADJACENT 10, R_TYPE 6, R_BEAT 5.
+Rejections by rule: R_ADJACENT 18, R_NOOP 11, R_REACH 6, R_TYPE 2.
 
 Notes on these numbers:
 
-- A *shadow step* is one shadow event: up to three model proposals, then a hand-written fallback. 1 of 156 steps was skipped (the model failed and no fallback fitted the state). Every shadow still ended with its committed crossing.
+- A *shadow step* is one shadow event: up to three model proposals, then a hand-written fallback. 3 of 156 steps were skipped (the model failed and no fallback fitted the state). Every shadow still ended with its committed crossing.
 - "Rejected" counts proposals stopped by the validator or by a story-beat check (`R_BEAT`, which includes banned phrases). A rejected proposal never changes state.
 - The crossing text is hand-written around the committed facts. The atmosphere-sentence rows measure only the model's optional extra sentence, which is rule-checked. That doesn't prove the sentence never contradicts anything; hand labels go in `eval/labels/` and show as "not labeled" until a person fills them in.
-- Time from the click to the crossing, with no reading pause at all: p50 7.69 s, p95 10.15 s. In real play the shadow runs while you read the scenes before it.
+- Time from the click to the crossing, with no reading pause at all: p50 6.64 s, p95 8.96 s. In real play the shadow runs while you read the scenes before it.
 <!-- RESULTS:END -->
 
 ### Hosted model, reported separately
@@ -139,32 +141,32 @@ Model: gemma-4-31B-it provider-managed, 8 live playthroughs (every fork path), r
 | Intrusions revealing a post-fork fact | 16/16 (100%) |
 | Intrusions with valid origin event | 16/16 (100%) |
 | Replays reproducing every state hash | 8/8 (100%) |
-| Shadow events accepted on the model's first proposal | 44/52 (85%) |
+| Shadow events accepted on the model's first proposal | 47/52 (90%) |
 | Shadow events committed from the model | 48/52 (92%) |
 | Shadow events from hand-written fallback | 4/52 (8%) |
-| Proposals rejected by the validator | 16/64 (25%) |
+| Proposals rejected by the validator | 13/61 (21%) |
 | Deliberate impossible give rejected | 30/30 (100%) |
 | Model's atmosphere sentence failing rule checks (first attempt) | 0/16 (0%) |
 | Crossings that kept a model sentence (rest: hand-written lines only) | 16/16 (100%) |
 | Narration contradictions, hand-labeled | not labeled |
 | Intrusion accuracy, hand-labeled | not labeled |
-| Model call latency p50 / p95 | 1.67 s / 2.9 s |
-| Whole shadow timeline p50 / p95 | 6.83 s / 11.81 s |
-| Model calls per playthrough (mean) | 10 |
-| Tokens per playthrough (mean) | 5616 |
+| Model call latency p50 / p95 | 1.46 s / 1.99 s |
+| Whole shadow timeline p50 / p95 | 5.1 s / 9.33 s |
+| Model calls per playthrough (mean) | 9.6 |
+| Tokens per playthrough (mean) | 5300 |
 
 Variation (same choices, different seeds):
 
 | Path | Runs | Distinct event chains | Mean pairwise overlap (Jaccard) |
 |---|---|---|---|
-| lock/basement | 2 | 2 | 0.09 |
+| lock/basement | 2 | 2 | 0.2 |
 | lock/roof | 2 | 2 | 0.2 |
 | open/basement | 2 | 2 | 0.27 |
-| open/roof | 2 | 2 | 0.4 |
+| open/roof | 2 | 2 | 0.27 |
 
-Rejections by rule: R_NOOP 12, R_ADJACENT 2, R_REACH 2.
+Rejections by rule: R_NOOP 12, R_REACH 1.
 
-Spend: $0.00911 over 8 playthroughs (mean $0.00114 each) at $0.18/$0.5 per 1M input/output tokens.
+Spend: $0.00861 over 8 playthroughs (mean $0.00108 each) at $0.18/$0.5 per 1M input/output tokens.
 
 The ledger in `spend.json` also covers health checks, probes and earlier runs. Two seeds per path is too few to compare models; this run shows only that hosted mode works end to end and holds the same invariants.
 
@@ -174,7 +176,7 @@ Every number above comes from `uv run python eval/run_all.py` (or `--from-result
 
 The same open-weight family runs in both live modes. Gemma 4 E2B runs locally on a consumer GPU, and Gemma 4 31B is hosted for people without one.
 
-- **Many background calls.** Each playthrough makes about 11 model calls (about 6,400 tokens) that the player never sees directly, and most of them happen in a world the player never visits. Locally they cost nothing and need no account. Hosted, they cost about a tenth of a cent per playthrough at the listed price ($0.18 / $0.50 per million input / output tokens), which an open model makes possible at hobby scale.
+- **Many background calls.** Each playthrough makes about 10 model calls (about 5,400 tokens) that the player never sees directly, and most of them happen in a world the player never visits. Locally they cost nothing and need no account. Hosted, they cost about a tenth of a cent per playthrough at the listed price ($0.18 / $0.50 per million input / output tokens), which an open model makes possible at hobby scale.
 - **Pinned weights.** The validator, prompts and fallback rates were tuned against one exact local model file (digest in MODELS.md). A closed model that changed underneath would silently change how often the story falls back. With open weights, the local mode can always be checked against the same file.
 - **Inspectable.** In local mode the whole simulation runs on your machine: model, prompts, proposals, rejections and commits. In both modes the evidence view (press `E`) shows every proposal and validator decision.
 

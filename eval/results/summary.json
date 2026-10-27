@@ -17,21 +17,20 @@
  "replay_reproduces": "24/24 (100%)",
  "shadow_steps": {
   "total": 156,
-  "first_try": "114/156 (73%)",
+  "first_try": "141/156 (90%)",
   "model_committed": "146/156 (94%)",
-  "fallback": "9/156 (6%)",
-  "skipped": "1/156 (1%)"
+  "fallback": "7/156 (4%)",
+  "skipped": "3/156 (2%)"
  },
  "validator": {
-  "proposals": 213,
+  "proposals": 183,
   "rejections_by_rule": {
-   "R_REACH": 28,
-   "R_NOOP": 18,
-   "R_ADJACENT": 10,
-   "R_TYPE": 6,
-   "R_BEAT": 5
+   "R_ADJACENT": 18,
+   "R_NOOP": 11,
+   "R_REACH": 6,
+   "R_TYPE": 2
   },
-  "rejected": "67/213 (31%)"
+  "rejected": "37/183 (20%)"
  },
  "impossible_give": {
   "probe_calls": 30,
@@ -55,7 +54,7 @@
   "lock/basement": {
    "runs": 6,
    "distinct_chains": 6,
-   "mean_pairwise_event_overlap_jaccard": 0.31
+   "mean_pairwise_event_overlap_jaccard": 0.22
   },
   "lock/roof": {
    "runs": 6,
@@ -70,18 +69,18 @@
   "open/roof": {
    "runs": 6,
    "distinct_chains": 6,
-   "mean_pairwise_event_overlap_jaccard": 0.37
+   "mean_pairwise_event_overlap_jaccard": 0.41
   }
  },
  "performance": {
-  "model_call_latency_p50_s": 1.78,
-  "model_call_latency_p95_s": 2.09,
-  "shadow_sim_p50_s": 7.15,
-  "shadow_sim_p95_s": 9.52,
-  "crossing_scene_p50_s": 7.69,
-  "crossing_scene_p95_s": 10.15,
+  "model_call_latency_p50_s": 1.65,
+  "model_call_latency_p95_s": 2.16,
+  "shadow_sim_p50_s": 6.12,
+  "shadow_sim_p95_s": 8.3,
+  "crossing_scene_p50_s": 6.64,
+  "crossing_scene_p95_s": 8.96,
   "crossing_note": "time from click to crossing text with no reading pause; includes waiting for the shadow",
-  "model_calls_per_playthrough_mean": 10.9,
-  "tokens_per_playthrough_mean": 6389
+  "model_calls_per_playthrough_mean": 9.6,
+  "tokens_per_playthrough_mean": 5393
  }
 }
