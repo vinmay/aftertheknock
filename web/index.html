@@ -12,6 +12,7 @@
 <body>
 <header class="bar">
   <span class="mode" id="mode"></span>
+  <span class="clock" id="clock" hidden aria-label="Time"></span>
   <span class="tools">
     <button class="tool" id="sound-toggle" aria-pressed="true" title="Sound">sound</button>
     <button class="tool" id="evidence-toggle" aria-pressed="false" title="Evidence view (E)">evidence</button>
@@ -39,8 +40,11 @@
   </section>
 
   <section id="scene" class="screen" hidden>
-    <div id="text" class="text" aria-live="polite"></div>
-    <div id="choices" class="choices"></div>
+    <div id="history" class="history" aria-label="Earlier in the night"></div>
+    <div id="current" class="current">
+      <div id="text" class="text" aria-live="polite"></div>
+      <div id="choices" class="choices"></div>
+    </div>
   </section>
 </main>
 

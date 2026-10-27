@@ -188,56 +188,119 @@ function paragraphs(text) {
   return text.split(/\n\s*\n/).map((p) => p.trim()).filter(Boolean);
 }
 
-function show(v) {
-  S.view = v;
-  $("#title").hidden = true;
-  $("#scene").hidden = false;
-  const scene = $("#scene");
-  scene.className = "screen kind-" + (v.kind || "scene");
-  const text = $("#text");
-  let html = "";
+const TYPE_MS = 14;              // per character; click, tap or Space skips
+const Typing = { timer: null, finish: null };
+
+function sceneHtml(v) {
   if (v.kind === "crossing") {
-    const c = v.crossing;
-    const mark = c.inscription;
-    html = paragraphs(v.text).map((p) => {
-      const t = esc(p).replace(esc(mark), `<button class="ink" id="ink" title="Where did this come from?">${esc(mark)}</button>`);
+    const mark = v.crossing.inscription;
+    return paragraphs(v.text).map((p) => {
+      const t = esc(p).replace(esc(mark), `<button class="ink" title="Where did this come from?">${esc(mark)}</button>`);
       return `<p>${t}</p>`;
-    }).join("") + `<p><button class="trace-hint" id="trace-hint">where did this come from? ↗</button></p>`;
-    stageCrossing(c);
-  } else {
-    html = paragraphs(v.text).map((p, i) => `<p style="animation-delay:${i * 0.35}s">${esc(p)}</p>`).join("");
+    }).join("") + `<p><button class="trace-hint">where did this come from? ↗</button></p>`;
   }
+  let html = paragraphs(v.text).map((p) => `<p>${esc(p)}</p>`).join("");
   if (v.kind === "ending" && v.verified !== undefined) {
     const how = STATIC ? "Verified when this site was built: re-running" : "Replay verified: re-running";
     html += `<p class="small muted">${v.verified ? `${how} the recorded model outputs through the engine reproduced every timeline's state hash.` : "Replay did not reproduce the recorded state."}</p>`;
   }
-  text.innerHTML = html;
-  const ink = $("#ink"), hint = $("#trace-hint");
-  if (ink) ink.addEventListener("click", () => openTrace(v.trace));
-  if (hint) hint.addEventListener("click", () => openTrace(v.trace));
+  return html;
+}
 
-  const n = v.kind === "crossing" ? 1 : paragraphs(v.text).length;
+/* Reveal text nodes character by character. Resolves when done or skipped. */
+function typeOut(root) {
+  const nodes = [];
+  const walk = (n) => n.childNodes.forEach((c) => (c.nodeType === 3 ? nodes.push([c, c.textContent]) : walk(c)));
+  walk(root);
+  if (REDUCED) return Promise.resolve();
+  nodes.forEach(([n]) => (n.textContent = ""));
+  root.classList.add("typing");
+  return new Promise((resolve) => {
+    let i = 0, j = 0;
+    const done = () => {
+      clearInterval(Typing.timer); Typing.timer = null; Typing.finish = null;
+      nodes.forEach(([n, t]) => (n.textContent = t));
+      root.classList.remove("typing");
+      resolve();
+    };
+    Typing.finish = done;
+    Typing.timer = setInterval(() => {
+      for (let k = 0; k < 2; k++) {
+        if (i >= nodes.length) return done();
+        const [n, t] = nodes[i];
+        n.textContent = t.slice(0, ++j);
+        if (j >= t.length) { i++; j = 0; }
+      }
+    }, TYPE_MS);
+  });
+}
+
+function skipTyping() { if (Typing.finish) { Typing.finish(); return true; } return false; }
+
+async function show(v) {
+  S.view = v;
+  $("#title").hidden = true;
+  $("#scene").hidden = false;
+  $("#scene").className = "screen kind-" + (v.kind || "scene");
+  setClock(v.clock);
+  if (v.power === "out" && !REDUCED) {
+    document.body.classList.add("flicker");
+    setTimeout(() => document.body.classList.remove("flicker"), 1000);
+  }
+  const cur = $("#current");
+  cur.classList.remove("fade-in"); void cur.offsetWidth; cur.classList.add("fade-in");
+  const text = $("#text");
+  text.innerHTML = sceneHtml(v);
+  text.querySelectorAll(".ink, .trace-hint").forEach((b) => b.addEventListener("click", (ev) => { ev.stopPropagation(); openTrace(v.trace); }));
   const ch = $("#choices");
-  ch.style.animationDelay = `${Math.min(n * 0.35 + 0.4, 3)}s`;
   ch.innerHTML = "";
-  ch.style.animation = "none"; void ch.offsetWidth; ch.style.animation = "";
+  ch.hidden = true;
+  if (v.kind === "map" || v.kind === "final" || v.kind === "ending") S.mapSeen = true;
+  if (!$("#evidence").hidden) loadEvidence();
+  if (S.history?.length) cur.scrollIntoView({ behavior: REDUCED ? "auto" : "smooth", block: "start" });
+  else window.scrollTo({ top: 0 });
+
+  if (v.kind === "crossing") stageCrossing(v.crossing);
+  else await typeOut(text);
+  if (S.view !== v) return;
+
   const recorded = S.replay ? S.replay.choices[S.step] : null;
   v.choices.forEach((label, i) => {
     const b = document.createElement("button");
-    b.textContent = label;
+    b.innerHTML = `<span class="num">${i + 1}</span>${esc(label)}`;
+    b.dataset.index = i;
     if (S.replay) { if (i === recorded) b.classList.add("recorded"); else b.disabled = true; }
     b.addEventListener("click", () => choose(i));
     ch.appendChild(b);
   });
   if (v.kind === "ending") {
-    [["Open the map", () => openMap()], ["Begin again", () => location.reload()]].forEach(([label, fn]) => {
+    [["Play again — it won't be the same night", () => (location.href = location.pathname)],
+     ["See how this was made", () => howItWorks()],
+     ["Open the map", () => openMap()]].forEach(([label, fn]) => {
       const b = document.createElement("button"); b.textContent = label; b.addEventListener("click", fn); ch.appendChild(b);
     });
   }
-  if (v.kind === "map" || v.kind === "final" || v.kind === "ending") S.mapSeen = true;
-  if (v.kind === "map") setTimeout(openMap, 1200);
-  window.scrollTo({ top: 0, behavior: "smooth" });
-  if (!$("#evidence").hidden) loadEvidence();
+  ch.hidden = false;
+  if (v.kind === "map") setTimeout(openMap, 900);
+}
+
+/* Move the finished scene into the history, keeping the option you didn't take. */
+function archive(chosen) {
+  const v = S.view;
+  if (!v) return;
+  const entry = document.createElement("div");
+  entry.className = "past";
+  entry.innerHTML = sceneHtml(v);
+  entry.querySelectorAll(".trace-hint").forEach((b) => b.parentElement.remove());
+  entry.querySelectorAll(".ink").forEach((b) => b.addEventListener("click", () => openTrace(v.trace)));
+  if (v.choices.length > 1) {
+    entry.insertAdjacentHTML("beforeend", `<ul class="past-choices">${v.choices.map((c, i) =>
+      `<li class="${i === chosen ? "taken" : "not-taken"}">${esc(c)}</li>`).join("")}</ul>`);
+  } else if (v.choices.length === 1) {
+    entry.insertAdjacentHTML("beforeend", `<ul class="past-choices"><li class="taken">${esc(v.choices[0])}</li></ul>`);
+  }
+  $("#history").appendChild(entry);
+  (S.history ||= []).push(v.scene);
 }
 
 async function choose(i) {
@@ -250,14 +313,41 @@ async function choose(i) {
   }, 500);
   try {
     const d = await api("/api/choose", { game: S.game, index: i });
-    S.step++;
-    show(d.view);
-  } catch (e) {
-    $("#choices").insertAdjacentHTML("beforeend", `<p class="small bad">${esc(e.message)}</p>`);
-  } finally {
     clearTimeout(wait);
+    S.step++;
+    archive(i);
+    S.busy = false;
+    await show(d.view);
+  } catch (e) {
+    clearTimeout(wait);
+    $("#choices").insertAdjacentHTML("beforeend", `<p class="small bad">${esc(e.message)}</p>`);
+    $("#choices").querySelectorAll("button").forEach((b) => (b.disabled = false));
+  } finally {
     S.busy = false;
   }
+}
+
+/* Click or tap the text to skip typing; Space skips; 1-9 choose; Enter takes a single choice. */
+document.addEventListener("click", (ev) => {
+  if (Typing.finish && ev.target.closest("#current") && !ev.target.closest("button")) skipTyping();
+});
+document.addEventListener("keydown", (ev) => {
+  if (ev.target.tagName === "INPUT" || ev.target.tagName === "TEXTAREA") return;
+  if (!$("#crossing-stage").hidden || !$("#map").hidden || !$("#drawer").hidden) return;
+  if (ev.key === " " && skipTyping()) { ev.preventDefault(); return; }
+  if ($("#scene").hidden || $("#choices").hidden) return;
+  const buttons = [...$("#choices").querySelectorAll("button[data-index]:not([disabled])")];
+  const n = parseInt(ev.key, 10);
+  if (n >= 1) {
+    const b = $("#choices").querySelector(`button[data-index="${n - 1}"]`);
+    if (b && !b.disabled) { ev.preventDefault(); b.click(); }
+  } else if (ev.key === "Enter" && buttons.length === 1 && document.activeElement === document.body) {
+    ev.preventDefault(); buttons[0].click();
+  }
+});
+
+function setClock(t) {
+  if (t) { $("#clock").textContent = t; $("#clock").hidden = false; }
 }
 
 /* ---------------------------------------------------------------- the crossing */
@@ -289,7 +379,7 @@ function stageCrossing(c) {
     setTimeout(() => document.body.classList.remove("flicker"), 1000);
   }
   voice ? Sound.crossing() : Sound.pen(c.inscription.length);
-  const close = () => { el.hidden = true; document.body.classList.remove("staged"); $("#ink")?.focus(); };
+  const close = () => { el.hidden = true; document.body.classList.remove("staged"); $("#current .ink")?.focus(); };
   $("#stage-go").addEventListener("click", close);
   setTimeout(() => $("#stage-go")?.focus(), REDUCED ? 0 : 3200);
 }

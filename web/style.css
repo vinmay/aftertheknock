@@ -228,3 +228,25 @@ body.staged main { filter: blur(2px) brightness(0.5); }
 .linkish { font-family: var(--mono); font-size: 0.72rem; letter-spacing: 0.04em; color: var(--muted); text-decoration: underline; text-underline-offset: 3px; padding: 0.4rem 0.2rem; }
 .linkish:hover { color: var(--ink); }
 .drawer a { color: var(--ink); }
+
+/* History of the night: earlier scenes stay, fainter; the option you didn't take is struck through */
+.history .past { color: var(--muted); padding-bottom: 1.4rem; margin-bottom: 1.8rem; border-bottom: 1px solid var(--faint); }
+.history .past p { margin: 0 0 1rem; animation: none; opacity: 1; transform: none; }
+.history .past .ink { animation: none; }
+.past-choices { list-style: none; padding: 0; margin: 1rem 0 0; font-size: 0.95rem; }
+.past-choices li { padding: 0.15rem 0; }
+.past-choices .taken { color: var(--ink); }
+.past-choices .taken::before { content: "→ "; color: var(--muted); }
+.past-choices .not-taken { color: var(--muted); opacity: 0.55; text-decoration: line-through; text-decoration-thickness: 1px; }
+.past-choices .not-taken { margin-left: 1.15rem; }
+.current { scroll-margin-top: 5rem; min-height: 60vh; }
+.current.fade-in { animation: in 0.7s ease both; }
+.text.typing p { animation: none; opacity: 1; transform: none; }
+.choices button { min-height: 44px; display: flex; align-items: center; gap: 0.6rem; width: 100%; }
+.choices button::before { content: none; }
+.choices .num {
+  flex: none; font-family: var(--mono); font-size: 0.72rem; color: var(--muted); border: 1px solid var(--faint);
+  border-radius: 3px; width: 1.4rem; height: 1.4rem; display: inline-grid; place-items: center;
+}
+.choices button:hover .num, .choices button:focus-visible .num { color: var(--ink); border-color: var(--muted); }
+.clock { font-family: var(--mono); font-size: 0.8rem; color: var(--ink); letter-spacing: 0.08em; margin-left: auto; margin-right: 1.2rem; }
