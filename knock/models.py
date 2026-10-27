@@ -159,11 +159,15 @@ class SpendLedger:
     backstop if the file is lost (for example on a host with an ephemeral disk).
     """
 
-    def __init__(self, path: str, cap_usd: float, price_in_per_m: float, price_out_per_m: float):
+    def __init__(self, path: str, cap_usd: float, price_in_per_m: float, price_out_per_m: float,
+                 hourly_usd: float = 1.0):
         import threading
         from pathlib import Path
         self.path = Path(path)
         self.cap = cap_usd
+        # Per-process ceiling held in memory: it still holds if the ledger file is lost.
+        self.hourly = hourly_usd
+        self.recent: list[tuple[float, float]] = []
         self.price_in, self.price_out = price_in_per_m, price_out_per_m
         self.lock = threading.Lock()
         self.data = {"cap_usd": cap_usd, "price_in_per_m": price_in_per_m,
@@ -176,13 +180,21 @@ class SpendLedger:
     def total(self) -> float:
         return self.data["total_usd"]
 
+    def last_hour(self) -> float:
+        now = time.time()
+        self.recent = [(t, u) for t, u in self.recent if now - t < 3600]
+        return sum(u for _, u in self.recent)
+
     def check(self) -> None:
         if self.total >= self.cap:
             raise SpendCapReached(f"spend cap ${self.cap:.2f} reached (${self.total:.4f} spent)")
+        if self.last_hour() >= self.hourly:
+            raise SpendCapReached(f"hourly ceiling ${self.hourly:.2f} reached in this process")
 
     def add(self, run_id: str | None, prompt_tokens: int, output_tokens: int) -> float:
         usd = prompt_tokens / 1e6 * self.price_in + output_tokens / 1e6 * self.price_out
         with self.lock:
+            self.recent.append((time.time(), usd))
             self.data["total_usd"] = round(self.data["total_usd"] + usd, 8)
             self.data["calls"] += 1
             run = self.data["runs"].setdefault(run_id or "unattributed",
@@ -229,7 +241,8 @@ class OpenAICompatModel:
         e = os.environ
         ledger = SpendLedger(e.get("KNOCK_SPEND_FILE", "eval/results/spend.json"),
                              float(e.get("KNOCK_SPEND_CAP_USD", "10")),
-                             float(e["KNOCK_PRICE_IN_PER_M"]), float(e["KNOCK_PRICE_OUT_PER_M"]))
+                             float(e["KNOCK_PRICE_IN_PER_M"]), float(e["KNOCK_PRICE_OUT_PER_M"]),
+                             float(e.get("KNOCK_SPEND_HOURLY_USD", "1")))
         key = e.get("KNOCK_OPENAI_API_KEY") or e.get("DIGITALOCEAN_INFERENCE_KEY")
         if not key:
             raise SystemExit("set KNOCK_OPENAI_API_KEY (or DIGITALOCEAN_INFERENCE_KEY) for the hosted provider")

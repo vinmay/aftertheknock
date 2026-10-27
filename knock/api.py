@@ -30,6 +30,7 @@ MAX_GAMES = 200
 MAP_SCENES = {"map", "final"}
 
 NEW_GAMES_PER_IP_HOUR = 20
+NEW_GAMES_PER_HOUR = int(os.environ.get("KNOCK_NEW_GAMES_PER_HOUR", "60"))   # all clients together
 LIVE_CHECK_S = 60
 
 _games: dict[str, Game] = {}
@@ -37,6 +38,8 @@ _lock = threading.Lock()
 _model = None
 _live = {"ok": False, "checked": 0.0}
 _starts: dict[str, list[float]] = {}
+_all_starts: list[float] = []
+_last_seen: dict[str, float] = {}
 
 
 def live_ok() -> bool:
@@ -61,22 +64,46 @@ def live_ok() -> bool:
 
 
 def _rate_ok(ip: str) -> bool:
+    """Per-client and global limits on new live games per hour."""
     now = time.time()
     with _lock:
+        _all_starts[:] = [t for t in _all_starts if now - t < 3600]
         recent = [t for t in _starts.get(ip, []) if now - t < 3600]
-        if len(recent) >= NEW_GAMES_PER_IP_HOUR:
-            _starts[ip] = recent
+        _starts[ip] = recent
+        if len(recent) >= NEW_GAMES_PER_IP_HOUR or len(_all_starts) >= NEW_GAMES_PER_HOUR:
             return False
-        _starts[ip] = recent + [now]
+        _starts[ip].append(now)
+        _all_starts.append(now)
     return True
 
 
 def _get(gid: str) -> Game:
     with _lock:
         g = _games.get(gid)
+        if g is not None:
+            _last_seen[gid] = time.time()
     if g is None:
         raise KeyError("unknown game")
     return g
+
+
+def _add_game(g: Game) -> None:
+    """Keep at most MAX_GAMES in memory, evicting the one idle longest."""
+    with _lock:
+        while len(_games) >= MAX_GAMES:
+            idle = min(_games, key=lambda k: _last_seen.get(k, 0))
+            _games.pop(idle)
+            _last_seen.pop(idle, None)
+        _games[g.run_id] = g
+        _last_seen[g.run_id] = time.time()
+
+
+def client_ip(handler) -> str:
+    """Render appends the connecting client's address as the LAST X-Forwarded-For entry;
+    earlier entries are whatever the client sent and can't be trusted."""
+    xff = handler.headers.get("X-Forwarded-For", "")
+    parts = [p.strip() for p in xff.split(",") if p.strip()]
+    return parts[-1] if parts else handler.client_address[0]
 
 
 def _save(g: Game) -> None:
@@ -155,7 +182,7 @@ class Handler(SimpleHTTPRequestHandler):
                 if not live_ok():
                     return self._json({"error": "The live model isn't available right now.", "fallback": "replay"},
                                       HTTPStatus.SERVICE_UNAVAILABLE)
-                ip = self.headers.get("X-Forwarded-For", self.client_address[0]).split(",")[0].strip()
+                ip = client_ip(self)
                 if not _rate_ok(ip):
                     return self._json({"error": "Too many new nights from here; try a replay.", "fallback": "replay"},
                                       HTTPStatus.TOO_MANY_REQUESTS)
@@ -169,10 +196,7 @@ class Handler(SimpleHTTPRequestHandler):
                     return self._json({"error": "The live model's budget is used up.", "fallback": "replay"},
                                       HTTPStatus.SERVICE_UNAVAILABLE)
                 g = Game(str(body.get("pocket", ""))[:200], seed, model, run_id=run_id)
-                with _lock:
-                    if len(_games) >= MAX_GAMES:
-                        _games.pop(next(iter(_games)))
-                    _games[g.run_id] = g
+                _add_game(g)
                 return self._json({"game": g.run_id, "seed": seed, "pocket": g.pocket, "view": g.view(),
                                    "model": f"{g.log.model.get('model')}{' (hosted)' if g.log.model.get('hosted') else ''} ·"})
             if u.path == "/api/replay/start":
@@ -183,8 +207,7 @@ class Handler(SimpleHTTPRequestHandler):
                 g = Game(rec["pocket_raw"], rec["seed"], ReplayModel(rec), background=False,
                          run_id=f"replay_{rec['run_id']}_{time.time_ns() % 10**6}")
                 g.replay_of = rec
-                with _lock:
-                    _games[g.run_id] = g
+                _add_game(g)
                 return self._json({"game": g.run_id, "seed": rec["seed"], "pocket": g.pocket,
                                    "view": g.view(), "replay": {
                                        "choices": [c["index"] for c in rec["choices"]],

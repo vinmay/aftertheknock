@@ -14,7 +14,8 @@ It is 11:47 PM. A storm. A woman you have never met knocks on your door and says
 
 ## Play it
 
-- **Recorded nights in your browser:** https://knock-replay.onrender.com/ shows replays of real local runs (the model is not running live).
+- **Play live in your browser:** https://knock-live.onrender.com/ (Gemma 4 31B on DigitalOcean serverless inference; if the model is unavailable, the page says so and offers the recorded nights instead).
+- **Recorded nights:** https://knock-replay.onrender.com/ shows replays of real local runs (the model is not running live).
 
 ## Run it
 
@@ -38,7 +39,7 @@ Terminal version: `uv run knock play`.
 | Mode | What happens | Needs |
 |---|---|---|
 | **Local live** (default: `knock-server`) | Shadow timelines are generated during your playthrough by Gemma 4 E2B on your own GPU, offline. This is the mode the evaluation measures. | Ollama + `gemma4:e2b` |
-| **Hosted live** (`render.yaml` service `knock-live`, *tested against the real endpoint, not yet deployed*) | The same engine and front end on Render. Model calls go to **Gemma 4 31B (`gemma-4-31B-it`), an open-weight model on DigitalOcean serverless inference**, through its OpenAI-compatible API. That is a bigger model than the local default, so its numbers are reported separately and never mixed into the results below. Spend is capped (default $10) and logged per playthrough. If the endpoint is down or the cap is reached, the page switches to the labeled replays. | Configured by the deployer (`.env.example`) |
+| **Hosted live** ([knock-live.onrender.com](https://knock-live.onrender.com/), `render.yaml` service `knock-live`) | The same engine and front end on Render. Model calls go to **Gemma 4 31B (`gemma-4-31B-it`), an open-weight model on DigitalOcean serverless inference**, through its OpenAI-compatible API. That is a bigger model than the local default, so its numbers are reported separately and never mixed into the results below. Spend is capped (default $10) and logged per playthrough. If the endpoint is down or the cap is reached, the page switches to the labeled replays. | Configured by the deployer (`.env.example`) |
 | **Replay site** (static, `site/`, [knock-replay.onrender.com](https://knock-replay.onrender.com/)) | Plays committed recordings of real local runs. Every screen says **"Replay of a real recorded run — the model is not running live."** Nothing is generated. When the site is built, each recording is re-run through the engine from its recorded model outputs, and the build fails if any timeline's state hash differs. Choices follow the recording. | A browser |
 | **Replay via the server** (`knock-server --replay-only`) | The same recordings, re-executed by the engine when you play them, labeled the same way. | Python |
 | **Evaluation** (`eval/run_all.py`) | Fresh local live runs, or `--from-results` to recompute every number from the saved raw logs. | Ollama for fresh runs |
@@ -46,6 +47,10 @@ Terminal version: `uv run knock play`.
 Rebuild the replay site after re-recording: `uv run python scripts/build_static.py`. A test fails if `site/` is out of date.
 
 No closed-model API is called anywhere. The hosted mode is selected only by environment variables (`KNOCK_PROVIDER=openai` plus `KNOCK_OPENAI_*`). Without them, everything runs locally.
+
+**Hosted spend limits.** The real cap is the DigitalOcean prepaid balance: serverless inference stops when it runs out. The app adds three guards. A ledger cap (default $10) is checked before every call, but its file lives on Render's temporary disk and resets whenever the service restarts. A per-process hourly ceiling (default $1) is held in memory, so it doesn't depend on that file. And new live games are limited to 20 per client and 60 per hour overall.
+
+**Your pocket text.** Live runs store what you type as your pocket object on the server's temporary disk (in the run log), and nowhere else; it is wiped when the server restarts. In hosted mode it is also part of the prompts sent to the inference provider (DigitalOcean) to generate the other night. In local mode it never leaves your machine.
 
 ## How it works
 

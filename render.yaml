@@ -40,4 +40,8 @@ services:
       - key: KNOCK_SPEND_CAP_USD
         value: "10"
       - key: KNOCK_SPEND_FILE
-        value: /tmp/knock-spend.json   # free plan disk is ephemeral; the prepaid DO balance is the backstop
+        value: /tmp/knock-spend.json   # free plan disk is ephemeral: resets on every restart
+      - key: KNOCK_SPEND_HOURLY_USD
+        value: "1"                     # in-memory per-process ceiling, independent of the file
+      - key: KNOCK_NEW_GAMES_PER_HOUR
+        value: "60"                    # all clients together (plus 20 per client IP)
