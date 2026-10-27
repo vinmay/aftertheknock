@@ -291,7 +291,7 @@ async function show(v) {
   if (S.history?.length) cur.scrollIntoView({ behavior: REDUCED ? "auto" : "smooth", block: "start" });
   else window.scrollTo({ top: 0 });
 
-  if (v.kind === "crossing") stageCrossing(v.crossing);
+  if (v.kind === "crossing") stageCrossing(v.crossing, v.scene === "crossing2");
   else await typeOut(text);
   if (S.view !== v) return;
 
@@ -399,11 +399,10 @@ function setClock(t) {
 /* ---------------------------------------------------------------- the crossing */
 const REDUCED = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 
-function stageCrossing(c) {
+function stageCrossing(c, second = false) {
   const el = $("#crossing-stage");
-  const voice = c.sense === "voice";
-  const kind = voice ? "voice" : c.object === "key07" ? "tag" : "paper";
-  const label = voice ? "" : c.object === "key07" ? "BASEMENT 07" : esc(S.pocket || "");
+  const kind = c.object === "key07" ? "tag" : "paper";
+  const label = c.object === "key07" ? "BASEMENT 07" : esc(S.pocket || "");
   el.innerHTML = `
     <div class="stage-inner">
       <p class="stage-before">${esc(c.before)}</p>
@@ -424,7 +423,9 @@ function stageCrossing(c) {
     document.body.classList.add("flicker");
     setTimeout(() => document.body.classList.remove("flicker"), 1000);
   }
-  voice ? Sound.crossing() : Sound.pen(c.inscription.length);
+  // The second crossing escalates: a low swell under the pen, not the pen alone.
+  if (second) Sound.crossing();
+  Sound.pen(c.inscription.length);
   const close = () => { el.hidden = true; document.body.classList.remove("staged"); $("#current .ink")?.focus(); };
   $("#stage-go").addEventListener("click", close);
   setTimeout(() => $("#stage-go")?.focus(), REDUCED ? 0 : 3200);
