@@ -351,3 +351,16 @@ label[for="pocket"] { color: var(--ink); }
 .fork-note { font-style: italic; color: var(--muted); margin: 0.2rem 0 1rem; font-size: 0.95rem; }
 .afterword button { color: var(--ink); }
 #map-svg[hidden] { display: none; }
+
+/* Landing: one closed door, light under it, a peephole that catches the light */
+.door { display: block; width: 7.5rem; height: auto; margin: 0 0 -1rem; }
+.door .seam { animation: seam 6s ease-in-out infinite; }
+.door .glint { animation: glint 9s ease-in-out infinite; }
+@keyframes seam { 0%, 100% { opacity: 0.55; } 50% { opacity: 1; } }
+@keyframes glint { 0%, 88%, 100% { opacity: 0.25; } 92% { opacity: 1; } }
+@media (max-width: 40rem) { .door { width: 5.5rem; margin-bottom: -0.5rem; } }
+@media (prefers-reduced-motion: reduce) { .door .seam, .door .glint { animation: none; } }
+input::placeholder { color: #8f887c; font-style: italic; }
+@media (max-width: 40rem) {
+  .foot { position: static; text-align: center; padding: 0 1rem 2rem; }
+}

@@ -21,6 +21,20 @@
 
 <main id="stage">
   <section id="title" class="screen">
+    <svg class="door" viewBox="0 0 220 300" aria-hidden="true" focusable="false">
+      <defs>
+        <linearGradient id="seam" x1="0" x2="1"><stop offset="0" stop-color="#e9b86a" stop-opacity="0"/><stop offset="0.5" stop-color="#e9b86a" stop-opacity="0.55"/><stop offset="1" stop-color="#e9b86a" stop-opacity="0"/></linearGradient>
+        <radialGradient id="lens" cx="0.38" cy="0.35" r="0.7"><stop offset="0" stop-color="#f3e3c2"/><stop offset="0.35" stop-color="#8a6a3c"/><stop offset="1" stop-color="#2b2015"/></radialGradient>
+      </defs>
+      <rect x="20" y="10" width="180" height="282" fill="#121010" stroke="#26221e" stroke-width="2"/>
+      <rect x="36" y="26" width="148" height="262" fill="#0c0b0a" stroke="#1d1a17"/>
+      <rect x="52" y="44" width="116" height="96" fill="none" stroke="#1a1714"/>
+      <rect x="52" y="160" width="116" height="112" fill="none" stroke="#1a1714"/>
+      <circle cx="110" cy="100" r="7.5" fill="url(#lens)" stroke="#5a4428" stroke-width="1.5"/>
+      <circle class="glint" cx="107.5" cy="97.5" r="1.4" fill="#fff6e0"/>
+      <circle cx="160" cy="176" r="4" fill="#3a2e1f"/>
+      <rect class="seam" x="36" y="288" width="148" height="3" fill="url(#seam)"/>
+    </svg>
     <h1>After the Knock</h1>
     <p class="sub">11:47 PM. A storm. Someone at your door who says you already let her in.</p>
     <form id="start">
