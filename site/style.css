@@ -442,3 +442,10 @@ a.cta { display: inline-flex; align-items: center; text-decoration: none; }
 .settings .tool::before { content: "\25CB  "; }
 .settings .tool[aria-pressed="true"]::before { content: "\25CF  "; }
 @media (max-width: 40rem) { #instant-toggle { max-width: none; text-align: left; } }
+
+/* The power cut: a brief darkening, nothing more. */
+body.blackout main { animation: blackout 1.3s ease both; }
+@keyframes blackout { 0% { opacity: 1; } 12% { opacity: 0.08; } 70% { opacity: 0.08; } 100% { opacity: 1; } }
+body.instant-text.blackout main { animation: none; }
+/* The header (status, settings, mute, evidence) stays reachable above the crossing stage. */
+.bar { z-index: 35; }

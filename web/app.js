@@ -50,55 +50,284 @@ async function api(path, body) {
 }
 
 /* ---------------------------------------------------------------- sound */
+/* Synthesized sound. Presentation only: cues follow committed state (choice ids, scene fields,
+   crossing records) and never touch the engine or its logs. One master gain into a limiter;
+   every method fails silently. */
 const Sound = {
-  ctx: null, on: true, rain: null,
+  ctx: null, master: null, noise: null, layers: {}, live: new Set(), mapVoices: null,
+  on: (() => { try { return localStorage.getItem("knock.sound") !== "0"; } catch { return true; } })(),
+  ROOM: 0.035, HUM: 0.007,
+
+  guard(fn) { try { if (this.ctx && this.on) fn.call(this, this.ctx, this.ctx.currentTime); } catch { /* silent */ } },
+
   init() {
-    if (this.ctx) return;
-    try { this.ctx = new (window.AudioContext || window.webkitAudioContext)(); } catch { return; }
-    const c = this.ctx, len = c.sampleRate * 2, buf = c.createBuffer(1, len, c.sampleRate), d = buf.getChannelData(0);
-    for (let i = 0; i < len; i++) d[i] = Math.random() * 2 - 1;
-    const src = c.createBufferSource(); src.buffer = buf; src.loop = true;
-    const bp = c.createBiquadFilter(); bp.type = "lowpass"; bp.frequency.value = 900;
-    const g = c.createGain(); g.gain.value = 0;
-    src.connect(bp).connect(g).connect(c.destination); src.start();
-    this.rain = g; this.noise = buf; this.setRain(0.035);
+    try {
+      if (!this.ctx) {
+        this.ctx = new (window.AudioContext || window.webkitAudioContext)();
+        const c = this.ctx;
+        const limiter = c.createDynamicsCompressor();
+        limiter.threshold.value = -12; limiter.knee.value = 6; limiter.ratio.value = 12;
+        limiter.attack.value = 0.003; limiter.release.value = 0.25;
+        this.master = c.createGain();
+        this.master.gain.value = this.on ? 1 : 0;
+        this.master.connect(limiter).connect(c.destination);
+        const len = c.sampleRate * 2, buf = c.createBuffer(1, len, c.sampleRate), d = buf.getChannelData(0);
+        for (let i = 0; i < len; i++) d[i] = Math.random() * 2 - 1;
+        this.noise = buf;
+      }
+      this.resume();
+      if (!this.layers.room) this.startRoom();
+    } catch { /* no audio: the story works without it */ }
   },
-  setRain(v) { if (this.rain) this.rain.gain.setTargetAtTime(this.on ? v : 0, this.ctx.currentTime, 1.5); },
-  thump(t, f = 68) {
-    const c = this.ctx, o = c.createOscillator(), g = c.createGain();
-    o.frequency.setValueAtTime(f, t); o.frequency.exponentialRampToValueAtTime(40, t + 0.25);
-    g.gain.setValueAtTime(0.0001, t); g.gain.exponentialRampToValueAtTime(0.5, t + 0.01); g.gain.exponentialRampToValueAtTime(0.0001, t + 0.3);
-    o.connect(g).connect(c.destination); o.start(t); o.stop(t + 0.32);
+  resume() { try { if (this.ctx && this.ctx.state === "suspended") this.ctx.resume(); } catch { /* silent */ } },
+
+  /* ---- building blocks */
+  noiseSrc(c, offset = Math.random()) {
+    const s = c.createBufferSource(); s.buffer = this.noise; s.loop = true;
+    s.start(c.currentTime, offset * 1.9); return s;
   },
-  knock() { if (!this.ctx || !this.on) return; const t = this.ctx.currentTime + 0.3; [0, 0.38, 0.76].forEach((d) => this.thump(t + d)); },
-  crossing() {
-    if (!this.ctx || !this.on) return;
-    const c = this.ctx, t = c.currentTime, g = c.createGain();
-    g.gain.setValueAtTime(0.0001, t); g.gain.exponentialRampToValueAtTime(0.12, t + 1.2); g.gain.exponentialRampToValueAtTime(0.0001, t + 4);
-    g.connect(c.destination);
-    [110, 116.5, 164.8].forEach((f) => { const o = c.createOscillator(); o.type = "sine"; o.frequency.value = f; o.connect(g); o.start(t); o.stop(t + 4.1); });
-    this.setRain(0.005); setTimeout(() => this.setRain(0.035), 3500);
+  track(node, stopAt) {
+    this.live.add(node);
+    node.onended = () => this.live.delete(node);
+    if (stopAt !== undefined) node.stop(stopAt);
+    return node;
   },
-  tick() {
-    if (!this.ctx || !this.on) return;
-    const c = this.ctx, t = c.currentTime, o = c.createOscillator(), g = c.createGain();
-    o.frequency.value = 1800; g.gain.setValueAtTime(0.02, t); g.gain.exponentialRampToValueAtTime(0.0001, t + 0.05);
-    o.connect(g).connect(c.destination); o.start(t); o.stop(t + 0.06);
+  env(c, t, peak, attack, hold, release) {
+    const g = c.createGain();
+    g.gain.setValueAtTime(0.0001, t);
+    g.gain.exponentialRampToValueAtTime(peak, t + attack);
+    g.gain.setValueAtTime(peak, t + attack + hold);
+    g.gain.exponentialRampToValueAtTime(0.0001, t + attack + hold + release);
+    return g;
   },
-  pen(n) {
-    if (!this.ctx || !this.on) return;
-    const c = this.ctx, t0 = c.currentTime + 0.5;
-    for (let i = 0; i < n * 3; i++) {
-      const t = t0 + i * 0.09 + Math.random() * 0.03;
-      const src = c.createBufferSource(); src.buffer = this.noise;
-      const hp = c.createBiquadFilter(); hp.type = "bandpass"; hp.frequency.value = 2500 + Math.random() * 2500; hp.Q.value = 3;
-      const g = c.createGain(); g.gain.setValueAtTime(0.0001, t); g.gain.exponentialRampToValueAtTime(0.09, t + 0.01); g.gain.exponentialRampToValueAtTime(0.0001, t + 0.07);
-      src.connect(hp).connect(g).connect(c.destination); src.start(t, Math.random()); src.stop(t + 0.08);
+  burst(c, t, freq, q, peak, dur) {            // a short bandpassed noise transient
+    const s = c.createBufferSource(); s.buffer = this.noise;
+    const f = c.createBiquadFilter(); f.type = "bandpass"; f.frequency.value = freq; f.Q.value = q;
+    s.connect(f).connect(this.env(c, t, peak, 0.002, 0, dur)).connect(this.master);
+    s.start(t, Math.random() * 1.8); this.track(s, t + dur + 0.05);
+  },
+  tone(c, t, freq, peak, attack, hold, release, type = "sine") {
+    const o = c.createOscillator(); o.type = type; o.frequency.value = freq;
+    o.connect(this.env(c, t, peak, attack, hold, release)).connect(this.master);
+    o.start(t); this.track(o, t + attack + hold + release + 0.05);
+    return o;
+  },
+  set(param, v, c, tau = 0.8) { param.cancelScheduledValues(c.currentTime); param.setTargetAtTime(v, c.currentTime, tau); },
+
+  /* ---- layers: room tone (rain + mains hum), and one abstract texture per shadow night */
+  startRoom() {
+    const c = this.ctx;
+    const rain = this.noiseSrc(c), lp = c.createBiquadFilter(); lp.type = "lowpass"; lp.frequency.value = 900;
+    const rg = c.createGain(); rg.gain.value = 0.0001;
+    rain.connect(lp).connect(rg).connect(this.master);
+    const hg = c.createGain(); hg.gain.value = 0.0001;
+    const h1 = c.createOscillator(); h1.frequency.value = 60;
+    const h2 = c.createOscillator(); h2.frequency.value = 120;
+    const h2g = c.createGain(); h2g.gain.value = 0.45;
+    h1.connect(hg); h2.connect(h2g).connect(hg); hg.connect(this.master);
+    h1.start(); h2.start();
+    this.layers.room = { srcs: [rain, h1, h2], gain: rg, lp, hum: hg };
+    this.set(rg.gain, this.ROOM, c, 1.2);
+    this.set(hg.gain, this.HUM, c, 1.2);
+  },
+  shadowLayer(id) {
+    const c = this.ctx;
+    if (this.layers[id]) return this.layers[id];
+    const g = c.createGain(); g.gain.value = 0.0001; g.connect(this.master);
+    const srcs = [];
+    if (id === "B") {                           // differently filtered rain, with sparse ticking
+      const n = this.noiseSrc(c), bp = c.createBiquadFilter(); bp.type = "bandpass"; bp.frequency.value = 2200; bp.Q.value = 0.6;
+      n.connect(bp).connect(g); srcs.push(n);
+      const tick = c.createBuffer(1, c.sampleRate * 1.7, c.sampleRate), td = tick.getChannelData(0);
+      [0.21, 0.83, 1.38].forEach((at) => { const i = Math.floor(at * c.sampleRate); for (let k = 0; k < 220; k++) td[i + k] = (Math.random() * 2 - 1) * Math.exp(-k / 40); });
+      const ts = c.createBufferSource(); ts.buffer = tick; ts.loop = true;
+      const tg = c.createGain(); tg.gain.value = 0.5; ts.connect(tg).connect(g); ts.start(); srcs.push(ts);
+    } else {                                    // low wind and a pipe resonance
+      const n = this.noiseSrc(c), lp = c.createBiquadFilter(); lp.type = "lowpass"; lp.frequency.value = 380;
+      const pipe = c.createBiquadFilter(); pipe.type = "bandpass"; pipe.frequency.value = 196; pipe.Q.value = 14;
+      const pg = c.createGain(); pg.gain.value = 2.2;
+      n.connect(lp).connect(g); n.connect(pipe).connect(pg).connect(g); srcs.push(n);
     }
-    this.setRain(0.01); setTimeout(() => this.setRain(0.035), 3500);
+    srcs.forEach((x) => this.live.add(x));
+    return (this.layers[id] = { srcs, gain: g, release: null });
   },
-  toggle() { this.on = !this.on; this.setRain(0.035); $("#sound-toggle").setAttribute("aria-pressed", String(this.on)); },
+  releaseLayer(id, after = 2.5) {
+    const L = this.layers[id];
+    if (!L) return;
+    clearTimeout(L.release);
+    L.release = setTimeout(() => {
+      try { L.srcs.forEach((x) => { x.stop(); x.disconnect(); this.live.delete(x); }); L.gain.disconnect(); } catch { /* silent */ }
+      if (this.layers[id] === L) delete this.layers[id];
+    }, after * 1000);
+  },
+  bleed(id, level = 0.25, seconds = 4) {        // the other night leaks in for a few seconds
+    this.guard((c) => {
+      const L = this.shadowLayer(id); clearTimeout(L.release);
+      this.set(L.gain.gain, level * 0.14, c, 0.6);
+      setTimeout(() => { if (!this.focused) { this.set(L.gain.gain, 0.0001, c, 0.8); this.releaseLayer(id, 4); } }, seconds * 1000);
+    });
+  },
+  focusShadow(id) {                             // a source memory is open: that night forward, ours back
+    this.guard((c) => {
+      const room = this.layers.room;
+      if (id) {
+        this.focused = id;
+        const L = this.shadowLayer(id); clearTimeout(L.release);
+        this.set(L.gain.gain, 0.045, c, 0.5);
+        if (room) this.set(room.gain.gain, this.ROOM * 0.35, c, 0.5);
+      } else if (this.focused) {
+        const prev = this.focused; this.focused = null;
+        if (this.layers[prev]) { this.set(this.layers[prev].gain.gain, 0.0001, c, 0.5); this.releaseLayer(prev, 2.5); }
+        if (room) this.set(room.gain.gain, this.ROOM, c, 0.8);
+      }
+    });
+  },
+
+  /* ---- story cues */
+  knock() {
+    this.guard((c, now) => {
+      let t = now + 0.3;
+      for (let i = 0; i < 3; i++) {
+        const v = 1 + (Math.random() - 0.5) * 0.12;
+        const o = this.tone(c, t, 68 * v, 0.5 * v, 0.008, 0, 0.28);
+        o.frequency.setValueAtTime(68 * v, t); o.frequency.exponentialRampToValueAtTime(40, t + 0.25);
+        this.burst(c, t, 300 + Math.random() * 600, 1.2, 0.35 * v, 0.03 + Math.random() * 0.03);
+        t += 0.34 + Math.random() * 0.08;
+      }
+    });
+  },
+  deadbolt() {                                  // committed Lock: a heavy bolt, then the wrong silence
+    this.guard((c, now) => {
+      this.burst(c, now + 0.05, 2400, 4, 0.4, 0.035);
+      this.burst(c, now + 0.17, 1500, 5, 0.5, 0.05);
+      const body = this.tone(c, now + 0.17, 92, 0.35, 0.005, 0.02, 0.22);
+      body.frequency.exponentialRampToValueAtTime(55, now + 0.4);
+      const room = this.layers.room;
+      if (room) { this.set(room.gain.gain, this.ROOM * 0.18, c, 0.25); setTimeout(() => this.set(room.gain.gain, this.ROOM, c, 2.5), 4500); }
+      this.tone(c, now + 0.6, 73.4, 0.012, 1.2, 2.5, 2.5);
+    });
+  },
+  latch() {                                     // committed Open: a softer latch, the room opens up
+    this.guard((c, now) => {
+      this.burst(c, now + 0.05, 1900, 3, 0.22, 0.03);
+      this.burst(c, now + 0.14, 2600, 3, 0.15, 0.025);
+      const room = this.layers.room;
+      if (room) {
+        this.set(room.lp.frequency, 1700, c, 0.6); this.set(room.gain.gain, this.ROOM * 1.4, c, 0.6);
+        setTimeout(() => { this.set(room.lp.frequency, 900, c, 2); this.set(room.gain.gain, this.ROOM, c, 2); }, 5000);
+      }
+    });
+  },
+  power(on) {                                   // scene field power = "out" cuts the hum at once
+    this.guard((c) => {
+      const room = this.layers.room; if (!room) return;
+      if (on) this.set(room.hum.gain, this.HUM, c, 0.15);
+      else { room.hum.gain.cancelScheduledValues(c.currentTime); room.hum.gain.setValueAtTime(0.0001, c.currentTime); }
+    });
+  },
+  powerCut() {                                  // the fake-out: everything drops for a breath, nothing comes
+    this.guard((c) => {
+      const room = this.layers.room; if (!room) return;
+      this.set(room.gain.gain, this.ROOM * 0.1, c, 0.08);
+      setTimeout(() => this.set(room.gain.gain, this.ROOM, c, 1.5), 2400);
+    });
+  },
+  crossing(n, object, scratchDelay, scratchFor) {
+    this.guard((c, now) => {
+      const room = this.layers.room;
+      if (room) { this.set(room.gain.gain, this.ROOM * 0.3, c, 0.3); setTimeout(() => this.set(room.gain.gain, this.ROOM, c, 2), 3600); }
+      if (n === 1) {
+        const p = this.tone(c, now, 46, 0.32, 0.25, 0.1, 0.9);                       // low pressure pulse
+        p.frequency.exponentialRampToValueAtTime(38, now + 1.2);
+        this.bleed("B");
+      } else {
+        [110, 117.3, 155.6].forEach((f) => this.tone(c, now, f, 0.05, 1.2, 0.8, 2));  // detuned, more dissonant
+        if (object === "key07") [0.15, 0.32, 0.41].forEach((d) => {                   // a small metal tag rattle
+          this.burst(c, now + scratchDelay + d, 3800 + Math.random() * 1500, 8, 0.12, 0.04);
+          this.tone(c, now + scratchDelay + d, 2900 + Math.random() * 400, 0.015, 0.002, 0, 0.12, "triangle");
+        });
+        this.bleed("D");
+      }
+      this.pen(scratchDelay, scratchFor);
+    });
+  },
+  pen(delay = 0.4, dur = 2.2) {                  // scratches spread over the mark's reveal
+    this.guard((c, now) => {
+      const strokes = Math.max(6, Math.round(dur / 0.09));
+      for (let i = 0; i < strokes; i++) {
+        const t = now + delay + (i / strokes) * dur + Math.random() * 0.03;
+        this.burst(c, t, 2500 + Math.random() * 2500, 3, 0.09, 0.06);
+      }
+    });
+  },
+  tick() { this.guard((c, now) => this.tone(c, now, 1800, 0.02, 0.002, 0, 0.05)); },
+
+  /* ---- the map: two voices drift apart as the lanes draw, and meet at each crossing */
+  mapStart() {
+    this.guard((c, now) => {
+      this.mapStop();
+      const g = c.createGain(); g.gain.setValueAtTime(0.0001, now); g.gain.exponentialRampToValueAtTime(0.02, now + 1); g.connect(this.master);
+      const a = c.createOscillator(), b = c.createOscillator();
+      a.frequency.value = 147; b.frequency.value = 147; a.connect(g); b.connect(g); a.start(); b.start();
+      this.live.add(a); this.live.add(b);
+      this.mapVoices = { a, b, g };
+    });
+  },
+  mapApart(cents) { this.guard((c) => { const v = this.mapVoices; if (v) this.set(v.b.detune, cents, c, 0.6); }); },
+  mapMeet() {
+    this.guard((c, now) => {
+      const v = this.mapVoices; if (!v) return;
+      this.set(v.b.detune, 0, c, 0.12);
+      setTimeout(() => this.mapApart(70), 700);
+    });
+  },
+  mapStop(fade = 0) {
+    const v = this.mapVoices; this.mapVoices = null;
+    if (!v) return;
+    try {
+      const c = this.ctx, t = c.currentTime;
+      v.g.gain.cancelScheduledValues(t);
+      if (fade) v.g.gain.setTargetAtTime(0.0001, t, fade / 3); else v.g.gain.setValueAtTime(0, t);
+      [v.a, v.b].forEach((o) => { o.stop(t + fade + 0.05); this.live.delete(o); });
+    } catch { /* silent */ }
+  },
+
+  /* ---- endings, per their meaning */
+  ending(which) {
+    this.guard((c) => {
+      this.focusShadow(null);
+      if (which === "erase") {                  // the other night fades out entirely; the power and room return
+        ["B", "D"].forEach((id) => { if (this.layers[id]) { this.set(this.layers[id].gain.gain, 0.0001, c, 0.6); this.releaseLayer(id, 3); } });
+        setTimeout(() => this.power(true), 1800);
+      } else {                                  // both nights stay, quietly mixed
+        ["B", "D"].forEach((id) => { const L = this.shadowLayer(id); clearTimeout(L.release); this.set(L.gain.gain, 0.012, c, 2); });
+      }
+    });
+  },
+
+  /* ---- hygiene */
+  toggle() {
+    this.on = !this.on;
+    try { localStorage.setItem("knock.sound", this.on ? "1" : "0"); } catch { /* per page only */ }
+    try {
+      if (this.master) {
+        const t = this.ctx.currentTime;
+        this.master.gain.cancelScheduledValues(t);
+        this.master.gain.setValueAtTime(this.on ? 1 : 0, t);     // mute stops output immediately
+      }
+    } catch { /* silent */ }
+    if (!this.on) this.mapStop();
+    $("#sound-toggle").setAttribute("aria-pressed", String(this.on));
+  },
+  reset() {                                     // a new night: stop and release everything
+    this.mapStop();
+    try { this.live.forEach((n) => { try { n.stop(); n.disconnect(); } catch { /* already stopped */ } }); } catch { /* silent */ }
+    this.live.clear();
+    Object.values(this.layers).forEach((L) => { clearTimeout(L.release); try { L.srcs?.forEach((x) => { x.stop(); x.disconnect(); }); } catch { /* silent */ } });
+    this.layers = {}; this.focused = null;
+  },
 };
+["pointerdown", "keydown", "touchstart"].forEach((ev) => document.addEventListener(ev, () => Sound.resume(), { passive: true }));
 
 /* ---------------------------------------------------------------- start */
 const LINKS = {
@@ -180,7 +409,7 @@ $("#pocket").addEventListener("input", (ev) => $(".door")?.classList.toggle("war
 $("#start").addEventListener("submit", async (ev) => {
   ev.preventDefault();
   if (S.busy) return;
-  Sound.init();
+  Sound.reset(); Sound.init();
   S.busy = true; $("#begin").disabled = true; $("#begin").textContent = "…";
   try {
     const d = await api("/api/new", { pocket: $("#pocket").value });
@@ -197,7 +426,7 @@ $("#start").addEventListener("submit", async (ev) => {
 });
 
 async function startReplay(id) {
-  Sound.init();
+  Sound.reset(); Sound.init();
   const d = await api("/api/replay/start", { id });
   S.game = d.game; S.replay = d.replay; S.step = 0; S.pocket = d.pocket;
   const liveHref = STATIC ? LINKS.live : location.pathname;
@@ -261,10 +490,15 @@ async function show(v) {
   $("#scene").hidden = false;
   $("#scene").className = "screen kind-" + (v.kind || "scene");
   setClock(v.clock);
-  if (v.power === "out" && !instantText()) {
-    document.body.classList.add("flicker");
-    setTimeout(() => document.body.classList.remove("flicker"), 1000);
+  if (v.power === "out") {
+    // The lights go: the hum cuts, the room drops for a breath, the screen darkens. Nothing appears.
+    Sound.power(false); Sound.powerCut();
+    if (!instantText()) {
+      document.body.classList.add("blackout");
+      setTimeout(() => document.body.classList.remove("blackout"), 1300);
+    }
   }
+  if (v.kind === "ending") Sound.ending(v.ending);
   const cur = $("#current");
   cur.classList.remove("fade-in"); void cur.offsetWidth; cur.classList.add("fade-in");
   const text = $("#text");
@@ -345,8 +579,13 @@ async function choose(i) {
     $("#choices").insertAdjacentHTML("beforeend", `<p class="waiting">…</p>`);
   }, 500);
   try {
+    const prev = S.view;
     const d = await api("/api/choose", { game: S.game, index: i });
     clearTimeout(wait);
+    if (prev && prev.kind === "fork1") {         // the committed choice, by id
+      const id = (prev.choice_ids || [])[i];
+      if (id === "lock") Sound.deadbolt(); else if (id === "open") Sound.latch();
+    }
     S.step++;
     archive(i);
     S.busy = false;
@@ -460,8 +699,9 @@ function stageCrossing(c, second = false) {
     setTimeout(() => document.body.classList.remove("flicker"), 1000);
   }
   // The second crossing escalates: a low swell under the pen, not the pen alone.
-  if (second) Sound.crossing();
-  Sound.pen(c.inscription.length);
+  // The mark is drawn from 0.4 s to 2.6 s; the scratches follow it (and still play, faster, without animation).
+  if (instantText()) Sound.crossing(second ? 2 : 1, c.object, 0.05, 0.8);
+  else Sound.crossing(second ? 2 : 1, c.object, 0.4, 2.2);
   const close = () => { el.hidden = true; document.body.classList.remove("staged"); $("#current .ink")?.focus(); };
   $("#stage-go").addEventListener("click", close);
   const ready = () => { el.classList.add("ready"); $("#stage-go")?.focus(); };
@@ -529,10 +769,12 @@ function crossingProof(o, x, m, attempts) {
 
 function openTrace(tr) {
   const evidence = !$("#evidence").hidden;
-  openDrawer(memoryHtml(tr.memory) + proofHtml(crossingProof(tr.origin, tr.intrusion, tr.manifestation, tr.attempts), evidence));
+  openDrawer(memoryHtml(tr.memory) + proofHtml(crossingProof(tr.origin, tr.intrusion, tr.manifestation, tr.attempts), evidence),
+    tr.intrusion.origin_branch);
 }
 
-function openDrawer(html) {
+function openDrawer(html, shadow = null) {
+  Sound.focusShadow(shadow);
   if ($("#drawer").hidden) S.drawerTrigger = document.activeElement;
   $("#drawer-body").innerHTML = html;
   $("#drawer").hidden = false;
@@ -542,6 +784,7 @@ function openDrawer(html) {
   body.scrollTop = 0;
 }
 function closeDrawer() {
+  Sound.focusShadow(null);
   $("#drawer").hidden = true;
   const t = S.drawerTrigger;
   if (t && document.contains(t)) t.focus();
@@ -581,6 +824,7 @@ async function openMap() {
 const Reveal = { timers: [] };
 function showAll() {
   Reveal.timers.forEach(clearTimeout); Reveal.timers = [];
+  Sound.mapStop();                                  // skipped: silent at once
   $("#map").classList.remove("revealing");
   $("#map-intro").hidden = true;
   $("#map").querySelectorAll("[data-stage]").forEach((el) => el.classList.add("on"));
@@ -597,12 +841,12 @@ function reveal() {
   $("#map-skip").focus();
   const at = (ms, fn) => Reveal.timers.push(setTimeout(fn, ms));
   const stage = (n) => map.querySelectorAll(`[data-stage="${n}"]`).forEach((el) => el.classList.add("on"));
-  at(1800, () => { $("#map-intro").hidden = true; stage(1); });
-  at(2600, () => stage(2));
-  at(3400, () => stage(3));
-  at(4200, () => { stage(4); Sound.crossing(); });
-  at(5400, () => stage(5));
-  at(6600, showAll);
+  at(1800, () => { $("#map-intro").hidden = true; stage(1); Sound.mapStart(); });
+  at(2600, () => { stage(2); Sound.mapApart(45); });
+  at(3400, () => { stage(3); Sound.mapApart(90); });
+  at(4200, () => { stage(4); Sound.mapMeet(); });
+  at(5400, () => { stage(5); Sound.mapMeet(); });
+  at(6600, () => { Sound.mapStop(1.5); showAll(); });
 }
 $("#map-skip").addEventListener("click", showAll);
 $("#map-graph-toggle").addEventListener("click", () => { S.mapGraph = !S.mapGraph; drawMap(S.mapData); showAll(); });
@@ -823,7 +1067,7 @@ function openEvent(id) {
     const o = d.events.find((y) => y.event_id === x.origin_event_id);
     const m = d.events.find((y) => y.event_id === x.manifestation_event_id);
     openDrawer(memoryHtml(x.memory, x.origin_event_id === id ? "the other night" : "your night") +
-      proofHtml(crossingProof(o, x, m, o.attempts), evidence));
+      proofHtml(crossingProof(o, x, m, o.attempts), evidence), x.origin_branch);
     return;
   }
   openDrawer(`<p class="kicker">${esc(d.labels[e.branch] || e.branch)}</p>
@@ -862,6 +1106,7 @@ function toggleEvidence() {
 $("#evidence-toggle").addEventListener("click", toggleEvidence);
 $("#evidence-close").addEventListener("click", toggleEvidence);
 $("#sound-toggle").addEventListener("click", () => { Sound.init(); Sound.toggle(); });
+$("#sound-toggle").setAttribute("aria-pressed", String(Sound.on));
 $("#instant-toggle").addEventListener("click", () => { INSTANT = !INSTANT; Prefs.set("instant", INSTANT ? "1" : "0"); applyInstant(); });
 /* Settings popover: reading and sound preferences, kept out of the header's way. */
 function setSettings(open) {

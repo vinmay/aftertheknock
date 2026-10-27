@@ -325,6 +325,8 @@ class Game:
         v = {"scene": self.scene, "kind": sc.get("kind", "scene"),
              "text": self.fmt(sc.get("text", "")),
              "choices": [self.fmt(c["label"]) for c in sc.get("choices", [])],
+             # Stable ids for presentation cues (e.g. the lock/open sound), never parsed from prose.
+             "choice_ids": [c.get("fork") or c.get("ending") or c.get("next") for c in sc.get("choices", [])],
              "clock": sc.get("clock"), "power": sc.get("power")}
         if v["kind"] == "crossing":
             cr = self.crossings[sc["shadow"]]
