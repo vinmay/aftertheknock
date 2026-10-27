@@ -1,0 +1,258 @@
+# Hand-written scenes. All characters are fictional.
+#
+# Placeholders: {pocket} is the player's object without an article ("bus ticket").
+# effects: hand-authored canonical events committed when the scene is entered.
+# kind:    fork1 | fork2 | crossing | map | final | ending (default: plain scene)
+
+start = "opening"
+
+[scenes.opening]
+text = """
+11:47 PM. The storm has been working at the windows for an hour.
+
+Someone knocks. Three times, evenly, the way people knock when they already know you're home.
+
+Through the peephole: a woman in a dark coat, soaked through, hair flat against her face. She isn't shivering. She is looking straight into the lens, as if she can see you on the other side of it.
+
+"Please," she says. "You already let me in."
+
+You have never seen her before. Your hand is on the deadbolt. In your pocket, your thumb finds the {pocket}.
+"""
+kind = "fork1"
+choices = [
+  { label = "Open the door", fork = "open" },
+  { label = "Lock it", fork = "lock" },
+]
+
+# ---------------------------------------------------------------- lock path
+[scenes.lock_1]
+text = """
+You turn the deadbolt. It is loud in the narrow entry, louder than it should be.
+
+On the other side of the door, nothing. No knock. No footsteps. Then, softly, almost kindly:
+
+"That's all right. You did, though."
+
+Water runs out from under the door in a thin, straight line, as if it has somewhere to be.
+"""
+choices = [{ label = "Keep watching", next = "lock_2" }]
+
+[scenes.lock_2]
+text = """
+She crosses the hall to 6D and knocks. Teo's door. Teo, who has lived across from you for six years and has never once opened his door to anyone. Not the super, not the police that night in March, not you.
+
+She waits. He doesn't open. She says something to the wood that you can't hear.
+
+Then she walks to the stairwell, and the fire door sighs shut behind her. Down. Not up. You can hear her going down for a long time.
+"""
+effects = [["set", "chars.mara.location", "stairwell"]]
+choices = [{ label = "Step away from the door", next = "lock_3" }]
+
+[scenes.lock_3]
+text = """
+The lights go out at 11:58. The fridge stops humming, and in the quiet you hear the building the way you never do: pipes, wind in the elevator shaft, something settling in the walls.
+
+You sit on the floor with your back against the locked door, because it seems like the only fixed thing in the apartment.
+
+Somewhere far below, a metal door closes. Then, very faintly, someone laughs.
+
+It sounds like you.
+"""
+effects = [["set", "chars.mara.location", "basement"]]
+choices = [{ label = "Take out the {pocket}", next = "crossing1" }]
+
+[scenes.lock_fork2]
+text = """
+At 12:06 there is a sound at Teo's door: the chain, the bolt, the chain again. It opens two inches. One eye. A strip of grey cardigan.
+
+"She was in there," he says. "With you. I heard her in your apartment."
+
+You start to tell him that's impossible, that your door has been locked all night.
+
+"I know," he says. "I heard you lock it. I heard both." He looks toward the stairwell. "She went down. If you go after her, don't go down. Go up. Up is just weather."
+
+The door closes. The chain.
+"""
+kind = "fork2"
+choices = [
+  { label = "Go down to the basement", fork = "basement" },
+  { label = "Go up to the roof", fork = "roof" },
+]
+
+[scenes.lock_basement]
+text = """
+Six flights in the dark, one hand on the rail. The basement is dry, which is wrong; the storm is everywhere else.
+
+Storage cages in rows, numbered in stencil. At the far end, unit 07, still padlocked. Mara sits on the concrete in front of it with the brass key in her lap, as if she is waiting for a bus.
+
+"There you are," she says. "Both of you are late."
+"""
+effects = [["set", "chars.player.location", "stairwell"], ["set", "chars.player.location", "basement"]]
+choices = [{ label = "Ask her what's in 07", next = "crossing2" }]
+
+[scenes.lock_roof]
+text = """
+The roof door sticks, then gives, and the storm takes the breath out of you. The city is dark to the river. The whole grid, not just your building. Water stands on the tar in sheets.
+
+You are alone up here. You are sure of that for almost a minute.
+
+Then the stairwell door bangs shut behind you, though nobody came through it.
+"""
+effects = [["set", "chars.player.location", "stairwell"], ["set", "chars.player.location", "roof"]]
+choices = [{ label = "Turn around", next = "crossing2" }]
+
+# ---------------------------------------------------------------- open path
+[scenes.open_1]
+text = """
+You open the door. She steps past you before you have decided to step aside, and the cold comes in with her.
+
+"Thank you," she says. "Again."
+
+Up close she is younger than you thought, and older. Water runs off her coat and pools around her shoes and doesn't spread. In her hand is a brass key on a paper tag. The tag says BASEMENT 07 in faded marker.
+"""
+choices = [{ label = "Ask who she is", next = "open_2" }]
+
+[scenes.open_2]
+text = """
+"Mara," she says, as though you have asked her that many times. She sits at your table without taking off the coat.
+
+"I need to go down to 07. I can't do it alone. Nobody can; it's a rule of the building." She turns the key over and over. "I asked Teo, across the hall. He has never opened his door for me. Not once."
+
+A pause.
+
+"That isn't true. He did tonight. Not here. Somewhere else."
+"""
+choices = [{ label = "\"Somewhere else?\"", next = "open_3" }]
+
+[scenes.open_3]
+text = """
+The lights go out at 11:58. Mara doesn't react. In the dark you can hear the water leaving her coat, steady as a clock.
+
+"Every time someone decides something," she says, "the night they didn't pick keeps going. Most of them are quiet. This one isn't."
+
+The key stops turning.
+
+"Look at the tag."
+"""
+choices = [{ label = "Look at the key", next = "crossing1" }]
+
+[scenes.open_fork2]
+text = """
+Mara stands. "So. Down with me, or up without me."
+
+She says it gently, like a choice that has already been made somewhere and she is only letting you catch up.
+
+Across the hall, Teo's door is open an inch. You can feel him listening.
+"""
+kind = "fork2"
+choices = [
+  { label = "Go down to the basement with Mara", fork = "basement" },
+  { label = "Go up to the roof alone", fork = "roof" },
+]
+
+[scenes.open_basement]
+text = """
+She goes first. Six flights, and her hand never touches the rail. The basement is dry, which is wrong; the storm is everywhere else.
+
+Storage cages in rows, numbered in stencil. Unit 07 at the far end, padlocked. Mara holds out the key, but not toward the lock. Toward you.
+
+"You do it," she says. "It has to be someone who's still deciding."
+"""
+effects = [["set", "chars.player.location", "stairwell"], ["set", "chars.mara.location", "stairwell"],
+           ["set", "chars.player.location", "basement"], ["set", "chars.mara.location", "basement"]]
+choices = [{ label = "Reach for the key", next = "crossing2" }]
+
+[scenes.open_roof]
+text = """
+You leave her at your table. She doesn't argue. "I'll be here," she says. "I'm very good at it."
+
+The roof door sticks, then gives. The storm, the black city, water standing on the tar. You stand in it until you are as wet as she was.
+
+Behind you, the stairwell door bangs shut, though nobody came through it.
+"""
+effects = [["set", "chars.player.location", "stairwell"], ["set", "chars.player.location", "roof"]]
+choices = [{ label = "Turn around", next = "crossing2" }]
+
+# ---------------------------------------------------------------- shared
+[scenes.crossing1]
+kind = "crossing"
+shadow = "B"
+choices = [{ label = "Keep going", next = "$fork2" }]
+
+[scenes.crossing2]
+kind = "crossing"
+shadow = "D"
+choices = [{ label = "Keep going", next = "map" }]
+
+[scenes.map]
+kind = "map"
+text = """
+The night comes apart in your hands, and for a moment you can see all of it: the night you lived, and the nights you didn't.
+
+Everything that crossed over came from somewhere. Touch a thread to see where.
+"""
+choices = [{ label = "Close the map", next = "final" }]
+
+[scenes.final]
+kind = "final"
+text = """
+Somewhere below you, or behind you, or inside the walls, a door is waiting to be opened. You know which one. It is the one you didn't choose.
+
+You can close it for good. Or you can open it and let the other night through.
+"""
+choices = [
+  { label = "Erase the other night", ending = "erase" },
+  { label = "Open the door and let it through", ending = "open" },
+]
+
+# ---------------------------------------------------------------- endings
+# Slots are filled by the engine from committed shadow facts.
+[endings.erase]
+text = """
+You choose this night. Only this one.
+
+{erase_marks}
+
+{erase_mara}
+
+At 12:30 the power comes back all at once, every light in the building, and the fridge begins to hum as if nothing happened. Nothing did.
+
+You will never know what happened in the night you didn't choose. You will think about it on stairs for the rest of your life.
+"""
+
+[endings.open]
+text = """
+You open the door.
+
+The other night comes in quietly, the way Mara did. It smells like rain that never reached this building.
+
+{open_key}
+
+{open_mara}
+
+{open_teo}
+
+You look at what the night left you. {open_marks}
+
+Both nights are true now. You will have to live in both of them.
+"""
+
+[endings.slots]
+erase_marks = "The writing fades: {fade_list}, like breath off a mirror, and then there is nothing left to read."
+erase_mara_present = "When you look up, Mara is gone. Where she stood, the floor is dry."
+erase_mara_absent = "Far below, a metal door closes, gently, and does not open again."
+
+open_key_mara = "Mara still has the key. In the other night she never let go of it, and she doesn't now."
+open_key_player = "Your hand closes on something cold. In the other night, you were the one holding the brass key. Now you are holding it here too."
+open_key_teo = "Across the hall, a chain comes off a door. In the other night Teo ended up with the key, and you hear it turning in his hand."
+open_key_place = "In the other night the key was left in {key_place}. When you go to look, much later, it is there too."
+
+open_mara_unit07 = "Mara is in 07 now. In the other night she went in, and in this one she is already inside, sitting with her back to the cage door, finally not alone."
+open_mara_with_player = "Mara is beside you. She was beside you in the other night too. She looks relieved, and very tired, like someone who has been holding a door shut for a long time."
+open_mara_elsewhere = "Mara is in {mara_place}. In the other night that is where she ended up, and that is where she is now. You don't go to her. She doesn't need you to anymore."
+
+open_teo_hurt = "In 6D, Teo is sitting on the floor of his own kitchen, holding his arm, not sure how he hurt it."
+open_teo_dead = "In 6D, there is no sound at all. There won't be, again."
+open_teo_fine = "In 6D, Teo turns off his radio, and you hear him say, to no one, \"Finally.\""
+
+open_marks = "{mark_lines} Written in a night you never lived."

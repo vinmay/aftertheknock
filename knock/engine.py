@@ -11,6 +11,8 @@ Canonical timelines receive exactly one intrusion from their sibling shadow.
 from __future__ import annotations
 
 import copy
+import functools
+import threading
 from dataclasses import dataclass, field, asdict
 
 from .state import apply_delta, fact_holds, initial_state, state_hash, location_of
@@ -103,6 +105,15 @@ class Intrusion:
         return asdict(self)
 
 
+def _locked(fn):
+    """Shadows simulate on a background thread while the canonical timeline advances."""
+    @functools.wraps(fn)
+    def wrapper(self, *a, **kw):
+        with self._lock:
+            return fn(self, *a, **kw)
+    return wrapper
+
+
 def _delta_paths(delta) -> list[str]:
     return [path for _, path, _ in delta]
 
@@ -116,6 +127,7 @@ class Timeline:
         self.intrusions: list[Intrusion] = []
         self.ops: list[dict] = []          # replayable record of everything that changed state
         self._world = world
+        self._lock = threading.RLock()
 
     # ---- lookup -------------------------------------------------------
     def branch(self, bid: str) -> Branch:
@@ -123,6 +135,7 @@ class Timeline:
             raise EngineError(f"no branch {bid!r}")
         return self.branches[bid]
 
+    @_locked
     def state(self, bid: str) -> dict:
         return copy.deepcopy(self.branch(bid).state)
 
@@ -146,6 +159,7 @@ class Timeline:
         return "C" if "C" in self.branches else "A"
 
     # ---- branching ----------------------------------------------------
+    @_locked
     def fork(self, parent: str, budget: int = 3) -> tuple[str, str]:
         if parent not in BRANCH_PLAN:
             raise BranchRuleError(f"branch {parent!r} may not fork")
@@ -190,6 +204,7 @@ class Timeline:
         b = self.branch(bid)
         return validate(b.state, proposal, frozen=b.frozen)
 
+    @_locked
     def commit(self, bid: str, proposal: dict, *, source: str = "model", request_id: str) -> Event:
         """Validate and commit a proposal. Idempotent per request_id."""
         b = self.branch(bid)
@@ -212,6 +227,7 @@ class Timeline:
                          "source": source, "request_id": request_id})
         return ev
 
+    @_locked
     def author(self, bid: str, delta: list, summary: str, *, request_id: str,
                actor: str = "story", target: str = "") -> Event:
         """Commit a hand-authored story effect (for example the fork choice itself)."""
@@ -229,6 +245,7 @@ class Timeline:
                          "target": target})
         return ev
 
+    @_locked
     def freeze(self, bid: str) -> None:
         b = self.branch(bid)
         if b.kind != "shadow":
@@ -238,6 +255,7 @@ class Timeline:
             self.ops.append({"op": "freeze", "branch": bid})
 
     # ---- intrusions ---------------------------------------------------
+    @_locked
     def cross(self, shadow_id: str, origin_event_id: str, *, request_id: str | None = None) -> Intrusion:
         """Let one committed shadow event manifest in its sibling canonical timeline."""
         request_id = request_id or f"cross:{shadow_id}"
@@ -318,6 +336,7 @@ class Timeline:
     def hashes(self) -> dict:
         return {bid: state_hash(b.state) for bid, b in self.branches.items()}
 
+    @_locked
     def to_dict(self) -> dict:
         return {
             "pocket_name": self.pocket_name,
