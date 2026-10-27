@@ -590,6 +590,7 @@ function reveal() {
   at(6600, showAll);
 }
 $("#map-skip").addEventListener("click", showAll);
+$("#map-graph-toggle").addEventListener("click", () => { S.mapGraph = !S.mapGraph; drawMap(S.mapData); showAll(); });
 function closeMap() {
   Reveal.timers.forEach(clearTimeout); Reveal.timers = [];
   $("#map").classList.remove("revealing");
@@ -656,11 +657,15 @@ function drawMap(d) {
   const svg = $("#map-svg");
   const box = $("#map .map-scroll").clientWidth || window.innerWidth;
   const narrow = window.matchMedia("(max-width: 40rem)").matches;
-  svg.toggleAttribute("hidden", narrow);
-  $("#map-list").hidden = !narrow;
-  $("#map-detail").hidden = narrow;
+  const graph = !narrow || S.mapGraph;            // phones: the card list first; the graph on request
+  svg.toggleAttribute("hidden", !graph);
+  $("#map-list").hidden = graph;
+  $("#map-detail").hidden = !graph;
+  $("#map-graph-toggle").hidden = !narrow;
+  $("#map-graph-toggle").textContent = S.mapGraph ? "View as a list" : "View as a graph";
+  $("#map .map-scroll").classList.toggle("wide", narrow && graph);
   drawEventList(d);
-  if (narrow) return drawMapList(d);
+  if (!graph) return drawMapList(d);
   const evidence = !$("#evidence").hidden;
   const br = Object.fromEntries(d.branches.map((b) => [b.id, b]));
   // Causal x order: shadows start right after their fork; a crossing lands after its origin.
@@ -683,8 +688,11 @@ function drawMap(d) {
   S.mapCol = col;
   const maxSeq = Math.max(...Object.values(col));
   const lane = { B: 0.17, S: 0.5, A: 0.5, C: 0.5, D: 0.83 };
-  const step = Math.max(84, (box - 180) / Math.max(maxSeq, 1));
-  const W = 90 + maxSeq * step + 90, H = Math.max(460, Math.min(window.innerHeight - 330, 620));
+  // Fit the graph to the space it has: full width, height from the viewport, so the overlay is the
+  // only scroll region (phones asking for the graph get a wide, horizontally scrolling view instead).
+  const W = narrow ? Math.max(720, maxSeq * 64 + 180) : box;
+  const step = (W - 180) / Math.max(maxSeq, 1);
+  const H = Math.max(320, Math.min(window.innerHeight - 340, 560));
   const P = (seq, b) => [90 + seq * step, H * lane[b]];
   svg.setAttribute("viewBox", `0 0 ${W} ${H}`);
   svg.setAttribute("width", W); svg.setAttribute("height", H);
@@ -742,6 +750,12 @@ function drawMap(d) {
       if (ev.key === "Enter" || ev.key === " ") { ev.preventDefault(); selectNode(id); $("#map-detail [data-open]")?.focus(); }
     });
   });
+  // A redraw (resize, graph/list toggle) keeps the current selection lit.
+  if (S.mapSelected) {
+    svg.querySelector(`.node[data-id="${CSS.escape(S.mapSelected)}"]`)?.classList.add("selected");
+    const i = d.intrusions.findIndex((x) => x.origin_event_id === S.mapSelected || x.manifestation_event_id === S.mapSelected);
+    if (i >= 0) svg.querySelectorAll(".thread")[i]?.classList.add("lit");
+  }
 }
 
 /* Screen readers: the same night as a chronological list. */

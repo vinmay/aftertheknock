@@ -424,3 +424,10 @@ body.instant-text main { animation: none !important; }
 .rec-badge { display: inline-block; font-family: var(--mono); font-size: 0.66rem; letter-spacing: 0.08em; text-transform: uppercase; color: var(--bg); background: #c9a96a; padding: 0.05rem 0.4rem; border-radius: 2px; vertical-align: 2px; margin-left: 0.4rem; }
 #drawer-body:focus { outline: none !important; }    /* a reading container, focused only so screen readers start at the memory */
 a.cta { display: inline-flex; align-items: center; text-decoration: none; }
+
+/* One scroll region: the overlay. The graph is sized to fit; only an explicitly widened phone graph scrolls sideways. */
+.map { overflow-y: auto; overflow-x: hidden; }
+.map-scroll { overflow: visible; }
+.map-scroll.wide { overflow-x: auto; justify-content: flex-start; }
+#map-svg { max-width: 100%; }
+.map-scroll.wide #map-svg { max-width: none; }
