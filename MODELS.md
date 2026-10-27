@@ -7,11 +7,33 @@
 | **Model** | `gemma4:e2b` (Gemma 4 E2B) via Ollama |
 | **Quantization** | Q4_K_M (GGUF) |
 | **License** | Apache 2.0 (as shipped in the Ollama model manifest) |
-| **Local digest** | `b37049369adf` |
+| **Source** | Official Ollama library tag `gemma4:e2b` (`registry.ollama.ai/library/gemma4:e2b`) |
+| **Manifest digest** | `sha256:b37049369adfe3d2b653af0ab301a062ca5cbe96ace6aa0d3f2559ee9b563fc2` |
+| **Weights blob** | `sha256:6dd7ac24fe13a238898e16e253ebc7a72fa27fb83f2658c2f6c241df3af5937d` (3.50 GB) |
 | **Runtime** | Ollama 0.40.4, JSON-schema constrained output (`format`), `think: false`, `num_ctx` 2048 |
 | **Hardware** | NVIDIA GTX 1660 Ti, 6 GB VRAM (Turing, no BF16) |
 
 Override with `KNOCK_MODEL=gemma4:e4b`.
+
+### Provenance check (2026-10-27)
+
+The local model is byte-identical to the official library build:
+
+- The sha256 of the registry manifest (`GET https://registry.ollama.ai/v2/library/gemma4/manifests/e2b`, fetched 2026-10-27) is `b37049369adf…63fc2`, the same digest Ollama reports locally (`/api/tags`).
+- Ollama stores that registry manifest as a blob, and the stored copy is byte-identical to the one fetched today. Its layers (model weights, vision projector, a small draft model used for speculative decoding with `draft_num_predict 3`, template, license, params) all have the same digests and sizes.
+- The weights file on disk hashes to its digest, `6dd7ac24…5937d` (checked with `sha256sum`).
+- The license layer is the Apache License 2.0.
+- `ollama show` reports a parent named `gemma4-validation-20260929:e2b-imatrix-attention-q6-q8-draft2`. That name comes from the official manifest's own `from` fields, so it is the library build's metadata, not a local custom build.
+
+Check it yourself:
+
+```bash
+curl -s -H "Accept: application/vnd.docker.distribution.manifest.v2+json" \
+  https://registry.ollama.ai/v2/library/gemma4/manifests/e2b | sha256sum
+curl -s localhost:11434/api/tags | grep -A2 '"gemma4:e2b"'
+```
+
+The game sends `temperature 0.8` and a seed with every call, which override the manifest's `temperature 1`.
 
 ## Day-one benchmark (2026-10-26)
 
