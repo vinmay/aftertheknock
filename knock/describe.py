@@ -58,3 +58,26 @@ def describe(e: dict, state: dict, pocket: str) -> str:
     if act == "harm":
         return f"{a} hurt {t}."
     return f"{a} {act} {t}."
+
+
+PLACE_TEASE = {
+    "apt": "Your apartment, with the door open.",
+    "hall": "The hall, seen from the wrong side of your door.",
+    "teo_apt": "A kitchen you have never been inside.",
+    "stairwell": "The stairwell, in the dark.",
+    "basement": "The basement. Dry.",
+    "unit07": "Inside 07.",
+    "roof": "The roof, in the rain.",
+}
+
+
+def teaser(e: dict, state_before: dict) -> str:
+    """A diegetic hint about where an intrusion came from, built only from its committed event."""
+    where = PLACE_TEASE.get(state_before["chars"][e["actor"]]["location"], "Somewhere else.")
+    if e["action"] == "speak":
+        tool = "Someone breathing in."
+        who = {"player": "Your own voice.", "mara": "Her voice.", "teo": "His voice."}.get(e["actor"], "A voice.")
+    else:
+        tool = "Something sharp." if e["target"] == "key07" else "A pen."
+        who = {"player": "Your own hand.", "mara": "Her hand.", "teo": "His hand."}.get(e["actor"], "A hand.")
+    return f"{where} {tool} {who}"

@@ -8,11 +8,11 @@ import time
 import tomllib
 import uuid
 
-from .describe import describe
+from .describe import describe, teaser
 from .engine import Timeline
 from .narrator import CHAR_NAMES, narrate_crossing
 from .sim import RunLog, load_shadows, pick_origin, simulate_shadow
-from .state import STORY_DIR, state_hash
+from .state import STORY_DIR, apply_delta, initial_state, state_hash
 
 DEFAULT_POCKET = "ticket stub"
 NOT_AN_OBJECT = {"nothing", "none", "no", "idk", "dunno", "empty", "nada", "na", "n a", "nothing at all"}
@@ -263,9 +263,13 @@ class Game:
         origin = self.timeline.event(x.origin_event_id)
         od = origin.to_dict()
         od["desc"] = describe(od, self.timeline.state(origin.branch), self.pocket)
+        before = initial_state(None, self.timeline.pocket_name)
+        for e in self.timeline.lineage(origin.branch)[: origin.seq]:
+            before = apply_delta(before, e.state_delta)
         return {"intrusion": x.to_dict(), "origin": od,
                 "manifestation": self.timeline.event(x.manifestation_event_id).to_dict(),
-                "attempts": self.attempts(origin.request_id)}
+                "attempts": self.attempts(origin.request_id),
+                "teaser": teaser(od, before)}
 
     def branch_labels(self) -> dict:
         f1, f2 = self.f1, self.f2

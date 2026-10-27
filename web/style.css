@@ -208,3 +208,4 @@ body.staged main { filter: blur(2px) brightness(0.5); }
 .stage-go { opacity: 0; animation: in 0.6s ease 3.8s forwards; justify-self: center; }
 .crossing-stage.instant *, .crossing-stage.instant .hand text { animation: none !important; opacity: 1 !important; }
 .crossing-stage.instant .hand text { fill: currentColor; stroke-dashoffset: 0; }
+.drawer .tease { font-style: italic; font-size: 1.15rem; }

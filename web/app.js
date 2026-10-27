@@ -209,6 +209,7 @@ function show(v) {
       const b = document.createElement("button"); b.textContent = label; b.addEventListener("click", fn); ch.appendChild(b);
     });
   }
+  if (v.kind === "map" || v.kind === "final" || v.kind === "ending") S.mapSeen = true;
   if (v.kind === "map") setTimeout(openMap, 1200);
   window.scrollTo({ top: 0, behavior: "smooth" });
   if (!$("#evidence").hidden) loadEvidence();
@@ -285,7 +286,17 @@ function attemptsHtml(attempts) {
   }).join("") + `</ul>`;
 }
 
+function fullRecordUnlocked() {
+  return S.mapSeen || !$("#evidence").hidden;
+}
+
 function openTrace(tr) {
+  if (!fullRecordUnlocked()) {
+    openDrawer(`<p class="kicker">where it came from</p>
+      <div class="quote shadowq tease">${esc(tr.teaser)}</div>
+      <p class="small muted">The full record opens with the map, at the end of the night. (Judges: the <b>evidence</b> switch at the top shows everything now.)</p>`);
+    return;
+  }
   const o = tr.origin, x = tr.intrusion, m = tr.manifestation;
   const body = `
     <p class="kicker">intrusion ${esc(x.intrusion_id)} · from timeline ${esc(x.origin_branch)} into ${esc(x.target_branch)}</p>

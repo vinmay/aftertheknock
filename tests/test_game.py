@@ -152,3 +152,12 @@ def test_every_shadow_ends_in_a_mark_across_many_seeds():
         g = play(f1, f2, end, RandomModel(), seed=seed)
         for shadow in ("B", "D"):
             assert pick_origin(g.timeline, shadow).action == "mark", (seed, f1, f2, shadow)
+
+
+def test_trace_teaser_comes_from_committed_event():
+    g = play("lock", "roof", "erase", ScriptedModel([]), seed=5)
+    tr = g.trace("X1")
+    o = tr["origin"]
+    assert o["actor"] == "mara" and o["action"] == "mark"
+    assert tr["teaser"] == "Your apartment, with the door open. A pen. Her hand."
+    assert o["text"] not in tr["teaser"]           # the teaser never repeats the evidence itself
