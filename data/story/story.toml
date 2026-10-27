@@ -373,11 +373,13 @@ player = "It's your handwriting. You don't remember writing it."
 # {A} actor, {T} person acted on, {obj} object, {on} what was written on, {place}, {text}, {from}.
 [flashback]
 move = "{A} goes to {place}."
-speak_to = "{A} says to {T}: “{text}”"
-speak_aloud = "{A} says, to no one: “{text}”"
+speak_to = "“{text}” {A} says it to {T}."
+speak_aloud = "“{text}” {A} says it to no one."
 give = "{A} hands {obj} to {T}."
 take = "{A} takes {obj}{from}."
 mark = "{A} writes “{text}” on {on}."
+# used when the line before already named the same object
+mark_again = "{A} writes “{text}” across {it}."
 open = "{A} unlocks {place}."
 hide = "{A} hides {obj}."
 discover = "{A} finds {obj}."

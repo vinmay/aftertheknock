@@ -417,6 +417,21 @@ function propSvg(c) {
       <text x="256" y="138" text-anchor="middle" class="ink-hand" style="font-size:${fs}px">${mark}</text>
     </svg>`;
   }
+  if (/receipt/.test(pocket)) {
+    // Decorative only: a fictional store and items the story never refers to.
+    const row = (y, a, b) => `<text x="128" y="${y}" class="printed faded">${a}</text><text x="292" y="${y}" text-anchor="end" class="printed faded">${b}</text>`;
+    return `<svg class="prop" viewBox="0 0 420 210" role="img" aria-label="Your ${esc(S.pocket)}. Handwritten on it: ${mark}">
+      <path d="M110,8 L310,8 L310,196 L300,202 L290,196 L280,202 L270,196 L260,202 L250,196 L240,202 L230,196 L220,202 L210,196 L200,202 L190,196 L180,202 L170,196 L160,202 L150,196 L140,202 L130,196 L120,202 L110,196 Z" fill="#efe9dc"/>
+      <path d="M110,104 L310,100" stroke="#000" stroke-opacity="0.08" stroke-width="3"/>
+      <text x="210" y="30" text-anchor="middle" class="printed">ALL-NITE CORNER STORE</text>
+      <text x="210" y="44" text-anchor="middle" class="printed faded">OPEN 24 HRS \u00b7 10:52 PM</text>
+      <line x1="124" y1="52" x2="296" y2="52" stroke="#b9ad93" stroke-dasharray="3 3"/>
+      ${row(68, "COFFEE", "1.80")}${row(82, "AA BATTERIES", "4.99")}
+      <line x1="124" y1="164" x2="296" y2="164" stroke="#b9ad93" stroke-dasharray="3 3"/>
+      ${row(180, "TOTAL", "6.79")}
+      <text x="210" y="134" text-anchor="middle" class="ink-hand" style="font-size:${Math.min(fs, 50)}px">${mark}</text>
+    </svg>`;
+  }
   return `<svg class="prop" viewBox="0 0 420 210" role="img" aria-label="Your ${esc(S.pocket)}. Handwritten on it: ${mark}">
     <path d="M14,16 L404,12 L408,196 L18,200 Z" fill="#e9e1cf"/>
     <path d="M210,14 L212,198" stroke="#000" stroke-opacity="0.08" stroke-width="3"/>
@@ -468,7 +483,7 @@ function factLine(f) {
 
 function attemptsHtml(attempts) {
   if (!attempts || !attempts.length) return "";
-  return `<h3>Validator</h3><ul class="attempts">` + attempts.map((a) => {
+  return `<h3>Validator</h3><p class="small muted">Each line is an original model proposal, shown unmodified, and what the validator decided. Only accepted proposals become events; the engine derives their effects itself.</p><ul class="attempts">` + attempts.map((a) => {
     if (a.kind === "fallback") return `<li><span class="fb">FALLBACK</span> hand-written event committed after three rejected proposals<pre>${esc(JSON.stringify(a.proposal))}</pre></li>`;
     const d = a.decision || {};
     const verdict = d.accepted ? `<span class="ok">ACCEPTED</span>` : `<span class="bad">REJECTED</span> ` +
@@ -505,7 +520,7 @@ function crossingProof(o, x, m, attempts) {
       <li>proposed by ${o.source === "model" ? "the model" : "a hand-written fallback"}; committed by the engine</li>
       <li>preconditions: ${esc((o.preconditions || []).join("; ") || "none")}</li>
       <li>evidence: ${esc((o.evidence_refs || []).join(", ") || "none")}</li>
-      ${o.summary && o.source === "model" ? `<li>the model's own summary: "${esc(o.summary)}"</li>` : ""}
+      ${o.summary && o.source === "model" ? `<li>Original model proposal, shown unmodified: "${esc(o.summary)}" <span class="muted">(the structured event, not this sentence, determines the committed world state)</span></li>` : ""}
       ${x.post_fork.map((f) => `<li>crossed: ${factLine(f)} <span class="muted">(created after the fork)</span></li>`).join("")}
       ${m.state_delta.map((f) => `<li>appeared: ${factLine(f)}</li>`).join("")}
     </ul>
@@ -799,7 +814,7 @@ function openEvent(id) {
   const evidence = !$("#evidence").hidden;
   const raw = `<ul class="facts">
       <li>event <b>${esc(e.event_id)}</b> · ${esc({ model: "proposed by the model, validated, committed", fallback: "hand-written fallback after rejected model proposals", story: "hand-written story event", intrusion: "a crossing from another timeline" }[e.source])}</li>
-      ${e.summary && e.source === "model" ? `<li>the model's own summary: "${esc(e.summary)}"</li>` : ""}
+      ${e.summary && e.source === "model" ? `<li>Original model proposal, shown unmodified: "${esc(e.summary)}" <span class="muted">(the structured event, not this sentence, determines the committed world state)</span></li>` : ""}
       ${e.preconditions.length ? `<li>preconditions: ${esc(e.preconditions.join("; "))}</li>` : ""}
       ${e.evidence_refs.length ? `<li>evidence: ${esc(e.evidence_refs.join(", "))}</li>` : ""}
       ${e.state_delta.map((f) => `<li>${factLine(f)}</li>`).join("")}
@@ -848,6 +863,19 @@ $("#evidence-toggle").addEventListener("click", toggleEvidence);
 $("#evidence-close").addEventListener("click", toggleEvidence);
 $("#sound-toggle").addEventListener("click", () => { Sound.init(); Sound.toggle(); });
 $("#instant-toggle").addEventListener("click", () => { INSTANT = !INSTANT; Prefs.set("instant", INSTANT ? "1" : "0"); applyInstant(); });
+/* Settings popover: reading and sound preferences, kept out of the header's way. */
+function setSettings(open) {
+  $("#settings").hidden = !open;
+  $("#settings-toggle").setAttribute("aria-expanded", String(open));
+  if (open) $("#settings button").focus();
+}
+$("#settings-toggle").addEventListener("click", () => setSettings($("#settings").hidden));
+document.addEventListener("click", (ev) => {
+  if (!$("#settings").hidden && !ev.target.closest("#settings, #settings-toggle")) setSettings(false);
+});
+document.addEventListener("keydown", (ev) => {
+  if (ev.key === "Escape" && !$("#settings").hidden) { ev.stopImmediatePropagation(); setSettings(false); $("#settings-toggle").focus(); }
+}, true);
 applyInstant();
 document.addEventListener("keydown", (ev) => {
   if (ev.target.tagName === "INPUT") return;

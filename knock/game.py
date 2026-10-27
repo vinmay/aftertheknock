@@ -392,27 +392,38 @@ class Game:
         name = lambda c: "the other you" if c == "player" else CHAR_NAMES.get(c, c)  # noqa: E731
         cap = lambda w: w[0].upper() + w[1:]  # noqa: E731
         lines = []
+        prev_actor, prev_obj = None, None
+        pronoun = {"mara": "She", "teo": "He"}
         for e in events:
             if e.source == "story":
                 lines.append({"line": e.summary, "event_id": e.event_id, "action": "story"})
+                prev_actor, prev_obj = None, None
                 continue
             before = self._state_before(e)
             places = before["places"]
             key = e.action
             if e.action == "speak":
                 key = "speak_aloud" if e.target in places else "speak_to"
+            is_obj = e.target in before["objects"]
+            if e.action == "mark" and is_obj and e.target == prev_obj and "mark_again" in tmpl:
+                key = "mark_again"
             if key not in tmpl:
                 return None
             prev = before["objects"].get(e.target, {}).get("holder") if e.action == "take" else None
-            slots = {"A": cap(name(e.actor)), "T": name(e.to or e.target),
-                     "obj": display_name(e.target, self.pocket) if e.target in before["objects"] else "",
-                     "on": display_name(e.target, self.pocket, "on") if e.target in before["objects"] else "",
+            # Deterministic polish: the same person twice in a row becomes a pronoun (not inside speech lines).
+            use_pronoun = e.actor == prev_actor and e.actor in pronoun and not key.startswith("speak")
+            plural = e.target == "pocket" and self.plural
+            slots = {"A": pronoun[e.actor] if use_pronoun else cap(name(e.actor)), "T": name(e.to or e.target),
+                     "obj": display_name(e.target, self.pocket) if is_obj else "",
+                     "on": display_name(e.target, self.pocket, "on") if is_obj else "",
+                     "it": ("them" if plural else "it") if is_obj else "",
                      "place": places[e.target]["name"] if e.target in places else "",
                      "text": e.text, "from": f" from {name(prev)}" if prev else ""}
             line = tmpl[key]
             for k, v in slots.items():
                 line = line.replace("{" + k + "}", v)
             lines.append({"line": line, "event_id": e.event_id, "action": e.action})
+            prev_actor, prev_obj = e.actor, (e.target if is_obj else None)
         if len(lines) > max_lines:          # keep the start of the night and the lines leading to the mark
             lines = lines[:1] + lines[-(max_lines - 1):]
         return lines

@@ -16,9 +16,12 @@
   <span class="mode" id="mode"></span>
   <span class="clock" id="clock" hidden aria-label="Time"></span>
   <span class="tools">
-    <button class="tool" id="instant-toggle" aria-pressed="false" title="Show text immediately, without fades or slow reveals">show text immediately</button>
-    <button class="tool" id="sound-toggle" aria-pressed="true" title="Sound">sound</button>
+    <button class="tool" id="settings-toggle" aria-expanded="false" aria-controls="settings">settings</button>
     <button class="tool" id="evidence-toggle" aria-pressed="false" title="Evidence view (E)">evidence</button>
+    <span id="settings" class="settings" hidden role="group" aria-label="Settings">
+      <button class="tool" id="instant-toggle" aria-pressed="false">show text immediately</button>
+      <button class="tool" id="sound-toggle" aria-pressed="true">sound</button>
+    </span>
   </span>
 </header>
 
