@@ -54,7 +54,8 @@ async function api(path, body) {
    crossing records) and never touch the engine or its logs. One master gain into a limiter;
    every method fails silently. */
 const Sound = {
-  ctx: null, master: null, noise: null, layers: {}, live: new Set(), mapVoices: null,
+  ctx: null, master: null, noise: null, layers: {}, live: new Set(), mapVoices: null, pens: new Set(),
+  mix: { restore: null },                       // one pending room restore; a new cue cancels it
   on: (() => { try { return localStorage.getItem("knock.sound") !== "0"; } catch { return true; } })(),
   ROOM: 0.035, HUM: 0.007,
 
@@ -105,6 +106,7 @@ const Sound = {
     const f = c.createBiquadFilter(); f.type = "bandpass"; f.frequency.value = freq; f.Q.value = q;
     s.connect(f).connect(this.env(c, t, peak, 0.002, 0, dur)).connect(this.master);
     s.start(t, Math.random() * 1.8); this.track(s, t + dur + 0.05);
+    return s;
   },
   tone(c, t, freq, peak, attack, hold, release, type = "sine") {
     const o = c.createOscillator(); o.type = type; o.frequency.value = freq;
@@ -113,6 +115,20 @@ const Sound = {
     return o;
   },
   set(param, v, c, tau = 0.8) { param.cancelScheduledValues(c.currentTime); param.setTargetAtTime(v, c.currentTime, tau); },
+
+  /* The room mixer: every duck goes through here. Starting a new duck cancels the previous cue's
+     pending restore, so the rain can never jump back up in the middle of a later cue. */
+  duck({ gain = 1, lp = 900 }, holdMs, restoreTau = 1.5, attackTau = 0.3) {
+    const c = this.ctx, room = this.layers.room;
+    if (!room) return;
+    clearTimeout(this.mix.restore);
+    this.set(room.gain.gain, this.ROOM * gain, c, attackTau);
+    this.set(room.lp.frequency, lp, c, attackTau);
+    this.mix.restore = setTimeout(() => {
+      this.mix.restore = null;
+      try { this.set(room.gain.gain, this.focused ? this.ROOM * 0.35 : this.ROOM, c, restoreTau); this.set(room.lp.frequency, 900, c, restoreTau); } catch { /* silent */ }
+    }, holdMs);
+  },
 
   /* ---- layers: room tone (rain + mains hum), and one abstract texture per shadow night */
   startRoom() {
@@ -162,9 +178,9 @@ const Sound = {
   },
   bleed(id, level = 0.25, seconds = 4) {        // the other night leaks in for a few seconds
     this.guard((c) => {
-      const L = this.shadowLayer(id); clearTimeout(L.release);
+      const L = this.shadowLayer(id); clearTimeout(L.release); clearTimeout(L.bleed);
       this.set(L.gain.gain, level * 0.14, c, 0.6);
-      setTimeout(() => { if (!this.focused) { this.set(L.gain.gain, 0.0001, c, 0.8); this.releaseLayer(id, 4); } }, seconds * 1000);
+      L.bleed = setTimeout(() => { if (this.focused !== id) { this.set(L.gain.gain, 0.0001, c, 0.8); this.releaseLayer(id, 4); } }, seconds * 1000);
     });
   },
   focusShadow(id) {                             // a source memory is open: that night forward, ours back
@@ -174,6 +190,7 @@ const Sound = {
         this.focused = id;
         const L = this.shadowLayer(id); clearTimeout(L.release);
         this.set(L.gain.gain, 0.045, c, 0.5);
+        clearTimeout(this.mix.restore); this.mix.restore = null;
         if (room) this.set(room.gain.gain, this.ROOM * 0.35, c, 0.5);
       } else if (this.focused) {
         const prev = this.focused; this.focused = null;
@@ -202,8 +219,7 @@ const Sound = {
       this.burst(c, now + 0.17, 1500, 5, 0.5, 0.05);
       const body = this.tone(c, now + 0.17, 92, 0.35, 0.005, 0.02, 0.22);
       body.frequency.exponentialRampToValueAtTime(55, now + 0.4);
-      const room = this.layers.room;
-      if (room) { this.set(room.gain.gain, this.ROOM * 0.18, c, 0.25); setTimeout(() => this.set(room.gain.gain, this.ROOM, c, 2.5), 4500); }
+      this.duck({ gain: 0.18 }, 4500, 2.5, 0.25);
       this.tone(c, now + 0.6, 73.4, 0.012, 1.2, 2.5, 2.5);
     });
   },
@@ -211,11 +227,7 @@ const Sound = {
     this.guard((c, now) => {
       this.burst(c, now + 0.05, 1900, 3, 0.22, 0.03);
       this.burst(c, now + 0.14, 2600, 3, 0.15, 0.025);
-      const room = this.layers.room;
-      if (room) {
-        this.set(room.lp.frequency, 1700, c, 0.6); this.set(room.gain.gain, this.ROOM * 1.4, c, 0.6);
-        setTimeout(() => { this.set(room.lp.frequency, 900, c, 2); this.set(room.gain.gain, this.ROOM, c, 2); }, 5000);
-      }
+      this.duck({ gain: 1.4, lp: 1700 }, 5000, 2, 0.6);
     });
   },
   power(on) {                                   // scene field power = "out" cuts the hum at once
@@ -227,15 +239,13 @@ const Sound = {
   },
   powerCut() {                                  // the fake-out: everything drops for a breath, nothing comes
     this.guard((c) => {
-      const room = this.layers.room; if (!room) return;
-      this.set(room.gain.gain, this.ROOM * 0.1, c, 0.08);
-      setTimeout(() => this.set(room.gain.gain, this.ROOM, c, 1.5), 2400);
+      this.duck({ gain: 0.1 }, 2400, 1.5, 0.08);
     });
   },
   crossing(n, object, scratchDelay, scratchFor) {
     this.guard((c, now) => {
-      const room = this.layers.room;
-      if (room) { this.set(room.gain.gain, this.ROOM * 0.3, c, 0.3); setTimeout(() => this.set(room.gain.gain, this.ROOM, c, 2), 3600); }
+      this.stopPen();                                 // a new crossing never stacks on an old one
+      this.duck({ gain: 0.3 }, 3600, 2);
       if (n === 1) {
         const p = this.tone(c, now, 46, 0.32, 0.25, 0.1, 0.9);                       // low pressure pulse
         p.frequency.exponentialRampToValueAtTime(38, now + 1.2);
@@ -256,9 +266,14 @@ const Sound = {
       const strokes = Math.max(6, Math.round(dur / 0.09));
       for (let i = 0; i < strokes; i++) {
         const t = now + delay + (i / strokes) * dur + Math.random() * 0.03;
-        this.burst(c, t, 2500 + Math.random() * 2500, 3, 0.09, 0.06);
+        const src = this.burst(c, t, 2500 + Math.random() * 2500, 3, 0.09, 0.06);
+        if (src) { this.pens.add(src); src.addEventListener("ended", () => this.pens.delete(src)); }
       }
     });
+  },
+  stopPen() {                                    // skip, instant, "Go on", a new scene: silence the pen now
+    try { this.pens.forEach((n) => { try { n.stop(); n.disconnect(); } catch { /* already done */ } this.live.delete(n); }); } catch { /* silent */ }
+    this.pens.clear();
   },
   tick() { this.guard((c, now) => this.tone(c, now, 1800, 0.02, 0.002, 0, 0.05)); },
 
@@ -320,7 +335,8 @@ const Sound = {
     $("#sound-toggle").setAttribute("aria-pressed", String(this.on));
   },
   reset() {                                     // a new night: stop and release everything
-    this.mapStop();
+    this.mapStop(); this.stopPen();
+    clearTimeout(this.mix.restore); this.mix.restore = null;
     try { this.live.forEach((n) => { try { n.stop(); n.disconnect(); } catch { /* already stopped */ } }); } catch { /* silent */ }
     this.live.clear();
     Object.values(this.layers).forEach((L) => { clearTimeout(L.release); try { L.srcs?.forEach((x) => { x.stop(); x.disconnect(); }); } catch { /* silent */ } });
@@ -469,6 +485,7 @@ let INSTANT = Prefs.get("instant") === "1";
 const instantText = () => INSTANT || REDUCED;
 function applyInstant() {
   document.body.classList.toggle("instant-text", instantText());
+  if (instantText()) Sound.stopPen();
   const b = $("#instant-toggle");
   if (b) b.setAttribute("aria-pressed", String(INSTANT));
 }
@@ -487,6 +504,7 @@ function sceneHtml(v) {
 }
 
 async function show(v) {
+  Sound.stopPen();                                  // a scene change never carries the pen with it
   S.view = v;
   $("#title").hidden = true;
   $("#scene").hidden = false;
@@ -779,7 +797,7 @@ function stageCrossing(c, second = false) {
   // The mark is drawn from 0.4 s to 2.6 s; the scratches follow it (and still play, faster, without animation).
   if (instantText()) Sound.crossing(second ? 2 : 1, c.object, 0.05, 0.8);
   else Sound.crossing(second ? 2 : 1, c.object, 0.4, 2.2);
-  const close = () => { el.hidden = true; document.body.classList.remove("staged"); $("#current .ink")?.focus(); };
+  const close = () => { Sound.stopPen(); el.hidden = true; document.body.classList.remove("staged"); $("#current .ink")?.focus(); };
   $("#stage-go").addEventListener("click", close);
   const ready = () => { el.classList.add("ready"); $("#stage-go")?.focus(); };
   if (instantText()) ready();
@@ -787,7 +805,7 @@ function stageCrossing(c, second = false) {
     const t = setTimeout(ready, 3100);              // the mark has finished writing itself
     el.addEventListener("click", (ev) => {           // click anywhere: finish now
       if (ev.target.closest("#stage-go")) return;
-      clearTimeout(t); el.classList.add("instant"); ready();
+      clearTimeout(t); el.classList.add("instant"); Sound.stopPen(); ready();
     }, { once: true });
   }
 }

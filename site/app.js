@@ -54,7 +54,8 @@ async function api(path, body) {
    crossing records) and never touch the engine or its logs. One master gain into a limiter;
    every method fails silently. */
 const Sound = {
-  ctx: null, master: null, noise: null, layers: {}, live: new Set(), mapVoices: null,
+  ctx: null, master: null, noise: null, layers: {}, live: new Set(), mapVoices: null, pens: new Set(),
+  mix: { restore: null },                       // one pending room restore; a new cue cancels it
   on: (() => { try { return localStorage.getItem("knock.sound") !== "0"; } catch { return true; } })(),
   ROOM: 0.035, HUM: 0.007,
 
@@ -105,6 +106,7 @@ const Sound = {
     const f = c.createBiquadFilter(); f.type = "bandpass"; f.frequency.value = freq; f.Q.value = q;
     s.connect(f).connect(this.env(c, t, peak, 0.002, 0, dur)).connect(this.master);
     s.start(t, Math.random() * 1.8); this.track(s, t + dur + 0.05);
+    return s;
   },
   tone(c, t, freq, peak, attack, hold, release, type = "sine") {
     const o = c.createOscillator(); o.type = type; o.frequency.value = freq;
@@ -113,6 +115,20 @@ const Sound = {
     return o;
   },
   set(param, v, c, tau = 0.8) { param.cancelScheduledValues(c.currentTime); param.setTargetAtTime(v, c.currentTime, tau); },
+
+  /* The room mixer: every duck goes through here. Starting a new duck cancels the previous cue's
+     pending restore, so the rain can never jump back up in the middle of a later cue. */
+  duck({ gain = 1, lp = 900 }, holdMs, restoreTau = 1.5, attackTau = 0.3) {
+    const c = this.ctx, room = this.layers.room;
+    if (!room) return;
+    clearTimeout(this.mix.restore);
+    this.set(room.gain.gain, this.ROOM * gain, c, attackTau);
+    this.set(room.lp.frequency, lp, c, attackTau);
+    this.mix.restore = setTimeout(() => {
+      this.mix.restore = null;
+      try { this.set(room.gain.gain, this.focused ? this.ROOM * 0.35 : this.ROOM, c, restoreTau); this.set(room.lp.frequency, 900, c, restoreTau); } catch { /* silent */ }
+    }, holdMs);
+  },
 
   /* ---- layers: room tone (rain + mains hum), and one abstract texture per shadow night */
   startRoom() {
@@ -162,9 +178,9 @@ const Sound = {
   },
   bleed(id, level = 0.25, seconds = 4) {        // the other night leaks in for a few seconds
     this.guard((c) => {
-      const L = this.shadowLayer(id); clearTimeout(L.release);
+      const L = this.shadowLayer(id); clearTimeout(L.release); clearTimeout(L.bleed);
       this.set(L.gain.gain, level * 0.14, c, 0.6);
-      setTimeout(() => { if (!this.focused) { this.set(L.gain.gain, 0.0001, c, 0.8); this.releaseLayer(id, 4); } }, seconds * 1000);
+      L.bleed = setTimeout(() => { if (this.focused !== id) { this.set(L.gain.gain, 0.0001, c, 0.8); this.releaseLayer(id, 4); } }, seconds * 1000);
     });
   },
   focusShadow(id) {                             // a source memory is open: that night forward, ours back
@@ -174,6 +190,7 @@ const Sound = {
         this.focused = id;
         const L = this.shadowLayer(id); clearTimeout(L.release);
         this.set(L.gain.gain, 0.045, c, 0.5);
+        clearTimeout(this.mix.restore); this.mix.restore = null;
         if (room) this.set(room.gain.gain, this.ROOM * 0.35, c, 0.5);
       } else if (this.focused) {
         const prev = this.focused; this.focused = null;
@@ -202,8 +219,7 @@ const Sound = {
       this.burst(c, now + 0.17, 1500, 5, 0.5, 0.05);
       const body = this.tone(c, now + 0.17, 92, 0.35, 0.005, 0.02, 0.22);
       body.frequency.exponentialRampToValueAtTime(55, now + 0.4);
-      const room = this.layers.room;
-      if (room) { this.set(room.gain.gain, this.ROOM * 0.18, c, 0.25); setTimeout(() => this.set(room.gain.gain, this.ROOM, c, 2.5), 4500); }
+      this.duck({ gain: 0.18 }, 4500, 2.5, 0.25);
       this.tone(c, now + 0.6, 73.4, 0.012, 1.2, 2.5, 2.5);
     });
   },
@@ -211,11 +227,7 @@ const Sound = {
     this.guard((c, now) => {
       this.burst(c, now + 0.05, 1900, 3, 0.22, 0.03);
       this.burst(c, now + 0.14, 2600, 3, 0.15, 0.025);
-      const room = this.layers.room;
-      if (room) {
-        this.set(room.lp.frequency, 1700, c, 0.6); this.set(room.gain.gain, this.ROOM * 1.4, c, 0.6);
-        setTimeout(() => { this.set(room.lp.frequency, 900, c, 2); this.set(room.gain.gain, this.ROOM, c, 2); }, 5000);
-      }
+      this.duck({ gain: 1.4, lp: 1700 }, 5000, 2, 0.6);
     });
   },
   power(on) {                                   // scene field power = "out" cuts the hum at once
@@ -227,15 +239,13 @@ const Sound = {
   },
   powerCut() {                                  // the fake-out: everything drops for a breath, nothing comes
     this.guard((c) => {
-      const room = this.layers.room; if (!room) return;
-      this.set(room.gain.gain, this.ROOM * 0.1, c, 0.08);
-      setTimeout(() => this.set(room.gain.gain, this.ROOM, c, 1.5), 2400);
+      this.duck({ gain: 0.1 }, 2400, 1.5, 0.08);
     });
   },
   crossing(n, object, scratchDelay, scratchFor) {
     this.guard((c, now) => {
-      const room = this.layers.room;
-      if (room) { this.set(room.gain.gain, this.ROOM * 0.3, c, 0.3); setTimeout(() => this.set(room.gain.gain, this.ROOM, c, 2), 3600); }
+      this.stopPen();                                 // a new crossing never stacks on an old one
+      this.duck({ gain: 0.3 }, 3600, 2);
       if (n === 1) {
         const p = this.tone(c, now, 46, 0.32, 0.25, 0.1, 0.9);                       // low pressure pulse
         p.frequency.exponentialRampToValueAtTime(38, now + 1.2);
@@ -256,9 +266,14 @@ const Sound = {
       const strokes = Math.max(6, Math.round(dur / 0.09));
       for (let i = 0; i < strokes; i++) {
         const t = now + delay + (i / strokes) * dur + Math.random() * 0.03;
-        this.burst(c, t, 2500 + Math.random() * 2500, 3, 0.09, 0.06);
+        const src = this.burst(c, t, 2500 + Math.random() * 2500, 3, 0.09, 0.06);
+        if (src) { this.pens.add(src); src.addEventListener("ended", () => this.pens.delete(src)); }
       }
     });
+  },
+  stopPen() {                                    // skip, instant, "Go on", a new scene: silence the pen now
+    try { this.pens.forEach((n) => { try { n.stop(); n.disconnect(); } catch { /* already done */ } this.live.delete(n); }); } catch { /* silent */ }
+    this.pens.clear();
   },
   tick() { this.guard((c, now) => this.tone(c, now, 1800, 0.02, 0.002, 0, 0.05)); },
 
@@ -320,7 +335,8 @@ const Sound = {
     $("#sound-toggle").setAttribute("aria-pressed", String(this.on));
   },
   reset() {                                     // a new night: stop and release everything
-    this.mapStop();
+    this.mapStop(); this.stopPen();
+    clearTimeout(this.mix.restore); this.mix.restore = null;
     try { this.live.forEach((n) => { try { n.stop(); n.disconnect(); } catch { /* already stopped */ } }); } catch { /* silent */ }
     this.live.clear();
     Object.values(this.layers).forEach((L) => { clearTimeout(L.release); try { L.srcs?.forEach((x) => { x.stop(); x.disconnect(); }); } catch { /* silent */ } });
@@ -469,6 +485,7 @@ let INSTANT = Prefs.get("instant") === "1";
 const instantText = () => INSTANT || REDUCED;
 function applyInstant() {
   document.body.classList.toggle("instant-text", instantText());
+  if (instantText()) Sound.stopPen();
   const b = $("#instant-toggle");
   if (b) b.setAttribute("aria-pressed", String(INSTANT));
 }
@@ -487,6 +504,7 @@ function sceneHtml(v) {
 }
 
 async function show(v) {
+  Sound.stopPen();                                  // a scene change never carries the pen with it
   S.view = v;
   $("#title").hidden = true;
   $("#scene").hidden = false;
@@ -627,7 +645,82 @@ const REDUCED = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 function inscriptionSize(text, room = 380) {
   return Math.max(22, Math.min(64, Math.round(room / Math.max(text.length, 5))));
 }
+/* Props by material (decided by the server from what the player typed): paper is written on,
+   metal is engraved, small hard things are scratched, anything else is an honest close-up. */
 function propSvg(c) {
+  if (c.object === "key07") return paperSvg(c);
+  const m = c.material || "paper";
+  if (m === "metal") return metalSvg(c);
+  if (m === "small") return smallSvg(c);
+  if (m === "unknown") return unknownSvg(c);
+  return paperSvg(c);
+}
+function noun() { return (S.pocket || "").toLowerCase().split(" ").pop(); }
+function fitSize(text, room, max = 52, min = 16) { return Math.max(min, Math.min(max, Math.round(room / Math.max(text.length, 3)))); }
+
+function metalSvg(c) {
+  const mark = esc(c.inscription), n = noun(), obj = esc(S.pocket || "object");
+  const defs = `<defs>
+    <radialGradient id="mg" cx="0.35" cy="0.3" r="0.8"><stop offset="0" stop-color="#f6e7c4"/><stop offset="0.35" stop-color="#c7a764"/><stop offset="0.75" stop-color="#7d6232"/><stop offset="1" stop-color="#3b2d15"/></radialGradient>
+    <linearGradient id="glint" x1="0" x2="1"><stop offset="0" stop-color="#fff" stop-opacity="0"/><stop offset="0.5" stop-color="#fff" stop-opacity="0.65"/><stop offset="1" stop-color="#fff" stop-opacity="0"/></linearGradient>
+  </defs>`;
+  if (/^(ring|rings|band|bracelet)$/.test(n)) {
+    // A band seen at an angle; the engraving follows the curve of its face.
+    return `<svg class="prop" viewBox="0 0 420 220" role="img" aria-label="Your ${obj}: a metal band. Engraved around it: ${mark}">${defs}
+      <ellipse cx="210" cy="118" rx="150" ry="72" fill="none" stroke="url(#mg)" stroke-width="42"/>
+      <ellipse cx="210" cy="118" rx="150" ry="72" fill="none" stroke="#1d150b" stroke-opacity="0.35" stroke-width="2"/>
+      <path d="M95,82 Q140,52 190,48" stroke="url(#glint)" stroke-width="5" fill="none" stroke-linecap="round"/>
+      <path id="arc" d="M66,128 C92,218 328,218 354,128" fill="none"/>
+      <text class="engrave" style="font-size:${fitSize(c.inscription, 640, 44, 18)}px"><textPath href="#arc" startOffset="50%" text-anchor="middle">${mark}</textPath></text>
+    </svg>`;
+  }
+  if (/^(key|keys)$/.test(n)) {
+    return `<svg class="prop" viewBox="0 0 420 220" role="img" aria-label="Your ${obj}: a metal key. Engraved on it: ${mark}">${defs}
+      <circle cx="110" cy="110" r="62" fill="url(#mg)"/><circle cx="110" cy="110" r="16" fill="#0e0d0c"/>
+      <path d="M168,96 L380,96 L380,124 L352,124 L352,144 L330,144 L330,124 L312,124 L312,140 L292,140 L292,124 L168,124 Z" fill="url(#mg)"/>
+      <path d="M70,72 Q100,56 132,58" stroke="url(#glint)" stroke-width="4" fill="none" stroke-linecap="round"/>
+      <text x="268" y="119" text-anchor="middle" class="engrave" style="font-size:${fitSize(c.inscription, 300, 34, 14)}px">${mark}</text>
+    </svg>`;
+  }
+  // Coins, medals, lockets, watches, pins, pennies: a disc, the engraving along its rim.
+  return `<svg class="prop" viewBox="0 0 420 220" role="img" aria-label="Your ${obj}: a small metal disc. Engraved on its face: ${mark}">${defs}
+    <circle cx="210" cy="110" r="96" fill="url(#mg)"/>
+    <circle cx="210" cy="110" r="84" fill="none" stroke="#3b2d15" stroke-opacity="0.45" stroke-width="2"/>
+    <path d="M150,48 Q190,26 238,30" stroke="url(#glint)" stroke-width="5" fill="none" stroke-linecap="round"/>
+    <path id="rim" d="M140,118 A72,72 0 0 0 280,118" fill="none"/>
+    ${c.inscription.length <= 5
+      ? `<text x="210" y="126" text-anchor="middle" class="engrave" style="font-size:${fitSize(c.inscription, 200, 48, 20)}px">${mark}</text>`
+      : `<text class="engrave" style="font-size:${fitSize(c.inscription, 300, 24, 11)}px"><textPath href="#rim" startOffset="50%" text-anchor="middle">${mark}</textPath></text>`}
+  </svg>`;
+}
+
+function smallSvg(c) {
+  const mark = esc(c.inscription), n = noun(), obj = esc(S.pocket || "object");
+  // The mark is scratched across the surface and deliberately overruns it: impossible writing.
+  const fs = fitSize(c.inscription, 520, 84, 30);       // larger than the object on purpose
+  const scratch = (y) => `<text x="210" y="${y}" text-anchor="middle" class="scratch" style="font-size:${fs}px">${mark}</text>`;
+  let shape, what;
+  if (n === "pick") { shape = `<path d="M150,40 C200,24 280,30 300,64 C312,96 250,170 214,196 C196,206 186,200 176,186 C150,140 116,96 120,70 C122,54 132,46 150,40 Z" fill="#7a2e1f"/><path d="M160,56 C200,44 252,48 272,66" stroke="#f1c9b9" stroke-opacity="0.35" stroke-width="3" fill="none"/>`; what = "a small plastic pick"; }
+  else if (n === "lighter") { shape = `<rect x="150" y="60" width="120" height="150" rx="10" fill="#273b52"/><rect x="150" y="30" width="120" height="38" rx="6" fill="#9aa3ab"/><circle cx="180" cy="48" r="9" fill="#5e676f"/><rect x="160" y="76" width="8" height="120" fill="#fff" fill-opacity="0.12"/>`; what = "a lighter"; }
+  else if (/^buttons?$/.test(n)) { shape = `<circle cx="210" cy="112" r="88" fill="#6b4a2e"/><circle cx="210" cy="112" r="70" fill="none" stroke="#3e2a18" stroke-width="3"/>${[[190, 92], [230, 92], [190, 132], [230, 132]].map(([x, y]) => `<circle cx="${x}" cy="${y}" r="8" fill="#0e0d0c"/>`).join("")}`; what = "a button"; }
+  else if (/^dice?$/.test(n)) { shape = `<rect x="130" y="34" width="160" height="160" rx="22" fill="#e8e2d4"/>${[[170, 74], [250, 154], [210, 114]].map(([x, y]) => `<circle cx="${x}" cy="${y}" r="12" fill="#1a1612"/>`).join("")}`; what = "a die"; }
+  else if (/^(pen|pens|lipstick|usb|chalk|crayon)$/.test(n)) { shape = `<rect x="60" y="88" width="300" height="48" rx="24" fill="#2c2a33"/><rect x="300" y="88" width="60" height="48" rx="20" fill="#8c8a93"/><rect x="74" y="96" width="210" height="6" rx="3" fill="#fff" fill-opacity="0.15"/>`; what = `a ${esc(n)}`; }
+  else { shape = `<path d="M110,120 C104,70 170,40 230,46 C300,52 330,96 320,140 C310,184 250,200 196,194 C140,188 114,160 110,120 Z" fill="#5d5a55"/><path d="M150,72 C190,56 240,58 270,72" stroke="#fff" stroke-opacity="0.18" stroke-width="4" fill="none"/>`; what = `a small hard ${esc(n || "object")}`; }
+  return `<svg class="prop" viewBox="0 0 420 220" role="img" aria-label="Your ${obj}: ${what}. Scratched across its surface: ${mark}">${shape}${scratch(124)}</svg>`;
+}
+
+function unknownSvg(c) {
+  // We don't know what it looks like, so we don't pretend: a dark close-up, in the player's own words.
+  const mark = esc(c.inscription), obj = esc(S.pocket || "object");
+  return `<svg class="prop" viewBox="0 0 420 220" role="img" aria-label="A dark close-up of your ${obj}. Marked across it: ${mark}">
+    <defs><radialGradient id="dim" cx="0.5" cy="0.45" r="0.65"><stop offset="0" stop-color="#2a2622"/><stop offset="1" stop-color="#0b0a09"/></radialGradient></defs>
+    <rect x="10" y="10" width="400" height="200" rx="6" fill="url(#dim)" stroke="#3a3631"/>
+    <text x="398" y="30" text-anchor="end" class="printed own">${esc((S.pocket || "").toUpperCase())}</text>
+    <text x="210" y="128" text-anchor="middle" class="scratch chalk" style="font-size:${fitSize(c.inscription, 420, 60, 24)}px">${mark}</text>
+  </svg>`;
+}
+
+function paperSvg(c) {
   const mark = esc(c.inscription), fs = inscriptionSize(c.inscription, c.object === "key07" ? 300 : 380);
   const pocket = (S.pocket || "").toLowerCase();
   if (c.object === "key07") {
@@ -704,7 +797,7 @@ function stageCrossing(c, second = false) {
   // The mark is drawn from 0.4 s to 2.6 s; the scratches follow it (and still play, faster, without animation).
   if (instantText()) Sound.crossing(second ? 2 : 1, c.object, 0.05, 0.8);
   else Sound.crossing(second ? 2 : 1, c.object, 0.4, 2.2);
-  const close = () => { el.hidden = true; document.body.classList.remove("staged"); $("#current .ink")?.focus(); };
+  const close = () => { Sound.stopPen(); el.hidden = true; document.body.classList.remove("staged"); $("#current .ink")?.focus(); };
   $("#stage-go").addEventListener("click", close);
   const ready = () => { el.classList.add("ready"); $("#stage-go")?.focus(); };
   if (instantText()) ready();
@@ -712,7 +805,7 @@ function stageCrossing(c, second = false) {
     const t = setTimeout(ready, 3100);              // the mark has finished writing itself
     el.addEventListener("click", (ev) => {           // click anywhere: finish now
       if (ev.target.closest("#stage-go")) return;
-      clearTimeout(t); el.classList.add("instant"); ready();
+      clearTimeout(t); el.classList.add("instant"); Sound.stopPen(); ready();
     }, { once: true });
   }
 }
