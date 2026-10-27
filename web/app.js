@@ -154,7 +154,7 @@ $("#start").addEventListener("submit", async (ev) => {
   try {
     const d = await api("/api/new", { pocket: $("#pocket").value });
     S.game = d.game; S.replay = null; S.pocket = d.pocket;
-    setMode(`<span class="tag live">live</span> ${esc(d.model || "")} seed ${esc(d.seed)}`);
+    setMode(`<span class="tag live">live</span>`, d.seed, `${esc(d.model || "")} generating the other night now`);
     show(d.view);
     Sound.knock();
   } catch (e) {
@@ -169,7 +169,7 @@ async function startReplay(id) {
   Sound.init();
   const d = await api("/api/replay/start", { id });
   S.game = d.game; S.replay = d.replay; S.step = 0; S.pocket = d.pocket;
-  setMode(`<span class="tag replay">replay</span> ${esc(REPLAY_LABEL)} · ${esc(d.replay.model.model)} · seed ${esc(d.seed)}`);
+  setMode(`<span class="tag replay">replay</span>`, d.seed, `${esc(REPLAY_LABEL)} · recorded with ${esc(d.replay.model.model)}`);
   show(d.view);
   Sound.knock();
 }
@@ -181,7 +181,15 @@ function fallBackToReplays(why) {
   $("#replays").hidden = false;
 }
 
-function setMode(html) { $("#mode").innerHTML = html; }
+function setMode(chip, seed, detail) {
+  $("#mode").innerHTML = `<button class="chip" id="chip" aria-expanded="false" title="What is running">${chip}</button>` +
+    `<span class="seed">seed ${esc(seed)}</span><span class="detail">${detail}</span>`;
+  $("#chip").addEventListener("click", () => {
+    const open = $("#mode").classList.toggle("open");
+    $("#chip").setAttribute("aria-expanded", String(open));
+  });
+}
+
 
 /* ---------------------------------------------------------------- scenes */
 function paragraphs(text) {
