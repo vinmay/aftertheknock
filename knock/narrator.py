@@ -13,7 +13,7 @@ import re
 
 from .engine import Intrusion, Timeline
 from .models import prompt_hash
-from .state import is_plural
+from .state import apply_delta, initial_state, is_plural, location_of
 
 SYSTEM = ("You add one sentence of atmosphere to a quiet, literary horror story, in second person, "
           "present tense. Concrete senses only: sound, cold, light, smell, touch. No dialogue.")
@@ -60,7 +60,24 @@ def _writer(released: list) -> str | None:
     return None
 
 
-def moment(view: dict, x: Intrusion) -> dict:
+def seen_before(timeline: Timeline, x: Intrusion, oid: str) -> bool:
+    """Had the player been in the same place as this object earlier in their own night?
+
+    Uses only the canonical lineage up to (not including) the crossing, so the narrator stays
+    blind to the shadow: it knows what you saw, not what happened elsewhere."""
+    lineage = timeline.lineage(x.target_branch)
+    man = next(i for i, e in enumerate(lineage) if e.event_id == x.manifestation_event_id)
+    s = initial_state(None, timeline.pocket_name)
+    if location_of(s, oid) == s["chars"]["player"]["location"]:
+        return True
+    for e in lineage[:man]:
+        s = apply_delta(s, e.state_delta)
+        if location_of(s, oid) == s["chars"]["player"]["location"]:
+            return True
+    return False
+
+
+def moment(view: dict, x: Intrusion, seen: bool = True) -> dict:
     """The facts of one crossing, as the canonical side is allowed to see them."""
     s = view["state"]
     released = [f for f in view["released"] if f in x.released]
@@ -75,7 +92,7 @@ def moment(view: dict, x: Intrusion) -> dict:
     elif obj["holder"] in with_you:
         situation = "held"
     else:
-        situation = "arrived"
+        situation = "arrived_seen" if seen else "arrived_unseen"
     return {"object": oid, "text": text, "writer": writer, "here": here, "place": s["places"][here]["name"],
             "with_you": with_you, "holder": obj["holder"], "situation": situation}
 
@@ -90,8 +107,9 @@ def template_parts(m: dict, templates: dict, pocket: str) -> dict:
     """Hand-written lines for this crossing, with the committed facts slotted in."""
     holder = CHAR_NAMES.get(m["holder"] or "", "")
     slots = {"pocket": pocket, "place": m["place"], "holder": holder, "it": "them" if is_plural(pocket) else "it"}
-    t = (templates.get(f"mark_{m['object']}_{m['situation']}") or templates.get(f"mark_{m['object']}")
-         or templates["mark_other"])
+    situation = m["situation"]
+    t = (templates.get(f"mark_{m['object']}_{situation}") or templates.get(f"mark_{m['object']}_{situation.split('_')[0]}")
+         or templates.get(f"mark_{m['object']}") or templates["mark_other"])
     who = templates["writer"].get(m["writer"], templates["writer"]["mara"])
     return {"object": m["object"], "situation": m["situation"], "before": _fill(t["before"], slots),
             "inscription": m["text"], "after": _fill(t["after"], slots), "who": _fill(who, slots)}
@@ -140,7 +158,8 @@ def compose(parts: dict, color: str | None) -> str:
 def narrate_crossing(timeline: Timeline, x: Intrusion, model, pocket: str, seed: int, log=None,
                      templates: dict | None = None) -> dict:
     view = canonical_view(timeline, x.target_branch)
-    m = moment(view, x)
+    oid = _crossing_fact([f for f in view["released"] if f in x.released])[0]
+    m = moment(view, x, seen_before(timeline, x, oid))
     parts = template_parts(m, templates, pocket)
     msgs = build_messages(m)
     raw, color = None, None

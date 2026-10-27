@@ -10,8 +10,8 @@ start = "opening"
 # you can't hold ("regret", "a promise"): they become the same fallback object as an empty pocket.
 [pocket_lines]
 object = "In your pocket, your thumb finds the {pocket}."
-empty = "Your pockets are empty, except for an old ticket stub you forgot about. Your thumb finds it anyway."
-abstract = "You brought {said} out with you tonight, but your hand finds only an old ticket stub, soft at the edges."
+empty = "You thought your pockets were empty. But your thumb catches a folded ticket stub. You don't remember putting it there."
+abstract = "You brought {said} out with you tonight. But your thumb catches a folded ticket stub. You don't remember putting it there."
 
 [scenes.opening]
 clock = "11:47"
@@ -289,9 +289,9 @@ You choose this night. Only this one.
 
 At 12:30 the power comes back all at once, every light in the building, and the fridge begins to hum as if nothing happened. Nothing did.
 
-You will never know what happened in the night you didn't choose.
+You remember enough of the other night to know you made the right choice.
 
-You will think about it on every stair.
+You will never be certain.
 """
 
 [endings.open]
@@ -336,7 +336,8 @@ open_marks = "\"{b_text}\" on {b_on}, in {b_writing}. \"{d_text}\" on {d_on}, in
 # ---------------------------------------------------------------- crossings
 # Hand-written lines around each crossing. The engine slots in the committed facts:
 # the inscription, the object, whose handwriting. Key: mark_<object>[_<situation>],
-# situation = yours | held (someone beside you holds it) | arrived (it turned up at your feet).
+# situation = yours | held (someone beside you holds it) | arrived_seen / arrived_unseen (it turned
+# up at your feet; "seen" means you had been in the same place as it earlier in your own night).
 [crossings.mark_pocket]
 before = "You take out the {pocket}."
 after = "That wasn't there when you put {it} in your pocket."
@@ -349,9 +350,13 @@ after = "That wasn't there when you put {it} in your pocket."
 before = "{holder} turns the key over in the dark. The paper tag catches the storm light."
 after = "That wasn't on the tag a minute ago."
 
-[crossings.mark_key07_arrived]
+[crossings.mark_key07_arrived_seen]
 before = "Something small and heavy clicks against the floor by your feet. The brass key, tagged BASEMENT 07. Nobody threw it."
-after = "That wasn't on the tag the last time you saw it, in Mara's hand."
+after = "The writing wasn't there when you last saw the key."
+
+[crossings.mark_key07_arrived_unseen]
+before = "Something small and heavy clicks against the floor by your feet. A brass key on a paper tag that says BASEMENT 07. Nobody threw it."
+after = "You've never seen this key before. Yet someone has written on its tag."
 
 [crossings.mark_other]
 before = "You look down."

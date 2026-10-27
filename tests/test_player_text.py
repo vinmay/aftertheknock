@@ -146,3 +146,16 @@ def test_flashback_lines_come_from_committed_events(name, g, views):
         # "took" only when a take happened.
         if not any(e.action == "take" for e in shadow.values()):
             assert "takes" not in " ".join(l["line"] for l in mem["scene"])
+
+
+@pytest.mark.parametrize("name,g,views", list(all_runs()), ids=lambda v: v if isinstance(v, str) else "")
+def test_crossing_text_only_claims_what_your_night_saw(name, g, views):
+    """A crossing never assumes you saw an object your own night never showed you."""
+    from knock.narrator import seen_before
+    for x in g.timeline.intrusions:
+        parts = g.crossings[x.origin_branch]["parts"]
+        if parts["situation"].startswith("arrived"):
+            seen = seen_before(g.timeline, x, parts["object"])
+            assert parts["situation"] == ("arrived_seen" if seen else "arrived_unseen"), name
+            if not seen:
+                assert "last saw" not in parts["after"] and "last time you saw" not in parts["after"], name

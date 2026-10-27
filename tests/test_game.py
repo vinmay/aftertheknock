@@ -126,8 +126,8 @@ def test_pocket_inputs(raw, name, kind):
 
 
 @pytest.mark.parametrize("raw,line", [
-    ("nothing", "Your pockets are empty, except for an old ticket stub you forgot about."),
-    ("regret", "You brought regret out with you tonight, but your hand finds only an old ticket stub"),
+    ("nothing", "You thought your pockets were empty. But your thumb catches a folded ticket stub. You don't remember putting it there."),
+    ("regret", "You brought regret out with you tonight. But your thumb catches a folded ticket stub."),
     ("two pennies", "In your pocket, your thumb finds the two pennies."),
 ])
 def test_pocket_line_in_opening(raw, line):
