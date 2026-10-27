@@ -5,7 +5,38 @@ const esc = (s) => String(s ?? "").replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "
 
 const S = { game: null, view: null, replay: null, step: 0, labels: {}, mapData: null, busy: false };
 
+const STATIC = Boolean(window.KNOCK_STATIC);
+const REPLAY_LABEL = "Replay of a real recorded run — the model is not running live";
+
+/* Static site: answer the same API calls from files exported at build time. */
+const Static = { data: null, step: 0, index: null };
+async function staticApi(path, body) {
+  const route = path.split("?")[0];
+  const index = async () => (Static.index ??= await (await fetch("replays/index.json")).json());
+  if (route === "/api/status") return { live: false, static: true, replays: (await index()).length };
+  if (route === "/api/replays") return index();
+  if (route === "/api/replay/start") {
+    const r = await fetch(`replays/${encodeURIComponent(body.id)}.json`);
+    if (!r.ok) throw new Error("no such recorded run");
+    const d = (Static.data = await r.json());
+    Static.step = 0;
+    return { game: d.id, seed: d.seed, pocket: d.pocket, view: d.steps[0].view,
+             replay: { choices: d.choices, model: d.model, recorded_run: d.run_id } };
+  }
+  const d = Static.data;
+  if (!d) throw new Error("start a recorded run first");
+  if (route === "/api/choose") {
+    if (body.index !== d.choices[Static.step]) throw new Error("A replay can only follow its recorded choices.");
+    Static.step++;
+    return { view: d.steps[Static.step].view };
+  }
+  if (route === "/api/map") return d.map;
+  if (route === "/api/evidence") return { log: d.log.slice(0, d.steps[Static.step].log_len), ops: d.ops, model: d.model, seed: d.seed };
+  throw new Error("not available in the static replay");
+}
+
 async function api(path, body) {
+  if (STATIC) return staticApi(path, body);
   const opt = body === undefined ? {} : { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body) };
   const r = await fetch(path, opt);
   const d = await r.json();
@@ -56,7 +87,11 @@ const Sound = {
 async function boot() {
   try {
     const st = await api("/api/status");
-    if (!st.live) {
+    if (st.static) {
+      $("#start").hidden = true;
+      $("#status-line").textContent = "";
+      $("#static-note").hidden = false;
+    } else if (!st.live) {
       $("#begin").disabled = true;
       $("#status-line").textContent = "Live generation is off on this server. You can watch recorded runs below.";
     } else {
@@ -96,7 +131,7 @@ async function startReplay(id) {
   Sound.init();
   const d = await api("/api/replay/start", { id });
   S.game = d.game; S.replay = d.replay; S.step = 0;
-  setMode(`<span class="tag replay">replay</span> recorded run ${esc(d.replay.recorded_run)} · ${esc(d.replay.model.model)} · not live generation`);
+  setMode(`<span class="tag replay">replay</span> ${esc(REPLAY_LABEL)} · ${esc(d.replay.model.model)} · seed ${esc(d.seed)}`);
   show(d.view);
   Sound.knock();
 }
@@ -127,7 +162,8 @@ function show(v) {
     html = paragraphs(v.text).map((p, i) => `<p style="animation-delay:${i * 0.35}s">${esc(p)}</p>`).join("");
   }
   if (v.kind === "ending" && v.verified !== undefined) {
-    html += `<p class="small muted">${v.verified ? "Replay verified: re-running the recorded model outputs through the engine reproduced every timeline's state hash." : "Replay did not reproduce the recorded state."}</p>`;
+    const how = STATIC ? "Verified when this site was built: re-running" : "Replay verified: re-running";
+    html += `<p class="small muted">${v.verified ? `${how} the recorded model outputs through the engine reproduced every timeline's state hash.` : "Replay did not reproduce the recorded state."}</p>`;
   }
   text.innerHTML = html;
   const ink = $("#ink"), hint = $("#trace-hint");

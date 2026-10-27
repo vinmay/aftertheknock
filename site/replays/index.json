@@ -1,0 +1,30 @@
+[
+ {
+  "id": "lock_basement_open_4712",
+  "model": "gemma4:e2b",
+  "path": "lock / basement / open",
+  "pocket": "bus ticket",
+  "seed": 4712
+ },
+ {
+  "id": "lock_roof_erase_4711",
+  "model": "gemma4:e2b",
+  "path": "lock / roof / erase",
+  "pocket": "folded receipt",
+  "seed": 4711
+ },
+ {
+  "id": "open_basement_erase_4713",
+  "model": "gemma4:e2b",
+  "path": "open / basement / erase",
+  "pocket": "guitar pick",
+  "seed": 4713
+ },
+ {
+  "id": "open_roof_open_4714",
+  "model": "gemma4:e2b",
+  "path": "open / roof / open",
+  "pocket": "old lighter",
+  "seed": 4714
+ }
+]

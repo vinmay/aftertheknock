@@ -33,9 +33,12 @@ Terminal version: `uv run knock play`.
 
 | Mode | What happens | Needs |
 |---|---|---|
-| **Live** (`knock-server`) | Shadow timelines are generated during your playthrough by Gemma 4 E2B on your machine. | Ollama + `gemma4:e2b` |
-| **Replay** (`--replay-only`, or the list on the title screen) | A recorded real run. The engine re-runs it from the recorded model outputs and checks that every timeline's state hash matches the recording. Labeled *replay* on screen. Nothing is generated. | Nothing |
-| **Evaluation** (`eval/run_all.py`) | Fresh live runs, or recomputation from the saved raw logs with `--from-results`. | Ollama for fresh runs |
+| **Local live** (default: `knock-server`) | Shadow timelines are generated during your playthrough by Gemma 4 E2B on your own GPU, offline. This is the mode the evaluation measures. | Ollama + `gemma4:e2b` |
+| **Replay site** (static, `site/`, hosted on Render) | Plays committed recordings of real local runs. Every screen says **"Replay of a real recorded run — the model is not running live."** Nothing is generated. When the site is built, each recording is re-run through the engine from its recorded model outputs, and the build fails if any timeline's state hash differs. Choices follow the recording. | A browser |
+| **Replay via the server** (`knock-server --replay-only`) | The same recordings, re-executed by the engine when you play them, labeled the same way. | Python |
+| **Evaluation** (`eval/run_all.py`) | Fresh local live runs, or `--from-results` to recompute every number from the saved raw logs. | Ollama for fresh runs |
+
+Rebuild the replay site after re-recording: `uv run python scripts/build_static.py`. A test fails if `site/` is out of date.
 
 No closed-model API is called anywhere.
 

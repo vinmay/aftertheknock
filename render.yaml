@@ -1,0 +1,13 @@
+# Render Blueprint. Connect the repo in the Render dashboard (New > Blueprint).
+services:
+  # Replay site: the committed recorded runs, no backend, no model.
+  # site/ is built by scripts/build_static.py and committed; nothing is built on Render.
+  - type: web
+    name: knock-replay
+    runtime: static
+    buildCommand: echo "site/ is prebuilt and committed"
+    staticPublishPath: site
+    headers:
+      - path: /*
+        name: X-Content-Type-Options
+        value: nosniff
