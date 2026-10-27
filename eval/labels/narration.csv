@@ -1,61 +1,241 @@
 run,intrusion,which,facts,text,label,note
-186cfac315,X1,raw,"pocket now reads ""1984""; written by mara","The guitar pick in your hand has the word ""1984"" written on it. Your fingers trace the uneven ink. The storm's light flickers across the surface.",,
-186cfac315,X1,final,"pocket now reads ""1984""; written by mara","The guitar pick in your hand has the word ""1984"" written on it. Your fingers trace the uneven ink. The storm's light flickers across the surface.",,
-186cfac315,X2,raw,"pocket now reads ""I'M SORRY""; written by player","The guitar pick lies in your palm. The ink is dark against the white surface. The storm's light flickers across the pick. It reads ""I'M SORRY"".",,
-186cfac315,X2,final,"pocket now reads ""I'M SORRY""; written by player","The guitar pick lies in your palm. The ink is dark against the white surface. The storm's light flickers across the pick. It reads ""I'M SORRY"".",,
-29c1633dab,X1,raw,"pocket now reads ""8001""; written by mara","The gold wedding ring catches the faint, bruised light from the storm. Your fingers trace the unfamiliar etching. ""8001"" is written on the band.",,
-29c1633dab,X1,final,"pocket now reads ""8001""; written by mara","The gold wedding ring catches the faint, bruised light from the storm. Your fingers trace the unfamiliar etching. ""8001"" is written on the band.",,
-29c1633dab,X2,raw,"pocket now reads ""WATCH OUT""; written by player","The gold wedding ring catches the faint, bruised light from the storm. Your fingers feel cold against the metal. You see the ink, ""WATCH OUT,"" on the band.",,
-29c1633dab,X2,final,"pocket now reads ""WATCH OUT""; written by player","The gold wedding ring catches the faint, bruised light from the storm. Your fingers feel cold against the metal. You see the ink, ""WATCH OUT,"" on the band.",,
-57e7fc4e9c,X1,raw,"pocket now reads ""8107""; written by mara","The guitar pick in your hand bears the inscription ""8107"". The faint ink bleeds across the smooth plastic. The lightning flashes, momentarily illuminating your trembling hands.",,
-57e7fc4e9c,X1,final,"pocket now reads ""8107""; written by mara","The guitar pick in your hand bears the inscription ""8107"". The faint ink bleeds across the smooth plastic. The lightning flashes, momentarily illuminating your trembling hands.",,
-57e7fc4e9c,X2,raw,"pocket now reads ""I'LL BE BACK""; written by player","The guitar pick lies in your palm. The ink is a stark, dark blue against the white plastic. The light from the storm weakly illuminates the surface. ""I'LL BE BACK"" is written across the pick.",,
-57e7fc4e9c,X2,final,"pocket now reads ""I'LL BE BACK""; written by player","The guitar pick lies in your palm. The ink is a stark, dark blue against the white plastic. The light from the storm weakly illuminates the surface. ""I'LL BE BACK"" is written across the pick.",,
-cf198bd880,X1,raw,"pocket now reads ""8109""; written by mara","The folded receipt feels cool against your palm. You watch the faint light of the storm outside the window. The ink on the paper reads ""8109"".",,
-cf198bd880,X1,final,"pocket now reads ""8109""; written by mara","The folded receipt feels cool against your palm. You watch the faint light of the storm outside the window. The ink on the paper reads ""8109"".",,
-cf198bd880,X2,raw,"pocket now reads ""LEAVE""; written by player","The folded receipt has ""LEAVE"" written on it. Your fingers trace the dry paper's edges. The storm's light casts long shadows across the damp concrete.",,
-cf198bd880,X2,final,"pocket now reads ""LEAVE""; written by player","The folded receipt is in your hand. You see the ink bleed slightly at the edges. The word ""LEAVE"" is written across the paper.",,
-41536c8398,X1,raw,"pocket now reads ""8176""; written by mara","The guitar pick feels slick under your fingertips. The storm light streaks across the windowpane. You see ""8176"" on the pick.",,
-41536c8398,X1,final,"pocket now reads ""8176""; written by mara","The guitar pick feels slick under your fingertips. The storm light streaks across the windowpane. You see ""8176"" on the pick.",,
-41536c8398,X2,raw,"pocket now reads ""HURT ME""; written by player","The guitar pick feels rough beneath your fingertips. A faint, dark line reads ""HURT ME"" on the plastic. The storm's light flickers across the surface.",,
-41536c8398,X2,final,"pocket now reads ""HURT ME""; written by player","The guitar pick feels rough beneath your fingertips. A faint, dark line reads ""HURT ME"" on the plastic. The storm's light flickers across the surface.",,
-9386220f24,X1,raw,"pocket now reads ""8103""; written by mara","The bus ticket is in your hand. You see ""8103"" written on it. The ink bleeds slightly where your thumb rests.",,
-9386220f24,X1,final,"pocket now reads ""8103""; written by mara","The bus ticket is in your hand. You see ""8103"" written on it. The ink bleeds slightly where your thumb rests.",,
-9386220f24,X2,raw,"pocket now reads ""I'LL SEE YOU""; written by player","The bus ticket is in your hand. The ink is a dark, wet stain across the paper. The storm's light casts long shadows across the damp concrete. The script reads, ""I'LL SEE YOU.""",,
-9386220f24,X2,final,"pocket now reads ""I'LL SEE YOU""; written by player","The bus ticket is in your hand. The ink is dark against the paper. It reads ""I'LL SEE YOU"".",,
-dcf6fad23e,X1,raw,"pocket now reads ""8192""; written by mara","The photo of your sister rests in your hand. The ink of the writing is dark and precise. You see ""8192"" across the image.",,
-dcf6fad23e,X1,final,"pocket now reads ""8192""; written by mara","The photo of your sister rests in your hand. The ink of the writing is dark and precise. You see ""8192"" across the image.",,
-dcf6fad23e,X2,raw,"pocket now reads ""DON'T LOOK BACK""; written by player","The photograph of your sister rests in your hand. The ink is dark against the silver sheen of the paper. The storm's light flickers across the surface. It reads ""DON'T LOOK BACK"".",,
-dcf6fad23e,X2,final,"pocket now reads ""DON'T LOOK BACK""; written by player","The photograph of your sister rests in your hand. The ink is dark against the silver sheen of the paper. The storm's light flickers across the surface. It reads ""DON'T LOOK BACK"".",,
-65751cb3b8,X1,raw,"pocket now reads ""8107""; written by mara","The photo of your sister rests in your hand. A dark mark appears across the image, reading ""8107"". The faint tremor in your fingers tightens around the paper.",,
-65751cb3b8,X1,final,"pocket now reads ""8107""; written by mara","The photo of your sister rests in your hand. A dark mark appears across the image, reading ""8107"". The faint tremor in your fingers tightens around the paper.",,
-65751cb3b8,X2,raw,"pocket now reads ""I'LL BE BACK""; written by player","The photograph of my sister rests in your hand. A dark line of ink now covers the image, reading ""I'LL BE BACK"". The storm's light flickers across the paper.",,
-65751cb3b8,X2,final,"pocket now reads ""I'LL BE BACK""; written by player","The photograph of my sister rests in your hand. A dark line of ink now covers the image, reading ""I'LL BE BACK"". The storm's light flickers across the paper.",,
-f6d4bea134,X1,raw,"pocket now reads ""1147""; written by mara","The lighter feels cool against your palm. You see ""1147"" etched on the metal. The storm's light flickers across the desk.",,
-f6d4bea134,X1,final,"pocket now reads ""1147""; written by mara","The lighter feels cool against your palm. You see ""1147"" etched on the metal. The storm's light flickers across the desk.",,
-f6d4bea134,X2,raw,"pocket now reads ""DANGER""; written by player","The lighter feels cold against your palm. The ink bleeds slightly where the word ""DANGER"" appears. The storm's light catches the dark writing.",,
-f6d4bea134,X2,final,"pocket now reads ""DANGER""; written by player","The lighter feels cold against your palm. The ink bleeds slightly where the word ""DANGER"" appears. The storm's light catches the dark writing.",,
-0930d9613e,X1,raw,"pocket now reads ""1987""; written by mara","The train ticket feels cool beneath your fingertips. You trace the ink where the date is written: ""nineteen eighty seven"". The storm outside rattles the windowpane.",,
-0930d9613e,X1,final,"pocket now reads ""1987""; written by mara","You turn the train ticket over. ""1987"" is written across it, the ink still wet. It isn't your handwriting.",,
-0930d9613e,X2,raw,"pocket now reads ""I'M SORRY""; written by player","The train ticket is in your hand. The ink bleeds slightly on the paper. You see the words ""I'M SORRY"".",,
-0930d9613e,X2,final,"pocket now reads ""I'M SORRY""; written by player","The train ticket is in your hand. The ink bleeds slightly on the paper. You see the words ""I'M SORRY"".",,
-f40e7925c9,X1,raw,"pocket now reads ""4815""; written by mara","The train ticket is in your hand. You watch the storm light flicker. The ink of ""4815"" is wet on the paper.",,
-f40e7925c9,X1,final,"pocket now reads ""4815""; written by mara","The train ticket is in your hand. You watch the storm light flicker. The ink of ""4815"" is wet on the paper.",,
-f40e7925c9,X2,raw,"pocket now reads ""H'TA HELP""; written by player","The train ticket is crumpled in your palm. A dark stain bleeds across the paper: ""H'TA HELP"". The lightning flashes, briefly illuminating the ink.",,
-f40e7925c9,X2,final,"pocket now reads ""H'TA HELP""; written by player","The train ticket is crumpled in your palm. A dark stain bleeds across the paper: ""H'TA HELP"". The lightning flashes, briefly illuminating the ink.",,
-cc37d59119,X1,raw,"pocket now reads ""4518""; written by mara","The lighter feels cold against your palm. You see the ink on the metal: ""4518"". The storm's light flickers across the room.",,
-cc37d59119,X1,final,"pocket now reads ""4518""; written by mara","The lighter feels cold against your palm. You see the ink on the metal: ""4518"". The storm's light flickers across the room.",,
-cc37d59119,X2,raw,"pocket now reads ""I'LL BE BACK""; written by player","The lighter feels cool against your palm. The ink bleeds slightly on the metal. You see the words ""I'LL BE BACK.""",,
-cc37d59119,X2,final,"pocket now reads ""I'LL BE BACK""; written by player","The lighter feels cool against your palm. The ink bleeds slightly on the metal. You see the words ""I'LL BE BACK.""",,
-10b65fceda,X1,raw,"key07 now reads ""1012""; written by mara","The paper tag of the key has ""1012"" written on it. Your fingers trace the unfamiliar ink. The storm’s light flickers across the surface.",,
-10b65fceda,X1,final,"key07 now reads ""1012""; written by mara","The paper tag of the key has ""1012"" written on it. Your fingers trace the unfamiliar ink. The storm’s light flickers across the surface.",,
-10b65fceda,X2,raw,"key07 now reads ""I'LL SEE YOU""; written by player","The key's paper tag is in Mara's hand. The ink smears slightly under the weak light. The script reads ""I'LL SEE YOU"".",,
-10b65fceda,X2,final,"key07 now reads ""I'LL SEE YOU""; written by player","The key's paper tag is in Mara's hand. The ink smears slightly under the weak light. The script reads ""I'LL SEE YOU"".",,
-bce8709cc6,X1,raw,"key07 now reads ""1147""; written by mara","The key's paper tag reads ""1147"". Your fingers trace the dark ink. The storm's light cuts across the room.",,
-bce8709cc6,X1,final,"key07 now reads ""1147""; written by mara","The key's paper tag reads ""1147"". Your fingers trace the dark ink. The storm's light cuts across the room.",,
-bce8709cc6,X2,raw,"key07 now reads ""I'LL SEE YOU""; written by player","The key's paper tag reads ""I'LL SEE YOU"". Your fingers trace the ink. The storm's light casts long shadows across the damp concrete.",,
-bce8709cc6,X2,final,"key07 now reads ""I'LL SEE YOU""; written by player","The paper tag on the key reads ""I'LL SEE YOU"". Your fingers trace the dark ink. The storm's light flickers across the damp concrete.",,
-36c9f5e38a,X1,raw,"key07 now reads ""1028""; written by teo","The paper tag on the key reads ""1028"". Your fingers trace the unfamiliar script. The storm's light flickers across the paper.",,
-36c9f5e38a,X1,final,"key07 now reads ""1028""; written by teo","The paper tag on the key reads ""1028"". Your fingers trace the unfamiliar script. The storm's light flickers across the paper.",,
-36c9f5e38a,X2,raw,"key07 now reads ""I'M SORRY""; written by player","The paper tag on the key reads ""I'M SORRY"". Your fingers trace the wet ink. The storm light shifts across the damp concrete.",,
-36c9f5e38a,X2,final,"key07 now reads ""I'M SORRY""; written by player","The paper tag on the key reads ""I'M SORRY"". Your fingers trace the wet ink. The storm light shifts across the damp concrete.",,
+lock_basement_erase_1006,X1,raw,"pocket now reads ""1987""; written by mara","The air grows thick, smelling of wet stone and something metallic.",,
+lock_basement_erase_1006,X1,final,"pocket now reads ""1987""; written by mara","You take out the guitar pick.
+
+“1987”
+
+That wasn't there when you put it in your pocket. The handwriting isn't yours.
+
+The air grows thick, smelling of wet stone and something metallic.",,
+lock_basement_erase_1006,X2,raw,"roof now reads ""I am sorry for the noise.""; written by player","The air grows thick, a damp, metallic chill pressing against your skin.",,
+lock_basement_erase_1006,X2,final,"roof now reads ""I am sorry for the noise.""; written by player","Then, from the stairwell, close and clear, a voice.
+
+“I am sorry for the noise.”
+
+It's your voice. You haven't said a word.
+
+The air grows thick, a damp, metallic chill pressing against your skin.",,
+lock_basement_open_1001,X1,raw,"pocket now reads ""1987""; written by mara",The air tastes like rusted metal and damp stone.,,
+lock_basement_open_1001,X1,final,"pocket now reads ""1987""; written by mara","You take out the wedding ring.
+
+“1987”
+
+That wasn't there when you put it in your pocket. The handwriting isn't yours.
+
+The air tastes like rusted metal and damp stone.",,
+lock_basement_open_1001,X2,raw,"stairwell now reads ""You can stop holding the door now.""; written by mara",The air tastes of wet stone and something metallic and ancient.,,
+lock_basement_open_1001,X2,final,"stairwell now reads ""You can stop holding the door now.""; written by mara","Then, from the stairwell, close and clear, a voice.
+
+“You can stop holding the door now.”
+
+It's Mara's voice. Mara is standing right beside you, and her mouth didn't move.
+
+The air tastes of wet stone and something metallic and ancient.",,
+lock_basement_open_1002,X1,raw,"pocket now reads ""8001""; written by mara",The air tastes like wet stone and ozone clings to your skin.,,
+lock_basement_open_1002,X1,final,"pocket now reads ""8001""; written by mara","You take out the guitar pick.
+
+“8001”
+
+That wasn't there when you put it in your pocket. The handwriting isn't yours.
+
+The air tastes like wet stone and ozone clings to your skin.",,
+lock_basement_open_1002,X2,raw,"roof now reads ""I will wait for the signal.""; written by player",The air tastes like wet stone and stagnant water.,,
+lock_basement_open_1002,X2,final,"roof now reads ""I will wait for the signal.""; written by player","Then, from the stairwell, close and clear, a voice.
+
+“I will wait for the signal.”
+
+It's your voice. You haven't said a word.
+
+The air tastes like wet stone and stagnant water.",,
+lock_basement_open_1003,X1,raw,"pocket now reads ""1982""; written by mara",The damp air tastes of rusted metal and old dust.,,
+lock_basement_open_1003,X1,final,"pocket now reads ""1982""; written by mara","You take out the folded receipt.
+
+“1982”
+
+That wasn't there when you put it in your pocket. The handwriting isn't yours.
+
+The damp air tastes of rusted metal and old dust.",,
+lock_basement_open_1003,X2,raw,"roof now reads ""The water always finds the weakest spot.""; written by player",The air tastes like wet stone and stagnant water.,,
+lock_basement_open_1003,X2,final,"roof now reads ""The water always finds the weakest spot.""; written by player","Then, from the stairwell, close and clear, a voice.
+
+“The water always finds the weakest spot.”
+
+It's your voice. You haven't said a word.
+
+The air tastes like wet stone and stagnant water.",,
+lock_basement_open_1004,X1,raw,"pocket now reads ""1147""; written by mara","The air grows thick, smelling of wet stone and something metallic.",,
+lock_basement_open_1004,X1,final,"pocket now reads ""1147""; written by mara","You take out the guitar pick.
+
+“1147”
+
+That wasn't there when you put it in your pocket. The handwriting isn't yours.
+
+The air grows thick, smelling of wet stone and something metallic.",,
+lock_basement_open_1004,X2,raw,"roof now reads ""Go toward the east wall now.""; written by player",The damp air presses against your skin like cold velvet.,,
+lock_basement_open_1004,X2,final,"roof now reads ""Go toward the east wall now.""; written by player","Then, from the stairwell, close and clear, a voice.
+
+“Go toward the east wall now.”
+
+It's your voice. You haven't said a word.
+
+The damp air presses against your skin like cold velvet.",,
+lock_basement_open_1005,X1,raw,"pocket now reads ""4581""; written by mara","The air grows thick, tasting of wet stone and stagnant dust.",,
+lock_basement_open_1005,X1,final,"pocket now reads ""4581""; written by mara","You take out the bus ticket.
+
+“4581”
+
+That wasn't there when you put it in your pocket. The handwriting isn't yours.
+
+The air grows thick, tasting of wet stone and stagnant dust.",,
+lock_basement_open_1005,X2,raw,"roof now reads ""I will meet you there soon.""; written by player","The damp air presses against your skin, thick with the smell of wet earth and something metallic.",,
+lock_basement_open_1005,X2,final,"roof now reads ""I will meet you there soon.""; written by player","Then, from the stairwell, close and clear, a voice.
+
+“I will meet you there soon.”
+
+It's your voice. You haven't said a word.
+
+The damp air presses against your skin, thick with the smell of wet earth and something metallic.",,
+lock_roof_erase_1001,X1,raw,"pocket now reads ""8001""; written by mara","The air tastes thick, metallic, and impossibly cold against your skin.",,
+lock_roof_erase_1001,X1,final,"pocket now reads ""8001""; written by mara","You take out the photo of my sister.
+
+“8001”
+
+That wasn't there when you put it in your pocket. The handwriting isn't yours.
+
+The air tastes thick, metallic, and impossibly cold against your skin.",,
+lock_roof_erase_1001,X2,raw,"teo_apt now reads ""The silence here is too heavy.""; written by teo",The air tastes of ozone and wet stone.,,
+lock_roof_erase_1001,X2,final,"teo_apt now reads ""The silence here is too heavy.""; written by teo","Then, from the stairwell, close and clear, a voice.
+
+“The silence here is too heavy.”
+
+It's Teo's voice. Teo hasn't left 6D in six years.
+
+The air tastes of ozone and wet stone.",,
+lock_roof_erase_1002,X1,raw,"pocket now reads ""4581""; written by mara",The air tastes like wet stone and ozone.,,
+lock_roof_erase_1002,X1,final,"pocket now reads ""4581""; written by mara","You take out the photo of my sister.
+
+“4581”
+
+That wasn't there when you put it in your pocket. The handwriting isn't yours.
+
+The air tastes like wet stone and ozone.",,
+lock_roof_erase_1002,X2,raw,"teo_apt now reads ""I will return before the dawn.""; written by teo",The air tastes thick with ozone and damp stone.,,
+lock_roof_erase_1002,X2,final,"teo_apt now reads ""I will return before the dawn.""; written by teo","Then, from the stairwell, close and clear, a voice.
+
+“I will return before the dawn.”
+
+It's Teo's voice. Teo hasn't left 6D in six years.
+
+The air tastes thick with ozone and damp stone.",,
+lock_roof_erase_1003,X1,raw,"pocket now reads ""8109""; written by mara",The air tastes metallic and impossibly cold against your skin.,,
+lock_roof_erase_1003,X1,final,"pocket now reads ""8109""; written by mara","You take out the lighter.
+
+“8109”
+
+That wasn't there when you put it in your pocket. The handwriting isn't yours.
+
+The air tastes metallic and impossibly cold against your skin.",,
+lock_roof_erase_1003,X2,raw,"teo_apt now reads ""The silence here tastes like rust.""; written by teo",The air tastes metallic and impossibly cold against your skin.,,
+lock_roof_erase_1003,X2,final,"teo_apt now reads ""The silence here tastes like rust.""; written by teo","Then, from the stairwell, close and clear, a voice.
+
+“The silence here tastes like rust.”
+
+It's Teo's voice. Teo hasn't left 6D in six years.
+
+The air tastes metallic and impossibly cold against your skin.",,
+lock_roof_erase_1006,X1,raw,"pocket now reads ""4819""; written by mara","The air grows thick, smelling of wet stone and something metallic.",,
+lock_roof_erase_1006,X1,final,"pocket now reads ""4819""; written by mara","You take out the train ticket.
+
+“4819”
+
+That wasn't there when you put it in your pocket. The handwriting isn't yours.
+
+The air grows thick, smelling of wet stone and something metallic.",,
+lock_roof_erase_1006,X2,raw,"teo_apt now reads ""I am sorry for the noise.""; written by teo",The air tastes like wet stone and ozone.,,
+lock_roof_erase_1006,X2,final,"teo_apt now reads ""I am sorry for the noise.""; written by teo","Then, from the stairwell, close and clear, a voice.
+
+“I am sorry for the noise.”
+
+It's Teo's voice. Teo hasn't left 6D in six years.
+
+The air tastes like wet stone and ozone.",,
+lock_roof_open_1004,X1,raw,"pocket now reads ""4815""; written by mara","The air tastes of wet stone and a sudden, sharp metallic chill against your skin.",,
+lock_roof_open_1004,X1,final,"pocket now reads ""4815""; written by mara","You take out the train ticket.
+
+“4815”
+
+That wasn't there when you put it in your pocket. The handwriting isn't yours.
+
+The air tastes of wet stone and a sudden, sharp metallic chill against your skin.",,
+lock_roof_open_1004,X2,raw,"basement now reads ""I kept your place.""; written by mara",The damp air presses against your skin like cold velvet.,,
+lock_roof_open_1004,X2,final,"basement now reads ""I kept your place.""; written by mara","Then, from the stairwell, close and clear, a voice.
+
+“I kept your place.”
+
+It's Mara's voice. She is nowhere near the stairwell.
+
+The damp air presses against your skin like cold velvet.",,
+lock_roof_open_1005,X1,raw,"pocket now reads ""1987""; written by mara","The air grows thick, tasting of wet stone and stagnant dust.",,
+lock_roof_open_1005,X1,final,"pocket now reads ""1987""; written by mara","You take out the lighter.
+
+“1987”
+
+That wasn't there when you put it in your pocket. The handwriting isn't yours.
+
+The air grows thick, tasting of wet stone and stagnant dust.",,
+lock_roof_open_1005,X2,raw,"teo_apt now reads ""I will see you then.""; written by teo","The damp air presses against your skin, thick and metallic.",,
+lock_roof_open_1005,X2,final,"teo_apt now reads ""I will see you then.""; written by teo","Then, from the stairwell, close and clear, a voice.
+
+“I will see you then.”
+
+It's Teo's voice. Teo hasn't left 6D in six years.
+
+The damp air presses against your skin, thick and metallic.",,
+open_basement_erase_1002,X1,raw,"key07 now reads ""4821""; written by mara",The air tastes like wet stone and ozone.,,
+open_basement_erase_1002,X1,final,"key07 now reads ""4821""; written by mara","Mara turns the key over in the dark. The paper tag catches the storm light.
+
+“4821”
+
+That wasn't on the tag when she showed it to you. The handwriting isn't yours.
+
+The air tastes like wet stone and ozone.",,
+open_basement_erase_1002,X2,raw,"teo_apt now reads ""I will see you there soon.""; written by teo",The air tastes like wet stone and stagnant water.,,
+open_basement_erase_1002,X2,final,"teo_apt now reads ""I will see you there soon.""; written by teo","Then, from the stairwell, close and clear, a voice.
+
+“I will see you there soon.”
+
+It's Teo's voice. Teo hasn't left 6D in six years.
+
+The air tastes like wet stone and stagnant water.",,
+open_basement_erase_1005,X1,raw,"key07 now reads ""8112""; written by mara","The air grows thick, tasting of ozone and damp stone.",,
+open_basement_erase_1005,X1,final,"key07 now reads ""8112""; written by mara","Mara turns the key over in the dark. The paper tag catches the storm light.
+
+“8112”
+
+That wasn't on the tag when she showed it to you. The handwriting isn't yours.
+
+The air grows thick, tasting of ozone and damp stone.",,
+open_basement_erase_1005,X2,raw,"roof now reads ""I will see you there soon.""; written by player","The damp air presses against your skin, thick with the smell of wet earth and something metallic.",,
+open_basement_erase_1005,X2,final,"roof now reads ""I will see you there soon.""; written by player","Then, from the stairwell, close and clear, a voice.
+
+“I will see you there soon.”
+
+It's your voice. You haven't said a word.
+
+The damp air presses against your skin, thick with the smell of wet earth and something metallic.",,
+open_basement_erase_1006,X1,raw,"key07 now reads ""1028""; written by teo",The air tastes like wet stone and something faintly metallic.,,
+open_basement_erase_1006,X1,final,"key07 now reads ""1028""; written by teo","Mara turns the key over in the dark. The paper tag catches the storm light.
+
+“1028”
+
+That wasn't on the tag when she showed it to you. The handwriting isn't yours, and it isn't hers.
+
+The air tastes like wet stone and something faintly metallic.",,
+open_basement_erase_1006,X2,raw,"teo_apt now reads ""I am sorry for the noise.""; written by teo","The air grows thick, a damp, metallic chill against your skin.",,
+open_basement_erase_1006,X2,final,"teo_apt now reads ""I am sorry for the noise.""; written by teo","Then, from the stairwell, close and clear, a voice.
+
+“I am sorry for the noise.”
+
+It's Teo's voice. Teo hasn't left 6D in six years.
+
+The air grows thick, a damp, metallic chill against your skin.",,

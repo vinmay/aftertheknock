@@ -16,19 +16,19 @@
  "replay_reproduces": "8/8 (100%)",
  "shadow_steps": {
   "total": 52,
-  "first_try": "45/52 (87%)",
+  "first_try": "44/52 (85%)",
   "model_committed": "48/52 (92%)",
   "fallback": "4/52 (8%)",
   "skipped": "0/52 (0%)"
  },
  "validator": {
-  "proposals": 63,
+  "proposals": 64,
   "rejections_by_rule": {
    "R_NOOP": 12,
-   "R_REACH": 2,
-   "R_ADJACENT": 1
+   "R_ADJACENT": 2,
+   "R_REACH": 2
   },
-  "rejected": "15/63 (24%)"
+  "rejected": "16/64 (25%)"
  },
  "impossible_give": {
   "probe_calls": 30,
@@ -41,6 +41,7 @@
  },
  "narration": {
   "crossings": 16,
+  "note": "crossing text is hand-written templates with committed facts; the model adds at most one checked sentence of atmosphere",
   "raw_first_attempt_failed_rule_checks": "0/16 (0%)",
   "raw_failure_kinds": {},
   "final_text_from_model": "16/16 (100%)",
@@ -52,12 +53,12 @@
   "lock/basement": {
    "runs": 2,
    "distinct_chains": 2,
-   "mean_pairwise_event_overlap_jaccard": 0.33
+   "mean_pairwise_event_overlap_jaccard": 0.09
   },
   "lock/roof": {
    "runs": 2,
    "distinct_chains": 2,
-   "mean_pairwise_event_overlap_jaccard": 0.09
+   "mean_pairwise_event_overlap_jaccard": 0.2
   },
   "open/basement": {
    "runs": 2,
@@ -71,22 +72,22 @@
   }
  },
  "performance": {
-  "model_call_latency_p50_s": 1.43,
-  "model_call_latency_p95_s": 2.23,
-  "shadow_sim_p50_s": 5.47,
-  "shadow_sim_p95_s": 9.41,
-  "crossing_scene_p50_s": 6.96,
-  "crossing_scene_p95_s": 11.66,
+  "model_call_latency_p50_s": 1.67,
+  "model_call_latency_p95_s": 2.9,
+  "shadow_sim_p50_s": 6.83,
+  "shadow_sim_p95_s": 11.81,
+  "crossing_scene_p50_s": 7.49,
+  "crossing_scene_p95_s": 12.46,
   "crossing_note": "time from click to crossing text with no reading pause; includes waiting for the shadow",
-  "model_calls_per_playthrough_mean": 9.9,
-  "tokens_per_playthrough_mean": 5187
+  "model_calls_per_playthrough_mean": 10,
+  "tokens_per_playthrough_mean": 5616
  },
  "spend": {
   "playthroughs": 8,
-  "usd_total": 0.00861,
-  "usd_per_playthrough_mean": 0.00108,
+  "usd_total": 0.00911,
+  "usd_per_playthrough_mean": 0.00114,
   "price_in_per_m": 0.18,
   "price_out_per_m": 0.5,
-  "ledger_total_usd_all_calls": 0.01206616
+  "ledger_total_usd_all_calls": 0.03760424
  }
 }

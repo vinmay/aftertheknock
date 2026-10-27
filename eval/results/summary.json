@@ -17,22 +17,21 @@
  "replay_reproduces": "24/24 (100%)",
  "shadow_steps": {
   "total": 156,
-  "first_try": "129/156 (83%)",
-  "model_committed": "141/156 (90%)",
-  "fallback": "13/156 (8%)",
-  "skipped": "2/156 (1%)"
+  "first_try": "114/156 (73%)",
+  "model_committed": "146/156 (94%)",
+  "fallback": "9/156 (6%)",
+  "skipped": "1/156 (1%)"
  },
  "validator": {
-  "proposals": 199,
+  "proposals": 213,
   "rejections_by_rule": {
-   "R_NOOP": 23,
-   "R_ADJACENT": 18,
-   "R_BEAT": 7,
-   "R_REACH": 6,
-   "R_SELF": 2,
-   "R_TYPE": 2
+   "R_REACH": 28,
+   "R_NOOP": 18,
+   "R_ADJACENT": 10,
+   "R_TYPE": 6,
+   "R_BEAT": 5
   },
-  "rejected": "58/199 (29%)"
+  "rejected": "67/213 (31%)"
  },
  "impossible_give": {
   "probe_calls": 30,
@@ -44,13 +43,11 @@
  },
  "narration": {
   "crossings": 48,
-  "raw_first_attempt_failed_rule_checks": "5/48 (10%)",
-  "raw_failure_kinds": {
-   "C_META": 3,
-   "C_TEXT": 2
-  },
-  "final_text_from_model": "46/48 (96%)",
-  "final_text_fallback": "2/48 (4%)",
+  "note": "crossing text is hand-written templates with committed facts; the model adds at most one checked sentence of atmosphere",
+  "raw_first_attempt_failed_rule_checks": "0/48 (0%)",
+  "raw_failure_kinds": {},
+  "final_text_from_model": "48/48 (100%)",
+  "final_text_fallback": "0/48 (0%)",
   "hand_labeled": "not labeled"
  },
  "intrusion_accuracy_hand_labeled": "not labeled",
@@ -58,33 +55,33 @@
   "lock/basement": {
    "runs": 6,
    "distinct_chains": 6,
-   "mean_pairwise_event_overlap_jaccard": 0.29
+   "mean_pairwise_event_overlap_jaccard": 0.31
   },
   "lock/roof": {
    "runs": 6,
    "distinct_chains": 6,
-   "mean_pairwise_event_overlap_jaccard": 0.25
+   "mean_pairwise_event_overlap_jaccard": 0.23
   },
   "open/basement": {
    "runs": 6,
    "distinct_chains": 6,
-   "mean_pairwise_event_overlap_jaccard": 0.35
+   "mean_pairwise_event_overlap_jaccard": 0.28
   },
   "open/roof": {
    "runs": 6,
    "distinct_chains": 6,
-   "mean_pairwise_event_overlap_jaccard": 0.4
+   "mean_pairwise_event_overlap_jaccard": 0.37
   }
  },
  "performance": {
-  "model_call_latency_p50_s": 1.61,
-  "model_call_latency_p95_s": 1.95,
-  "shadow_sim_p50_s": 5.97,
-  "shadow_sim_p95_s": 8.39,
-  "crossing_scene_p50_s": 6.92,
-  "crossing_scene_p95_s": 9.19,
+  "model_call_latency_p50_s": 1.78,
+  "model_call_latency_p95_s": 2.09,
+  "shadow_sim_p50_s": 7.15,
+  "shadow_sim_p95_s": 9.52,
+  "crossing_scene_p50_s": 7.69,
+  "crossing_scene_p95_s": 10.15,
   "crossing_note": "time from click to crossing text with no reading pause; includes waiting for the shadow",
-  "model_calls_per_playthrough_mean": 10.5,
-  "tokens_per_playthrough_mean": 5588
+  "model_calls_per_playthrough_mean": 10.9,
+  "tokens_per_playthrough_mean": 6389
  }
 }

@@ -88,42 +88,42 @@ Model: gemma4:e2b Q4_K_M, 24 live playthroughs (every fork path), raw logs in `e
 | Intrusions revealing a post-fork fact | 48/48 (100%) |
 | Intrusions with valid origin event | 48/48 (100%) |
 | Replays reproducing every state hash | 24/24 (100%) |
-| Shadow events accepted on the model's first proposal | 129/156 (83%) |
-| Shadow events committed from the model | 141/156 (90%) |
-| Shadow events from hand-written fallback | 13/156 (8%) |
-| Proposals rejected by the validator | 58/199 (29%) |
+| Shadow events accepted on the model's first proposal | 114/156 (73%) |
+| Shadow events committed from the model | 146/156 (94%) |
+| Shadow events from hand-written fallback | 9/156 (6%) |
+| Proposals rejected by the validator | 67/213 (31%) |
 | Deliberate impossible give rejected | 30/30 (100%) |
-| Raw narration failing rule checks (first attempt) | 5/48 (10%) |
-| Final narration from the model (rest is fallback) | 46/48 (96%) |
+| Model's atmosphere sentence failing rule checks (first attempt) | 0/48 (0%) |
+| Crossings that kept a model sentence (rest: hand-written lines only) | 48/48 (100%) |
 | Narration contradictions, hand-labeled | not labeled |
 | Intrusion accuracy, hand-labeled | not labeled |
-| Model call latency p50 / p95 | 1.61 s / 1.95 s |
-| Whole shadow timeline p50 / p95 | 5.97 s / 8.39 s |
-| Model calls per playthrough (mean) | 10.5 |
-| Tokens per playthrough (mean) | 5588 |
+| Model call latency p50 / p95 | 1.78 s / 2.09 s |
+| Whole shadow timeline p50 / p95 | 7.15 s / 9.52 s |
+| Model calls per playthrough (mean) | 10.9 |
+| Tokens per playthrough (mean) | 6389 |
 
 Variation (same choices, different seeds):
 
 | Path | Runs | Distinct event chains | Mean pairwise overlap (Jaccard) |
 |---|---|---|---|
-| lock/basement | 6 | 6 | 0.29 |
-| lock/roof | 6 | 6 | 0.25 |
-| open/basement | 6 | 6 | 0.35 |
-| open/roof | 6 | 6 | 0.4 |
+| lock/basement | 6 | 6 | 0.31 |
+| lock/roof | 6 | 6 | 0.23 |
+| open/basement | 6 | 6 | 0.28 |
+| open/roof | 6 | 6 | 0.37 |
 
-Rejections by rule: R_NOOP 23, R_ADJACENT 18, R_BEAT 7, R_REACH 6, R_SELF 2, R_TYPE 2.
+Rejections by rule: R_REACH 28, R_NOOP 18, R_ADJACENT 10, R_TYPE 6, R_BEAT 5.
 
 Notes on these numbers:
 
-- A *shadow step* is one shadow event: up to three model proposals, then a hand-written fallback. 2 of 156 steps were skipped (the model failed and no fallback fitted the state). Those shadows still ended with a committed inscription.
-- "Rejected" counts proposals stopped by the validator or by a story-beat check (`R_BEAT`). A rejected proposal never changes state.
-- Narration checks are rules on the critical facts (the inscription, numbers, names, the object), not a proof that the prose never contradicts anything. Hand labels go in `eval/labels/` and show as "not labeled" until a person fills them.
-- Time from the click to the crossing text, with no reading pause at all: p50 6.92 s, p95 9.19 s. In real play the shadow runs while you read the two or three scenes before it.
+- A *shadow step* is one shadow event: up to three model proposals, then a hand-written fallback. 1 of 156 steps was skipped (the model failed and no fallback fitted the state). Every shadow still ended with its committed crossing.
+- "Rejected" counts proposals stopped by the validator or by a story-beat check (`R_BEAT`, which includes banned phrases). A rejected proposal never changes state.
+- The crossing text is hand-written around the committed facts. The atmosphere-sentence rows measure only the model's optional extra sentence, which is rule-checked. That doesn't prove the sentence never contradicts anything; hand labels go in `eval/labels/` and show as "not labeled" until a person fills them in.
+- Time from the click to the crossing, with no reading pause at all: p50 7.69 s, p95 10.15 s. In real play the shadow runs while you read the scenes before it.
 <!-- RESULTS:END -->
 
 ### Hosted model, reported separately
 
-These numbers come from a small separate run of the same engine, with `gemma-4-31B-it` (Gemma 4 31B, open-weight) on DigitalOcean serverless inference. It's a bigger model than the local default, so none of these numbers feed the headline results above. 8 playthroughs, 2 seeds per fork path, `uv run python eval/run_all.py --hosted --seeds 2`, raw logs in `eval/results/hosted/runs/`, spend in `eval/results/spend.json`.
+These numbers come from a small separate run of the same engine, with `gemma-4-31B-it` (Gemma 4 31B, open-weight) on DigitalOcean serverless inference. It's a bigger model than the local default, so none of these numbers feed the headline results above. 8 playthroughs, 2 seeds per fork path, `uv run python eval/run_all.py --hosted --seeds 2`, raw logs in `eval/results/hosted/runs/`, spend ledger in `eval/results/spend.json`.
 
 Model: gemma-4-31B-it provider-managed, 8 live playthroughs (every fork path), raw logs in `eval/results/hosted/runs/`.
 
@@ -134,34 +134,34 @@ Model: gemma-4-31B-it provider-managed, 8 live playthroughs (every fork path), r
 | Intrusions revealing a post-fork fact | 16/16 (100%) |
 | Intrusions with valid origin event | 16/16 (100%) |
 | Replays reproducing every state hash | 8/8 (100%) |
-| Shadow events accepted on the model's first proposal | 45/52 (87%) |
+| Shadow events accepted on the model's first proposal | 44/52 (85%) |
 | Shadow events committed from the model | 48/52 (92%) |
 | Shadow events from hand-written fallback | 4/52 (8%) |
-| Proposals rejected by the validator | 15/63 (24%) |
+| Proposals rejected by the validator | 16/64 (25%) |
 | Deliberate impossible give rejected | 30/30 (100%) |
-| Raw narration failing rule checks (first attempt) | 0/16 (0%) |
-| Final narration from the model (rest is fallback) | 16/16 (100%) |
+| Model's atmosphere sentence failing rule checks (first attempt) | 0/16 (0%) |
+| Crossings that kept a model sentence (rest: hand-written lines only) | 16/16 (100%) |
 | Narration contradictions, hand-labeled | not labeled |
 | Intrusion accuracy, hand-labeled | not labeled |
-| Model call latency p50 / p95 | 1.43 s / 2.23 s |
-| Whole shadow timeline p50 / p95 | 5.47 s / 9.41 s |
-| Model calls per playthrough (mean) | 9.9 |
-| Tokens per playthrough (mean) | 5187 |
+| Model call latency p50 / p95 | 1.67 s / 2.9 s |
+| Whole shadow timeline p50 / p95 | 6.83 s / 11.81 s |
+| Model calls per playthrough (mean) | 10 |
+| Tokens per playthrough (mean) | 5616 |
 
 Variation (same choices, different seeds):
 
 | Path | Runs | Distinct event chains | Mean pairwise overlap (Jaccard) |
 |---|---|---|---|
-| lock/basement | 2 | 2 | 0.33 |
-| lock/roof | 2 | 2 | 0.09 |
+| lock/basement | 2 | 2 | 0.09 |
+| lock/roof | 2 | 2 | 0.2 |
 | open/basement | 2 | 2 | 0.27 |
 | open/roof | 2 | 2 | 0.4 |
 
-Rejections by rule: R_NOOP 12, R_REACH 2, R_ADJACENT 1.
+Rejections by rule: R_NOOP 12, R_ADJACENT 2, R_REACH 2.
 
-Spend: $0.00861 over 8 playthroughs (mean $0.00108 each) at $0.18/$0.5 per 1M input/output tokens.
+Spend: $0.00911 over 8 playthroughs (mean $0.00114 each) at $0.18/$0.5 per 1M input/output tokens.
 
-The ledger total in `spend.json` ($0.012) also covers the impossible-action probes and is higher than the per-playthrough sum above. Two seeds per path is too few to compare models; this run shows only that hosted mode works end to end and holds the same invariants.
+The ledger in `spend.json` also covers health checks, probes and earlier runs. Two seeds per path is too few to compare models; this run shows only that hosted mode works end to end and holds the same invariants.
 
 Every number above comes from `uv run python eval/run_all.py` (or `--from-results` to recompute from the committed raw logs). Charts: `eval/results/chart_*.svg`. Model choice and the day-one benchmark: [MODELS.md](MODELS.md).
 
@@ -169,7 +169,7 @@ Every number above comes from `uv run python eval/run_all.py` (or `--from-result
 
 The same open-weight family runs in both live modes. Gemma 4 E2B runs locally on a consumer GPU, and Gemma 4 31B is hosted for people without one.
 
-- **Many background calls.** Each playthrough makes about 10 model calls (about 5,600 tokens) that the player never sees directly, and most of them happen in a world the player never visits. Locally they cost nothing and need no account. Hosted, they cost about a tenth of a cent per playthrough at the listed price ($0.18 / $0.50 per million input / output tokens), which an open model makes possible at hobby scale.
+- **Many background calls.** Each playthrough makes about 11 model calls (about 6,400 tokens) that the player never sees directly, and most of them happen in a world the player never visits. Locally they cost nothing and need no account. Hosted, they cost about a tenth of a cent per playthrough at the listed price ($0.18 / $0.50 per million input / output tokens), which an open model makes possible at hobby scale.
 - **Pinned weights.** The validator, prompts and fallback rates were tuned against one exact local model file (digest in MODELS.md). A closed model that changed underneath would silently change how often the story falls back. With open weights, the local mode can always be checked against the same file.
 - **Inspectable.** In local mode the whole simulation runs on your machine: model, prompts, proposals, rejections and commits. In both modes the evidence view (press `E`) shows every proposal and validator decision.
 
