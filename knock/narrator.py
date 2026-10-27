@@ -14,8 +14,9 @@ from .engine import Intrusion, Timeline
 from .models import prompt_hash
 
 SYSTEM = ("You narrate one moment of a quiet, literary horror story in second person, present tense. "
-          "Write two or three short sentences. Use only the facts given. Never explain what is happening, "
-          "and never mention timelines.")
+          "Write two or three short sentences with one concrete physical detail (the ink, your hands, "
+          "the light, a sound). Use only the facts given. Never explain what is happening, and "
+          "never mention timelines.")
 
 CHAR_NAMES = {"mara": "Mara", "teo": "Teo"}
 FORBIDDEN_WORDS = ("timeline", "shadow", "branch", "json", "simulation")
@@ -68,18 +69,19 @@ def moment(view: dict, x: Intrusion) -> dict:
 
 def writer_phrase(writer: str | None) -> str:
     if writer == "player":
-        return "you wrote it yourself, in a night you don't remember"
-    return f"{CHAR_NAMES.get(writer, 'someone')} wrote it, in a night you didn't choose"
+        return "the handwriting is your own, but you never wrote it"
+    return f"the handwriting is {CHAR_NAMES.get(writer, 'someone')}'s"
 
 
 def build_messages(m: dict, pocket: str) -> list[dict]:
     noun = "the key's paper tag" if m["object"] == "key07" else f"the {pocket}"
     with_you = ", ".join(CHAR_NAMES[c] for c in m["with_you"] if c in CHAR_NAMES) or "no one"
     user = "\n".join([
-        f"Where you are: {m['place']}. With you: {with_you}.",
+        f"Where you are: {m['place']}. With you: {with_you}. The power is out; the only light is the storm's.",
         f"What changed: {noun} ({m['where']}) now has \"{m['text']}\" written on it. It was not there a moment ago.",
-        f"What you feel but cannot prove: {writer_phrase(m['writer'])}.",
-        f"Write the moment you notice it, in normal sentences. Quote the writing exactly as \"{m['text']}\". "
+        f"Let the reader sense, without saying it outright, that {writer_phrase(m['writer'])}.",
+        f"Write the moment you notice it, in normal sentences. Name {noun} in your first sentence. "
+        f"Quote the writing exactly as \"{m['text']}\". "
         "Apart from the writing itself, use no numbers and no words in ALL CAPS.",
     ])
     return [{"role": "system", "content": SYSTEM}, {"role": "user", "content": user}]
@@ -95,6 +97,7 @@ def restore(text: str, m: dict) -> str:
 def check(text: str, m: dict, pocket: str) -> list[str]:
     """Rule checks on the critical claims. Returns the problems found."""
     problems = []
+    rest = re.sub(re.escape(m["text"]), " ", text, flags=re.IGNORECASE) if m["text"] else text
     if not text or len(text) > MAX_LEN or len(text) < 40:
         problems.append("C_LENGTH")
     if m["text"] not in text:
@@ -109,9 +112,9 @@ def check(text: str, m: dict, pocket: str) -> list[str]:
     obj_words = ("key", "tag") if m["object"] == "key07" else tuple(words) or ("pocket",)
     if not any(w in text.lower() for w in obj_words):
         problems.append("C_OBJECT: the object is not mentioned")
-    if any(w in text.lower() for w in FORBIDDEN_WORDS):
+    if any(w in rest.lower() for w in FORBIDDEN_WORDS):
         problems.append("C_META: mentions the machinery")
-    caps = set(re.findall(r"\b[A-Z]{3,}\b", text.replace(m["text"], ""))) - {"BASEMENT"}
+    caps = set(re.findall(r"\b[A-Z]{3,}\b", rest)) - {"BASEMENT"}
     if caps:
         problems.append(f"C_CAPS: invented capitalized words {sorted(caps)}")
     return problems

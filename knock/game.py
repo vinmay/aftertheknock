@@ -209,7 +209,11 @@ class Game:
         b = t.state("B")
         place = lambda s, pid: s["places"][pid]["name"] if pid else "nowhere"  # noqa: E731
         fill = {"pocket": self.pocket}
-        fill["fade_list"] = ", then ".join(f'"{txt}" from {self._on(oid)}' for txt, oid, _ in marks)
+        if len({oid for _, oid, _ in marks}) == 1:
+            fill["fade_list"] = (" then ".join(f'"{txt}"' for txt, _, _ in marks)
+                                 + f" from {self._on(marks[0][1])}")
+        else:
+            fill["fade_list"] = ", then ".join(f'"{txt}" from {self._on(oid)}' for txt, oid, _ in marks)
         fill["mark_lines"] = " ".join(f'"{txt}" on {self._on(oid)}, in {self._hand(a)}.' for txt, oid, a in marks)
         here = c["chars"]["player"]["location"]
         fill["erase_mara"] = slots["erase_mara_present" if c["chars"]["mara"]["location"] == here else "erase_mara_absent"]
@@ -254,11 +258,11 @@ class Game:
         """Everything about one intrusion: its origin event, the validator decision, released facts."""
         x = next(i for i in self.timeline.intrusions if i.intrusion_id == intrusion_id)
         origin = self.timeline.event(x.origin_event_id)
-        decision = next((r for r in self.log.records
-                         if r.get("event_id") == origin.event_id), None)
-        return {"intrusion": x.to_dict(), "origin": origin.to_dict(),
+        od = origin.to_dict()
+        od["desc"] = describe(od, self.timeline.state(origin.branch), self.pocket)
+        return {"intrusion": x.to_dict(), "origin": od,
                 "manifestation": self.timeline.event(x.manifestation_event_id).to_dict(),
-                "decision": decision}
+                "attempts": self.attempts(origin.request_id)}
 
     def branch_labels(self) -> dict:
         f1, f2 = self.f1, self.f2

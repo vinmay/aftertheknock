@@ -8,6 +8,7 @@ dependencies = []
 
 [project.scripts]
 knock = "knock.cli:main"
+knock-server = "knock.api:main"
 
 [dependency-groups]
 dev = [
