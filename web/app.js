@@ -168,7 +168,7 @@ function show(v) {
   $("#title").hidden = true;
   $("#scene").hidden = false;
   const scene = $("#scene");
-  scene.className = "screen " + (v.kind || "");
+  scene.className = "screen kind-" + (v.kind || "scene");
   const text = $("#text");
   let html = "";
   if (v.kind === "crossing") {

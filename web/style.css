@@ -88,7 +88,7 @@ input::placeholder { color: var(--faint); }
 @keyframes breathe { 50% { opacity: 0.35; } }
 
 /* The intrusion */
-.crossing .text p { animation-duration: 1.4s; }
+.kind-crossing .text p { animation-duration: 1.4s; }
 .ink {
   color: var(--blood); font-style: italic; letter-spacing: 0.04em; white-space: nowrap;
   border-bottom: 1px dotted var(--blood); padding: 0 0.1rem;
