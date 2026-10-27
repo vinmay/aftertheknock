@@ -1,0 +1,15 @@
+#!/usr/bin/env bash
+# Deterministic walkthrough for recording.
+#   scripts/demo          plays the committed recorded run (no model needed, identical every time)
+#   scripts/demo --live   plays live with a fixed seed (needs Ollama)
+set -euo pipefail
+cd "$(dirname "$0")/.."
+PORT="${PORT:-8047}"
+REPLAY="${REPLAY:-lock_roof_erase_4711}"
+if [[ "${1:-}" == "--live" ]]; then
+  echo "Live, fixed seed 4711. Pocket: folded receipt. Choices: lock, roof, erase."
+  uv run knock auto lock roof erase --seed 4711 --pocket "a folded receipt"
+  exit 0
+fi
+echo "Open http://localhost:$PORT/?replay=$REPLAY"
+uv run knock-server --port "$PORT" --replay-only

@@ -345,4 +345,7 @@ document.addEventListener("keydown", (ev) => {
   }
 });
 
-boot();
+boot().then(() => {
+  const rid = new URLSearchParams(location.search).get("replay");
+  if (rid) startReplay(rid).catch((e) => ($("#status-line").textContent = e.message));
+});

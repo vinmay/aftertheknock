@@ -1,0 +1,22 @@
+#!/usr/bin/env bash
+# One-time local setup: Python deps, the model, a test run.
+set -euo pipefail
+cd "$(dirname "$0")/.."
+MODEL="${KNOCK_MODEL:-gemma4:e2b}"
+OLLAMA="${KNOCK_OLLAMA_URL:-http://localhost:11434}"
+
+command -v uv >/dev/null || { echo "Install uv first: https://docs.astral.sh/uv/"; exit 1; }
+uv sync
+
+if ! curl -sf "$OLLAMA/api/version" >/dev/null; then
+  echo "Ollama is not reachable at $OLLAMA. Install it from https://ollama.com and start it."
+  echo "Replay mode still works without it:  uv run knock-server --replay-only"
+  exit 1
+fi
+if ! curl -sf "$OLLAMA/api/tags" | grep -q "\"$MODEL\""; then
+  echo "Pulling $MODEL ..."
+  curl -sf "$OLLAMA/api/pull" -d "{\"model\":\"$MODEL\"}" >/dev/null
+fi
+uv run pytest -q
+echo
+echo "Ready. Start the game:  uv run knock-server   then open http://localhost:8047"
