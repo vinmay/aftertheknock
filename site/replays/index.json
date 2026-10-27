@@ -6,7 +6,7 @@
   "pocket": "folded receipt",
   "recommended": true,
   "seed": 4711,
-  "title": "The folded receipt with four numbers"
+  "title": "The folded receipt, then the key"
  },
  {
   "id": "lock_basement_open_4712",
@@ -15,7 +15,7 @@
   "pocket": "bus ticket",
   "recommended": false,
   "seed": 4712,
-  "title": "The bus ticket with four numbers"
+  "title": "The bus ticket, then the key"
  },
  {
   "id": "open_basement_erase_4713",
@@ -24,7 +24,7 @@
   "pocket": "guitar pick",
   "recommended": false,
   "seed": 4713,
-  "title": "The key with four numbers"
+  "title": "The key, then the guitar pick"
  },
  {
   "id": "open_roof_open_4714",
@@ -33,6 +33,6 @@
   "pocket": "old lighter",
   "recommended": false,
   "seed": 4714,
-  "title": "The key with four numbers"
+  "title": "The key, then the old lighter"
  }
 ]

@@ -79,9 +79,11 @@ def replay_card(rec_id: str, rec: dict) -> dict:
     """Listing for a recorded run. The title describes what happens in it (from its first crossing);
     the path is shown only when a card is opened. Playtime isn't recorded, so it isn't shown."""
     evs = {e["event_id"]: e for b in rec["timeline"]["branches"].values() for e in b["events"]}
+    name = lambda oid: "key" if oid == "key07" else rec["pocket"]  # noqa: E731
     first = evs[rec["crossings"]["B"]["intrusion"]["origin_event_id"]]
-    holder = "key" if first["target"] == "key07" else rec["pocket"]
-    return {"id": rec_id, "pocket": rec["pocket"], "title": f"The {holder} with four numbers",
+    second = evs[rec["crossings"]["D"]["intrusion"]["origin_event_id"]]
+    title = f"The {name(first['target'])}, then the {name(second['target'])}"   # what crossed, in order
+    return {"id": rec_id, "pocket": rec["pocket"], "title": title,
             "path": f"{rec['fork1']} / {rec['fork2']} / {rec['ending']['which']}", "seed": rec["seed"],
             "model": rec["model"].get("model"), "recommended": rec_id == RECOMMENDED_REPLAY}
 
