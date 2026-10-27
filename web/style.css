@@ -330,11 +330,21 @@ label[for="pocket"] { color: var(--ink); }
 #map-svg[hidden] { display: none; }
 
 /* Landing: one closed door, light under it, a peephole that catches the light */
-.door { display: block; width: 12rem; height: auto; margin: 0 0 -0.5rem; }
-.door .seam { opacity: 0.6; transition: opacity 0.6s ease; }
+.door { display: block; width: 12rem; height: auto; margin: 0 0 -1.6rem; overflow: visible; }
+/* Light from the hallway: a lit seam, a faint edge, a low spill on the floor. Brighter on Begin hover/focus. */
+.door .seam { opacity: 0.85; transition: opacity 0.6s ease; }
+.door .edge { opacity: 0.25; transition: opacity 0.6s ease; }
+.door .spill { opacity: 0.3; transition: opacity 0.6s ease; }
 .door.lit .seam { opacity: 1; }
-@media (max-width: 40rem) { .door { width: 8.5rem; } }
-@media (prefers-reduced-motion: reduce) { .door .seam { transition: none; } }
+.door.lit .edge { opacity: 0.45; }
+.door.lit .spill { opacity: 0.4; }
+/* Someone steps up to the peephole once you start typing: the lens warms (fades in 400ms, out 600ms). */
+.door .lens-warm { opacity: 0; transition: opacity 0.6s ease-out; }
+.door .lens { transition: filter 0.6s ease-out; }
+.door.warm .lens-warm { opacity: 0.9; transition: opacity 0.4s ease-in; }
+.door.warm .lens { filter: drop-shadow(0 0 5px rgba(240, 194, 122, 0.85)); transition: filter 0.4s ease-in; }
+@media (max-width: 40rem) { .door { width: 8.5rem; margin-bottom: -1.1rem; } }
+@media (prefers-reduced-motion: reduce) { .door .seam, .door .edge, .door .spill, .door .lens, .door .lens-warm { transition: none !important; } }
 input::placeholder { color: #8f887c; font-style: italic; }
 @media (max-width: 40rem) {
   .foot { position: static; text-align: center; padding: 0 1rem 2rem; }

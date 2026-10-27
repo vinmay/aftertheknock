@@ -172,6 +172,8 @@ uv run knock-server    # http://localhost:8047</pre>
     <p class="small">Code, tests and evaluation: <a href="${LINKS.repo}">${LINKS.repo.replace("https://", "")}</a>${st.static ? "" : ` · Replays: <a href="${LINKS.replay}">${LINKS.replay.replace("https://", "")}</a>`}</p>`);
 }
 $("#how").addEventListener("click", howItWorks);
+/* The peephole warms while there is something in the pocket field, and cools when it's cleared. */
+$("#pocket").addEventListener("input", (ev) => $(".door")?.classList.toggle("warm", ev.target.value.trim() !== ""));
 ["mouseenter", "focus"].forEach((ev) => $("#begin").addEventListener(ev, () => $(".door")?.classList.add("lit")));
 ["mouseleave", "blur"].forEach((ev) => $("#begin").addEventListener(ev, () => $(".door")?.classList.remove("lit")));
 

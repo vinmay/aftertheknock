@@ -24,20 +24,26 @@
 
 <main id="stage">
   <section id="title" class="screen">
-    <svg class="door" viewBox="0 0 220 300" aria-hidden="true" focusable="false">
+    <svg class="door" viewBox="0 0 220 330" aria-hidden="true" focusable="false">
       <defs>
-        <linearGradient id="seam" x1="0" x2="1"><stop offset="0" stop-color="#f0c27a" stop-opacity="0"/><stop offset="0.5" stop-color="#f0c27a" stop-opacity="0.9"/><stop offset="1" stop-color="#f0c27a" stop-opacity="0"/></linearGradient>
+        <linearGradient id="seam" x1="0" x2="1"><stop offset="0" stop-color="#f0c27a" stop-opacity="0"/><stop offset="0.15" stop-color="#f0c27a" stop-opacity="0.85"/><stop offset="0.85" stop-color="#f0c27a" stop-opacity="0.85"/><stop offset="1" stop-color="#f0c27a" stop-opacity="0"/></linearGradient>
+        <radialGradient id="spill" cx="0.5" cy="0.5" r="0.5"><stop offset="0" stop-color="#f0c27a" stop-opacity="1"/><stop offset="0.6" stop-color="#f0c27a" stop-opacity="0.35"/><stop offset="1" stop-color="#f0c27a" stop-opacity="0"/></radialGradient>
         <radialGradient id="lens" cx="0.35" cy="0.32" r="0.75"><stop offset="0" stop-color="#fff4da"/><stop offset="0.25" stop-color="#c9a66a"/><stop offset="0.7" stop-color="#5e4524"/><stop offset="1" stop-color="#1e160d"/></radialGradient>
+        <radialGradient id="lens-warm" cx="0.5" cy="0.5" r="0.5"><stop offset="0" stop-color="#ffe3a8"/><stop offset="0.55" stop-color="#f0c27a"/><stop offset="1" stop-color="#b9782e"/></radialGradient>
         <linearGradient id="rim" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#e2c48c"/><stop offset="0.5" stop-color="#7a5a2e"/><stop offset="1" stop-color="#d8b67a"/></linearGradient>
       </defs>
+      <!-- light from the hallway behind the door, spilling onto the floor -->
+      <ellipse class="spill" cx="110" cy="292" rx="100" ry="34" fill="url(#spill)"/>
       <rect x="18" y="8" width="184" height="286" fill="#16130f" stroke="#4a4036" stroke-width="2.5"/>
       <rect x="36" y="26" width="148" height="262" fill="#0f0d0b" stroke="#2c2620" stroke-width="1.5"/>
       <rect x="52" y="44" width="116" height="96" fill="none" stroke="#2a241e"/>
       <rect x="52" y="160" width="116" height="112" fill="none" stroke="#2a241e"/>
-      <circle cx="110" cy="100" r="9" fill="url(#lens)" stroke="url(#rim)" stroke-width="3"/>
+      <line class="edge" x1="38" y1="287.5" x2="182" y2="287.5" stroke="#f0c27a" stroke-width="1"/>
+      <circle class="lens" cx="110" cy="100" r="9" fill="url(#lens)" stroke="url(#rim)" stroke-width="3"/>
+      <circle class="lens-warm" cx="110" cy="100" r="7.5" fill="url(#lens-warm)"/>
       <circle cx="107" cy="97" r="1.6" fill="#fffaf0"/>
       <circle cx="160" cy="178" r="4.5" fill="#5a4630" stroke="#8a6c44" stroke-width="1"/>
-      <rect class="seam" x="40" y="289" width="140" height="1.6" fill="url(#seam)"/>
+      <rect class="seam" x="38" y="288" width="144" height="3.5" fill="url(#seam)"/>
     </svg>
     <h1>After the Knock</h1>
     <p class="sub">11:47 PM. A storm. Someone at your door who says you already let her in.</p>
