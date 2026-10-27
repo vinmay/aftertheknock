@@ -1,0 +1,1207 @@
+{
+ "summary": {
+  "model": {
+   "model": "gemma4:e2b",
+   "quantization": "Q4_K_M",
+   "parameter_size": "4.6B",
+   "family": "gemma4",
+   "digest": "b37049369adf"
+  },
+  "load_s": 0.34,
+  "seeds": 5,
+  "calls": 42,
+  "json_valid": 1.0,
+  "schema_valid": 1.0,
+  "validator_accept_per_call": 0.8095238095238095,
+  "steps": 35,
+  "steps_first_try": 0.8571428571428571,
+  "steps_model_committed": 0.9714285714285714,
+  "steps_fallback": 0.02857142857142857,
+  "latency_p50_s": 1.6,
+  "latency_p95_s": 1.966,
+  "output_tokens_mean": 60.1,
+  "prompt_tokens_mean": 543.2
+ },
+ "calls": [
+  {
+   "seed": 1000,
+   "latency_s": 1.9664203299907967,
+   "json_ok": true,
+   "schema_ok": true,
+   "prompt_tokens": 514,
+   "output_tokens": 79,
+   "spec": "B.open",
+   "step": 0,
+   "prompt_hash": "898a727ff145",
+   "accepted": true,
+   "rules": [],
+   "proposal": {
+    "summary": "Mara whispered something to the other you that the other you should not have known.",
+    "actor": "mara",
+    "action": "speak",
+    "target": "player",
+    "text": "The air in the hallway felt thick, and Mara breathed a low, ",
+    "to": "player"
+   }
+  },
+  {
+   "seed": 1010,
+   "latency_s": 1.5720884680049494,
+   "json_ok": true,
+   "schema_ok": true,
+   "prompt_tokens": 529,
+   "output_tokens": 56,
+   "spec": "B.open",
+   "step": 1,
+   "prompt_hash": "d15cf9cb5387",
+   "accepted": true,
+   "rules": [],
+   "proposal": {
+    "summary": "Mara took the player's pocket.",
+    "actor": "mara",
+    "action": "take",
+    "target": "pocket",
+    "text": "",
+    "to": "player"
+   }
+  },
+  {
+   "seed": 1020,
+   "latency_s": 1.778747083968483,
+   "json_ok": true,
+   "schema_ok": true,
+   "prompt_tokens": 558,
+   "output_tokens": 60,
+   "spec": "B.open",
+   "step": 2,
+   "prompt_hash": "81d30e547d7d",
+   "accepted": true,
+   "rules": [],
+   "proposal": {
+    "summary": "Mara wrote four digits on the pocket.",
+    "actor": "mara",
+    "action": "mark",
+    "target": "pocket",
+    "text": "8193",
+    "to": ""
+   }
+  },
+  {
+   "seed": 1000,
+   "latency_s": 0.7066295819822699,
+   "json_ok": true,
+   "schema_ok": true,
+   "prompt_tokens": 519,
+   "output_tokens": 58,
+   "spec": "B.lock",
+   "step": 0,
+   "prompt_hash": "a1148142031a",
+   "accepted": true,
+   "rules": [],
+   "proposal": {
+    "summary": "Teo opened his door for Mara.",
+    "actor": "teo",
+    "action": "open",
+    "target": "teo_apt",
+    "text": "",
+    "to": "mara"
+   }
+  },
+  {
+   "seed": 1010,
+   "latency_s": 1.6623072510119528,
+   "json_ok": true,
+   "schema_ok": true,
+   "prompt_tokens": 531,
+   "output_tokens": 62,
+   "spec": "B.lock",
+   "step": 1,
+   "prompt_hash": "b4847052e2a2",
+   "accepted": true,
+   "rules": [],
+   "proposal": {
+    "summary": "Mara stepped into Teo's apartment, facing the other you.",
+    "actor": "mara",
+    "action": "move",
+    "target": "teo_apt",
+    "text": "",
+    "to": ""
+   }
+  },
+  {
+   "seed": 1020,
+   "latency_s": 1.706691098981537,
+   "json_ok": true,
+   "schema_ok": true,
+   "prompt_tokens": 538,
+   "output_tokens": 65,
+   "spec": "B.lock",
+   "step": 2,
+   "prompt_hash": "f359da2d26be",
+   "accepted": true,
+   "rules": [],
+   "proposal": {
+    "summary": "Something happened between Mara and Teo.",
+    "actor": "mara",
+    "action": "speak",
+    "target": "teo",
+    "text": "I don't think this is safe.",
+    "to": "teo"
+   }
+  },
+  {
+   "seed": 1030,
+   "latency_s": 1.7100947110448033,
+   "json_ok": true,
+   "schema_ok": true,
+   "prompt_tokens": 571,
+   "output_tokens": 65,
+   "spec": "B.lock",
+   "step": 3,
+   "prompt_hash": "3838429f2a0a",
+   "accepted": false,
+   "rules": [
+    "R_BEAT"
+   ],
+   "proposal": {
+    "summary": "Mara scratched four digits into the tag of the brass key.",
+    "actor": "mara",
+    "action": "mark",
+    "target": "key07",
+    "text": "4321",
+    "to": ""
+   }
+  },
+  {
+   "seed": 1031,
+   "latency_s": 0.716081938939169,
+   "json_ok": true,
+   "schema_ok": true,
+   "prompt_tokens": 617,
+   "output_tokens": 47,
+   "spec": "B.lock",
+   "step": 3,
+   "prompt_hash": "b6d0cd594f4e",
+   "accepted": true,
+   "rules": [],
+   "proposal": {
+    "summary": "Mara scratched four digits into the key tag.",
+    "actor": "mara",
+    "action": "mark",
+    "target": "key07",
+    "text": "4815",
+    "to": ""
+   }
+  },
+  {
+   "seed": 2000,
+   "latency_s": 1.58050388796255,
+   "json_ok": true,
+   "schema_ok": true,
+   "prompt_tokens": 514,
+   "output_tokens": 65,
+   "spec": "B.open",
+   "step": 0,
+   "prompt_hash": "898a727ff145",
+   "accepted": true,
+   "rules": [],
+   "proposal": {
+    "summary": "Mara whispered something unsettling to the other you.",
+    "actor": "mara",
+    "action": "speak",
+    "target": "player",
+    "text": "The silence down there... it remembers.",
+    "to": "player"
+   }
+  },
+  {
+   "seed": 2010,
+   "latency_s": 1.5142065529944375,
+   "json_ok": true,
+   "schema_ok": true,
+   "prompt_tokens": 522,
+   "output_tokens": 56,
+   "spec": "B.open",
+   "step": 1,
+   "prompt_hash": "f536685c5318",
+   "accepted": true,
+   "rules": [],
+   "proposal": {
+    "summary": "Mara took the player's pocket.",
+    "actor": "mara",
+    "action": "take",
+    "target": "pocket",
+    "text": "",
+    "to": "player"
+   }
+  },
+  {
+   "seed": 2020,
+   "latency_s": 1.5983931940281764,
+   "json_ok": true,
+   "schema_ok": true,
+   "prompt_tokens": 551,
+   "output_tokens": 60,
+   "spec": "B.open",
+   "step": 2,
+   "prompt_hash": "dbcdfd65fd9b",
+   "accepted": true,
+   "rules": [],
+   "proposal": {
+    "summary": "Mara wrote four digits on the pocket.",
+    "actor": "mara",
+    "action": "mark",
+    "target": "pocket",
+    "text": "4811",
+    "to": ""
+   }
+  },
+  {
+   "seed": 2000,
+   "latency_s": 0.6133373039774597,
+   "json_ok": true,
+   "schema_ok": true,
+   "prompt_tokens": 519,
+   "output_tokens": 58,
+   "spec": "B.lock",
+   "step": 0,
+   "prompt_hash": "a1148142031a",
+   "accepted": true,
+   "rules": [],
+   "proposal": {
+    "summary": "Teo opened his door for Mara.",
+    "actor": "teo",
+    "action": "open",
+    "target": "teo_apt",
+    "text": "",
+    "to": "mara"
+   }
+  },
+  {
+   "seed": 2010,
+   "latency_s": 0.6112638399936259,
+   "json_ok": true,
+   "schema_ok": true,
+   "prompt_tokens": 531,
+   "output_tokens": 62,
+   "spec": "B.lock",
+   "step": 1,
+   "prompt_hash": "b4847052e2a2",
+   "accepted": true,
+   "rules": [],
+   "proposal": {
+    "summary": "Mara stepped into Teo's apartment, facing the other you.",
+    "actor": "mara",
+    "action": "move",
+    "target": "teo_apt",
+    "text": "",
+    "to": ""
+   }
+  },
+  {
+   "seed": 2020,
+   "latency_s": 2.13968834199477,
+   "json_ok": true,
+   "schema_ok": true,
+   "prompt_tokens": 538,
+   "output_tokens": 59,
+   "spec": "B.lock",
+   "step": 2,
+   "prompt_hash": "f359da2d26be",
+   "accepted": false,
+   "rules": [
+    "R_NOOP"
+   ],
+   "proposal": {
+    "summary": "Mara made a sudden move toward Teo.",
+    "actor": "mara",
+    "action": "take",
+    "target": "key07",
+    "text": "",
+    "to": "player"
+   }
+  },
+  {
+   "seed": 2021,
+   "latency_s": 0.7175627819960937,
+   "json_ok": true,
+   "schema_ok": true,
+   "prompt_tokens": 573,
+   "output_tokens": 42,
+   "spec": "B.lock",
+   "step": 2,
+   "prompt_hash": "9d2bcbaf2edc",
+   "accepted": false,
+   "rules": [
+    "R_NOOP"
+   ],
+   "proposal": {
+    "summary": "Mara moved to reach the basement.",
+    "actor": "mara",
+    "action": "take",
+    "target": "key07",
+    "text": "",
+    "to": "player"
+   }
+  },
+  {
+   "seed": 2022,
+   "latency_s": 0.607804102008231,
+   "json_ok": true,
+   "schema_ok": true,
+   "prompt_tokens": 573,
+   "output_tokens": 58,
+   "spec": "B.lock",
+   "step": 2,
+   "prompt_hash": "9d2bcbaf2edc",
+   "accepted": true,
+   "rules": [],
+   "proposal": {
+    "summary": "Mara attempted to speak to Teo.",
+    "actor": "mara",
+    "action": "speak",
+    "target": "teo",
+    "text": "Is it safe?",
+    "to": ""
+   }
+  },
+  {
+   "seed": 2030,
+   "latency_s": 1.7156273419968784,
+   "json_ok": true,
+   "schema_ok": true,
+   "prompt_tokens": 571,
+   "output_tokens": 65,
+   "spec": "B.lock",
+   "step": 3,
+   "prompt_hash": "ad6d925c4120",
+   "accepted": true,
+   "rules": [],
+   "proposal": {
+    "summary": "Mara scratched four digits into the tag of the brass key.",
+    "actor": "mara",
+    "action": "mark",
+    "target": "key07",
+    "text": "1147",
+    "to": ""
+   }
+  },
+  {
+   "seed": 3000,
+   "latency_s": 1.602154609048739,
+   "json_ok": true,
+   "schema_ok": true,
+   "prompt_tokens": 514,
+   "output_tokens": 66,
+   "spec": "B.open",
+   "step": 0,
+   "prompt_hash": "898a727ff145",
+   "accepted": true,
+   "rules": [],
+   "proposal": {
+    "summary": "Mara spoke a cryptic warning to the other you.",
+    "actor": "mara",
+    "action": "speak",
+    "target": "player",
+    "text": "The silence down there is not empty.",
+    "to": "player"
+   }
+  },
+  {
+   "seed": 3010,
+   "latency_s": 1.5210310280090198,
+   "json_ok": true,
+   "schema_ok": true,
+   "prompt_tokens": 523,
+   "output_tokens": 58,
+   "spec": "B.open",
+   "step": 1,
+   "prompt_hash": "f54091699a5e",
+   "accepted": true,
+   "rules": [],
+   "proposal": {
+    "summary": "Mara took the bus ticket from the other you.",
+    "actor": "mara",
+    "action": "take",
+    "target": "pocket",
+    "text": "",
+    "to": "player"
+   }
+  },
+  {
+   "seed": 3020,
+   "latency_s": 1.6426172179635614,
+   "json_ok": true,
+   "schema_ok": true,
+   "prompt_tokens": 554,
+   "output_tokens": 61,
+   "spec": "B.open",
+   "step": 2,
+   "prompt_hash": "509733ccbf79",
+   "accepted": true,
+   "rules": [],
+   "proposal": {
+    "summary": "Mara wrote four digits on the bus ticket.",
+    "actor": "mara",
+    "action": "mark",
+    "target": "pocket",
+    "text": "9110",
+    "to": ""
+   }
+  },
+  {
+   "seed": 3000,
+   "latency_s": 0.6374997039092705,
+   "json_ok": true,
+   "schema_ok": true,
+   "prompt_tokens": 519,
+   "output_tokens": 58,
+   "spec": "B.lock",
+   "step": 0,
+   "prompt_hash": "a1148142031a",
+   "accepted": true,
+   "rules": [],
+   "proposal": {
+    "summary": "Teo opened his door for Mara.",
+    "actor": "teo",
+    "action": "open",
+    "target": "teo_apt",
+    "text": "",
+    "to": "mara"
+   }
+  },
+  {
+   "seed": 3010,
+   "latency_s": 0.5833558540325612,
+   "json_ok": true,
+   "schema_ok": true,
+   "prompt_tokens": 531,
+   "output_tokens": 57,
+   "spec": "B.lock",
+   "step": 1,
+   "prompt_hash": "b4847052e2a2",
+   "accepted": true,
+   "rules": [],
+   "proposal": {
+    "summary": "Mara stepped into Teo's apartment.",
+    "actor": "mara",
+    "action": "move",
+    "target": "teo_apt",
+    "text": "",
+    "to": ""
+   }
+  },
+  {
+   "seed": 3020,
+   "latency_s": 1.6375831440091133,
+   "json_ok": true,
+   "schema_ok": true,
+   "prompt_tokens": 533,
+   "output_tokens": 58,
+   "spec": "B.lock",
+   "step": 2,
+   "prompt_hash": "3e2c9889450b",
+   "accepted": false,
+   "rules": [
+    "R_NOOP"
+   ],
+   "proposal": {
+    "summary": "Mara attempted to move towards the basement.",
+    "actor": "mara",
+    "action": "take",
+    "target": "key07",
+    "text": "",
+    "to": "player"
+   }
+  },
+  {
+   "seed": 3021,
+   "latency_s": 0.8411632089409977,
+   "json_ok": true,
+   "schema_ok": true,
+   "prompt_tokens": 568,
+   "output_tokens": 66,
+   "spec": "B.lock",
+   "step": 2,
+   "prompt_hash": "3a888c01e9b1",
+   "accepted": true,
+   "rules": [],
+   "proposal": {
+    "summary": "Mara attempted to interact with Teo after entering his apartment.",
+    "actor": "mara",
+    "action": "speak",
+    "target": "teo",
+    "text": "Are you sure about this?",
+    "to": "teo"
+   }
+  },
+  {
+   "seed": 3030,
+   "latency_s": 1.8161811570171267,
+   "json_ok": true,
+   "schema_ok": true,
+   "prompt_tokens": 570,
+   "output_tokens": 63,
+   "spec": "B.lock",
+   "step": 3,
+   "prompt_hash": "3b5600d95d58",
+   "accepted": true,
+   "rules": [],
+   "proposal": {
+    "summary": "Mara scratched four digits into the tag of the brass key.",
+    "actor": "mara",
+    "action": "mark",
+    "target": "key07",
+    "text": "4703",
+    "to": ""
+   }
+  },
+  {
+   "seed": 4000,
+   "latency_s": 1.7094458150677383,
+   "json_ok": true,
+   "schema_ok": true,
+   "prompt_tokens": 514,
+   "output_tokens": 66,
+   "spec": "B.open",
+   "step": 0,
+   "prompt_hash": "898a727ff145",
+   "accepted": true,
+   "rules": [],
+   "proposal": {
+    "summary": "Mara whispered something unsettling to the other you.",
+    "actor": "mara",
+    "action": "speak",
+    "target": "player",
+    "text": "The air down there smells like old secrets.",
+    "to": "player"
+   }
+  },
+  {
+   "seed": 4010,
+   "latency_s": 1.7010178299387917,
+   "json_ok": true,
+   "schema_ok": true,
+   "prompt_tokens": 522,
+   "output_tokens": 56,
+   "spec": "B.open",
+   "step": 1,
+   "prompt_hash": "f536685c5318",
+   "accepted": true,
+   "rules": [],
+   "proposal": {
+    "summary": "Mara took the player's pocket.",
+    "actor": "mara",
+    "action": "take",
+    "target": "pocket",
+    "text": "",
+    "to": "player"
+   }
+  },
+  {
+   "seed": 4020,
+   "latency_s": 1.7714230309939012,
+   "json_ok": true,
+   "schema_ok": true,
+   "prompt_tokens": 551,
+   "output_tokens": 60,
+   "spec": "B.open",
+   "step": 2,
+   "prompt_hash": "dbcdfd65fd9b",
+   "accepted": true,
+   "rules": [],
+   "proposal": {
+    "summary": "Mara wrote four digits on the pocket.",
+    "actor": "mara",
+    "action": "mark",
+    "target": "pocket",
+    "text": "4819",
+    "to": ""
+   }
+  },
+  {
+   "seed": 4000,
+   "latency_s": 0.68966312892735,
+   "json_ok": true,
+   "schema_ok": true,
+   "prompt_tokens": 519,
+   "output_tokens": 58,
+   "spec": "B.lock",
+   "step": 0,
+   "prompt_hash": "a1148142031a",
+   "accepted": true,
+   "rules": [],
+   "proposal": {
+    "summary": "Teo opened his door for Mara.",
+    "actor": "teo",
+    "action": "open",
+    "target": "teo_apt",
+    "text": "",
+    "to": "mara"
+   }
+  },
+  {
+   "seed": 4010,
+   "latency_s": 0.6845507629914209,
+   "json_ok": true,
+   "schema_ok": true,
+   "prompt_tokens": 531,
+   "output_tokens": 63,
+   "spec": "B.lock",
+   "step": 1,
+   "prompt_hash": "b4847052e2a2",
+   "accepted": true,
+   "rules": [],
+   "proposal": {
+    "summary": "Mara stepped into Teo's apartment, bringing them face to face.",
+    "actor": "mara",
+    "action": "move",
+    "target": "teo_apt",
+    "text": "",
+    "to": ""
+   }
+  },
+  {
+   "seed": 4020,
+   "latency_s": 1.6493295640684664,
+   "json_ok": true,
+   "schema_ok": true,
+   "prompt_tokens": 539,
+   "output_tokens": 63,
+   "spec": "B.lock",
+   "step": 2,
+   "prompt_hash": "56682e9ea34c",
+   "accepted": true,
+   "rules": [],
+   "proposal": {
+    "summary": "Something happened between Mara and Teo.",
+    "actor": "mara",
+    "action": "speak",
+    "target": "teo",
+    "text": "I don't like this.",
+    "to": "teo"
+   }
+  },
+  {
+   "seed": 4030,
+   "latency_s": 1.7518789089517668,
+   "json_ok": true,
+   "schema_ok": true,
+   "prompt_tokens": 572,
+   "output_tokens": 65,
+   "spec": "B.lock",
+   "step": 3,
+   "prompt_hash": "5626aa161592",
+   "accepted": false,
+   "rules": [
+    "R_BEAT"
+   ],
+   "proposal": {
+    "summary": "Mara scratched four digits into the tag of the brass key.",
+    "actor": "mara",
+    "action": "mark",
+    "target": "key07",
+    "text": "4567",
+    "to": ""
+   }
+  },
+  {
+   "seed": 4031,
+   "latency_s": 0.6877972789807245,
+   "json_ok": true,
+   "schema_ok": true,
+   "prompt_tokens": 618,
+   "output_tokens": 50,
+   "spec": "B.lock",
+   "step": 3,
+   "prompt_hash": "368c952cc497",
+   "accepted": true,
+   "rules": [],
+   "proposal": {
+    "summary": "Mara scratched four digits into the brass key's tag.",
+    "actor": "mara",
+    "action": "mark",
+    "target": "key07",
+    "text": "8153",
+    "to": ""
+   }
+  },
+  {
+   "seed": 5000,
+   "latency_s": 1.6749563119374216,
+   "json_ok": true,
+   "schema_ok": true,
+   "prompt_tokens": 514,
+   "output_tokens": 69,
+   "spec": "B.open",
+   "step": 0,
+   "prompt_hash": "898a727ff145",
+   "accepted": true,
+   "rules": [],
+   "proposal": {
+    "summary": "Mara told the other you something unsettling.",
+    "actor": "mara",
+    "action": "speak",
+    "target": "player",
+    "text": "The air down there... it doesn't like being disturbed.",
+    "to": "player"
+   }
+  },
+  {
+   "seed": 5010,
+   "latency_s": 2.2101485920138657,
+   "json_ok": true,
+   "schema_ok": true,
+   "prompt_tokens": 521,
+   "output_tokens": 60,
+   "spec": "B.open",
+   "step": 1,
+   "prompt_hash": "c4dd3698a144",
+   "accepted": true,
+   "rules": [],
+   "proposal": {
+    "summary": "Mara took the bus ticket from the player's pocket.",
+    "actor": "mara",
+    "action": "take",
+    "target": "pocket",
+    "text": "",
+    "to": "player"
+   }
+  },
+  {
+   "seed": 5020,
+   "latency_s": 1.7681065810611472,
+   "json_ok": true,
+   "schema_ok": true,
+   "prompt_tokens": 554,
+   "output_tokens": 61,
+   "spec": "B.open",
+   "step": 2,
+   "prompt_hash": "353beab6f9a2",
+   "accepted": true,
+   "rules": [],
+   "proposal": {
+    "summary": "Mara wrote four digits on the bus ticket.",
+    "actor": "mara",
+    "action": "mark",
+    "target": "pocket",
+    "text": "8112",
+    "to": ""
+   }
+  },
+  {
+   "seed": 5000,
+   "latency_s": 0.6857176510384306,
+   "json_ok": true,
+   "schema_ok": true,
+   "prompt_tokens": 519,
+   "output_tokens": 58,
+   "spec": "B.lock",
+   "step": 0,
+   "prompt_hash": "a1148142031a",
+   "accepted": true,
+   "rules": [],
+   "proposal": {
+    "summary": "Teo opened his door for Mara.",
+    "actor": "teo",
+    "action": "open",
+    "target": "teo_apt",
+    "text": "",
+    "to": "mara"
+   }
+  },
+  {
+   "seed": 5010,
+   "latency_s": 0.6208787359064445,
+   "json_ok": true,
+   "schema_ok": true,
+   "prompt_tokens": 531,
+   "output_tokens": 57,
+   "spec": "B.lock",
+   "step": 1,
+   "prompt_hash": "b4847052e2a2",
+   "accepted": true,
+   "rules": [],
+   "proposal": {
+    "summary": "Mara stepped into Teo's apartment.",
+    "actor": "mara",
+    "action": "move",
+    "target": "teo_apt",
+    "text": "",
+    "to": ""
+   }
+  },
+  {
+   "seed": 5020,
+   "latency_s": 1.624676022096537,
+   "json_ok": true,
+   "schema_ok": true,
+   "prompt_tokens": 533,
+   "output_tokens": 60,
+   "spec": "B.lock",
+   "step": 2,
+   "prompt_hash": "3e2c9889450b",
+   "accepted": false,
+   "rules": [
+    "R_NOOP"
+   ],
+   "proposal": {
+    "summary": "Mara attempted to reach the basement with Teo.",
+    "actor": "mara",
+    "action": "take",
+    "target": "key07",
+    "text": "",
+    "to": "player"
+   }
+  },
+  {
+   "seed": 5021,
+   "latency_s": 0.7829267269698903,
+   "json_ok": true,
+   "schema_ok": true,
+   "prompt_tokens": 568,
+   "output_tokens": 48,
+   "spec": "B.lock",
+   "step": 2,
+   "prompt_hash": "3a888c01e9b1",
+   "accepted": false,
+   "rules": [
+    "R_NOOP"
+   ],
+   "proposal": {
+    "summary": "Mara tried to move toward the basement while being with Teo.",
+    "actor": "mara",
+    "action": "take",
+    "target": "key07",
+    "text": "",
+    "to": "player"
+   }
+  },
+  {
+   "seed": 5022,
+   "latency_s": 0.7181928080972284,
+   "json_ok": true,
+   "schema_ok": true,
+   "prompt_tokens": 568,
+   "output_tokens": 61,
+   "spec": "B.lock",
+   "step": 2,
+   "prompt_hash": "3a888c01e9b1",
+   "accepted": false,
+   "rules": [
+    "R_NOOP"
+   ],
+   "proposal": {
+    "summary": "Mara attempted to move toward the basement with Teo.",
+    "actor": "mara",
+    "action": "take",
+    "target": "key07",
+    "text": "",
+    "to": "player"
+   }
+  },
+  {
+   "seed": 5030,
+   "latency_s": 1.9465768709778786,
+   "json_ok": true,
+   "schema_ok": true,
+   "prompt_tokens": 560,
+   "output_tokens": 64,
+   "spec": "B.lock",
+   "step": 3,
+   "prompt_hash": "f38a599f6356",
+   "accepted": true,
+   "rules": [],
+   "proposal": {
+    "summary": "Teo scratched four digits into the tag of the brass key.",
+    "actor": "teo",
+    "action": "mark",
+    "target": "key07",
+    "text": "4815",
+    "to": ""
+   }
+  }
+ ],
+ "steps": [
+  {
+   "seed": 1,
+   "spec": "B.open",
+   "step": 0,
+   "attempts": 1,
+   "outcome": "model",
+   "first_ok": true
+  },
+  {
+   "seed": 1,
+   "spec": "B.open",
+   "step": 1,
+   "attempts": 1,
+   "outcome": "model",
+   "first_ok": true
+  },
+  {
+   "seed": 1,
+   "spec": "B.open",
+   "step": 2,
+   "attempts": 1,
+   "outcome": "model",
+   "first_ok": true
+  },
+  {
+   "seed": 1,
+   "spec": "B.lock",
+   "step": 0,
+   "attempts": 1,
+   "outcome": "model",
+   "first_ok": true
+  },
+  {
+   "seed": 1,
+   "spec": "B.lock",
+   "step": 1,
+   "attempts": 1,
+   "outcome": "model",
+   "first_ok": true
+  },
+  {
+   "seed": 1,
+   "spec": "B.lock",
+   "step": 2,
+   "attempts": 1,
+   "outcome": "model",
+   "first_ok": true
+  },
+  {
+   "seed": 1,
+   "spec": "B.lock",
+   "step": 3,
+   "attempts": 2,
+   "outcome": "model",
+   "first_ok": false
+  },
+  {
+   "seed": 2,
+   "spec": "B.open",
+   "step": 0,
+   "attempts": 1,
+   "outcome": "model",
+   "first_ok": true
+  },
+  {
+   "seed": 2,
+   "spec": "B.open",
+   "step": 1,
+   "attempts": 1,
+   "outcome": "model",
+   "first_ok": true
+  },
+  {
+   "seed": 2,
+   "spec": "B.open",
+   "step": 2,
+   "attempts": 1,
+   "outcome": "model",
+   "first_ok": true
+  },
+  {
+   "seed": 2,
+   "spec": "B.lock",
+   "step": 0,
+   "attempts": 1,
+   "outcome": "model",
+   "first_ok": true
+  },
+  {
+   "seed": 2,
+   "spec": "B.lock",
+   "step": 1,
+   "attempts": 1,
+   "outcome": "model",
+   "first_ok": true
+  },
+  {
+   "seed": 2,
+   "spec": "B.lock",
+   "step": 2,
+   "attempts": 3,
+   "outcome": "model",
+   "first_ok": false
+  },
+  {
+   "seed": 2,
+   "spec": "B.lock",
+   "step": 3,
+   "attempts": 1,
+   "outcome": "model",
+   "first_ok": true
+  },
+  {
+   "seed": 3,
+   "spec": "B.open",
+   "step": 0,
+   "attempts": 1,
+   "outcome": "model",
+   "first_ok": true
+  },
+  {
+   "seed": 3,
+   "spec": "B.open",
+   "step": 1,
+   "attempts": 1,
+   "outcome": "model",
+   "first_ok": true
+  },
+  {
+   "seed": 3,
+   "spec": "B.open",
+   "step": 2,
+   "attempts": 1,
+   "outcome": "model",
+   "first_ok": true
+  },
+  {
+   "seed": 3,
+   "spec": "B.lock",
+   "step": 0,
+   "attempts": 1,
+   "outcome": "model",
+   "first_ok": true
+  },
+  {
+   "seed": 3,
+   "spec": "B.lock",
+   "step": 1,
+   "attempts": 1,
+   "outcome": "model",
+   "first_ok": true
+  },
+  {
+   "seed": 3,
+   "spec": "B.lock",
+   "step": 2,
+   "attempts": 2,
+   "outcome": "model",
+   "first_ok": false
+  },
+  {
+   "seed": 3,
+   "spec": "B.lock",
+   "step": 3,
+   "attempts": 1,
+   "outcome": "model",
+   "first_ok": true
+  },
+  {
+   "seed": 4,
+   "spec": "B.open",
+   "step": 0,
+   "attempts": 1,
+   "outcome": "model",
+   "first_ok": true
+  },
+  {
+   "seed": 4,
+   "spec": "B.open",
+   "step": 1,
+   "attempts": 1,
+   "outcome": "model",
+   "first_ok": true
+  },
+  {
+   "seed": 4,
+   "spec": "B.open",
+   "step": 2,
+   "attempts": 1,
+   "outcome": "model",
+   "first_ok": true
+  },
+  {
+   "seed": 4,
+   "spec": "B.lock",
+   "step": 0,
+   "attempts": 1,
+   "outcome": "model",
+   "first_ok": true
+  },
+  {
+   "seed": 4,
+   "spec": "B.lock",
+   "step": 1,
+   "attempts": 1,
+   "outcome": "model",
+   "first_ok": true
+  },
+  {
+   "seed": 4,
+   "spec": "B.lock",
+   "step": 2,
+   "attempts": 1,
+   "outcome": "model",
+   "first_ok": true
+  },
+  {
+   "seed": 4,
+   "spec": "B.lock",
+   "step": 3,
+   "attempts": 2,
+   "outcome": "model",
+   "first_ok": false
+  },
+  {
+   "seed": 5,
+   "spec": "B.open",
+   "step": 0,
+   "attempts": 1,
+   "outcome": "model",
+   "first_ok": true
+  },
+  {
+   "seed": 5,
+   "spec": "B.open",
+   "step": 1,
+   "attempts": 1,
+   "outcome": "model",
+   "first_ok": true
+  },
+  {
+   "seed": 5,
+   "spec": "B.open",
+   "step": 2,
+   "attempts": 1,
+   "outcome": "model",
+   "first_ok": true
+  },
+  {
+   "seed": 5,
+   "spec": "B.lock",
+   "step": 0,
+   "attempts": 1,
+   "outcome": "model",
+   "first_ok": true
+  },
+  {
+   "seed": 5,
+   "spec": "B.lock",
+   "step": 1,
+   "attempts": 1,
+   "outcome": "model",
+   "first_ok": true
+  },
+  {
+   "seed": 5,
+   "spec": "B.lock",
+   "step": 2,
+   "attempts": 3,
+   "outcome": "fallback",
+   "first_ok": false
+  },
+  {
+   "seed": 5,
+   "spec": "B.lock",
+   "step": 3,
+   "attempts": 1,
+   "outcome": "model",
+   "first_ok": true
+  }
+ ]
+}

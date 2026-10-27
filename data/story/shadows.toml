@@ -1,0 +1,153 @@
+# Shadow timeline specs. Key: <shadow>.<what the shadow did>[.<fork-2 choice>]
+#   B.open        player locked the door; in B the door was opened
+#   B.lock        player opened the door; in B the door stayed locked
+#   D.<f1>.<f2>   fork-1 canonical choice, then what the shadow did at fork 2
+#
+# setup:     hand-authored effect of the rejected choice (committed, not simulated)
+# steps:     one model call each (plus retries). `hint` guides the model;
+#            `actions` limits the action enum; `mark` forces a mark event
+#            ("digits" = four digits, "words" = a short phrase in capitals).
+# fallback:  tried in order if the model fails three times. "$holder:<obj>"
+#            means whoever holds that object; "$mark" is a seeded value.
+
+[B.open]
+premise = "In this timeline you opened the door at 11:47, and Mara came inside."
+setup_summary = "You open the door. Mara steps in, dripping, and closes it behind her."
+setup = [["set", "chars.mara.location", "apt"]]
+
+  [[B.open.steps]]
+  hint = "Mara says something to you that she should not know."
+  actions = ["speak", "move", "discover", "hide"]
+  fallback = [{ actor = "mara", action = "speak", target = "player", text = "You already let me in. You just don't remember it yet." }]
+
+  [[B.open.steps]]
+  hint = "Mara gets hold of the pocket object."
+  actions = ["take", "give"]
+  goal = "holds mara pocket"
+  fallback = [
+    { actor = "mara", action = "take", target = "pocket" },
+    { actor = "player", action = "give", target = "pocket", to = "mara" },
+  ]
+
+  [[B.open.steps]]
+  hint = "Mara writes four digits on the pocket object: a number that means something to her, never 1234 and not the time."
+  mark = "digits"
+  prefer = "pocket"
+  fallback = [{ actor = "$holder:pocket", action = "mark", target = "pocket", text = "$mark" }]
+
+[B.lock]
+premise = "In this timeline you kept the door locked at 11:47. Mara stayed in the hall."
+setup_summary = "You turn the deadbolt. Mara does not knock again."
+setup = [["set", "places.apt.locked", true]]
+
+  [[B.lock.steps]]
+  hint = "Teo, in 6D, opens his door for Mara. He never opens it for anyone."
+  actions = ["open"]
+  goal = "unlocked teo_apt"
+  fallback = [{ actor = "teo", action = "open", target = "teo_apt" }]
+
+  [[B.lock.steps]]
+  hint = "Mara steps into 6D, or Teo steps out into the hall, so they are face to face."
+  actions = ["move"]
+  goal = "together mara teo"
+  fallback = [
+    { actor = "mara", action = "move", target = "teo_apt" },
+    { actor = "teo", action = "move", target = "hall" },
+  ]
+
+  [[B.lock.steps]]
+  hint = "Something happens between Mara and Teo."
+  actions = ["speak", "give", "take", "harm"]
+  fallback = [{ actor = "mara", action = "give", target = "key07", to = "teo" }]
+
+  [[B.lock.steps]]
+  hint = "Whoever holds the brass key scratches four digits into its tag: a number that means something to them, never 1234 and not the time."
+  mark = "digits"
+  prefer = "key07"
+  fallback = [{ actor = "$holder:key07", action = "mark", target = "key07", text = "$mark" }]
+
+[D.lock.roof]
+premise = "You locked the door at 11:47. Later you climbed to the roof instead of going down."
+setup_summary = "You climb past the last landing and shoulder the roof door open."
+setup = [["set", "chars.player.location", "stairwell"], ["set", "chars.player.location", "roof"]]
+
+  [[D.lock.roof.steps]]
+  hint = "Someone comes up from below."
+  actions = ["move", "speak"]
+  fallback = [{ actor = "mara", action = "move", target = "stairwell" }]
+
+  [[D.lock.roof.steps]]
+  hint = "The storm, the roof, and what is said there."
+  actions = ["move", "speak", "take", "give", "harm"]
+  fallback = [{ actor = "mara", action = "move", target = "roof" }]
+
+  [[D.lock.roof.steps]]
+  hint = "Someone writes a short warning on an object they hold."
+  mark = "words"
+  prefer = "pocket"
+  fallback = [{ actor = "$holder:pocket", action = "mark", target = "pocket", text = "$mark" }]
+
+[D.lock.basement]
+premise = "You locked the door at 11:47. Later you went down to the basement instead of the roof."
+setup_summary = "You take the stairs down to the basement. Mara is there, by unit 07."
+setup = [["set", "chars.player.location", "stairwell"], ["set", "chars.player.location", "basement"]]
+
+  [[D.lock.basement.steps]]
+  hint = "Mara, waiting at storage unit 07, wants it opened."
+  actions = ["speak", "open", "give"]
+  fallback = [{ actor = "mara", action = "speak", target = "player", text = "Open it with me. That's all I wanted." }]
+
+  [[D.lock.basement.steps]]
+  hint = "Storage unit 07 is opened, or someone refuses."
+  actions = ["open", "move", "give", "take", "harm", "speak"]
+  fallback = [{ actor = "mara", action = "open", target = "unit07" }]
+
+  [[D.lock.basement.steps]]
+  hint = "Someone writes a short warning on an object they hold."
+  mark = "words"
+  prefer = "pocket"
+  fallback = [{ actor = "$holder:pocket", action = "mark", target = "pocket", text = "$mark" }]
+
+[D.open.roof]
+premise = "You let Mara in at 11:47. Later you climbed to the roof with her instead of going down."
+setup_summary = "You climb to the roof. Mara follows one step behind, the key in her fist."
+setup = [["set", "chars.player.location", "stairwell"], ["set", "chars.mara.location", "stairwell"],
+         ["set", "chars.player.location", "roof"], ["set", "chars.mara.location", "roof"]]
+
+  [[D.open.roof.steps]]
+  hint = "On the roof, Mara tells you what is in unit 07, or refuses to."
+  actions = ["speak", "move"]
+  fallback = [{ actor = "mara", action = "speak", target = "player", text = "It's not a thing in there. It's a night. This one." }]
+
+  [[D.open.roof.steps]]
+  hint = "The key changes hands, or is hidden."
+  actions = ["give", "take", "hide", "harm"]
+  fallback = [{ actor = "mara", action = "give", target = "key07", to = "player" }]
+
+  [[D.open.roof.steps]]
+  hint = "Someone writes a short warning on an object they hold."
+  mark = "words"
+  prefer = "key07"
+  fallback = [{ actor = "$holder:key07", action = "mark", target = "key07", text = "$mark" }]
+
+[D.open.basement]
+premise = "You let Mara in at 11:47. Later you went down to the basement with her instead of the roof."
+setup_summary = "You go down with Mara. The basement smells of rain that never reached it."
+setup = [["set", "chars.player.location", "stairwell"], ["set", "chars.mara.location", "stairwell"],
+         ["set", "chars.player.location", "basement"], ["set", "chars.mara.location", "basement"]]
+
+  [[D.open.basement.steps]]
+  hint = "Mara opens storage unit 07, or asks you to."
+  actions = ["open", "speak", "give"]
+  fallback = [{ actor = "mara", action = "open", target = "unit07" }]
+
+  [[D.open.basement.steps]]
+  hint = "Someone steps into unit 07, or something is left there."
+  actions = ["move", "hide", "give", "speak", "harm"]
+  fallback = [{ actor = "mara", action = "move", target = "unit07" }]
+
+  [[D.open.basement.steps]]
+  hint = "Someone writes a short warning on an object they hold."
+  mark = "words"
+  prefer = "pocket"
+  fallback = [{ actor = "$holder:pocket", action = "mark", target = "pocket", text = "$mark" }]
