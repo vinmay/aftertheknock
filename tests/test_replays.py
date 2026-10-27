@@ -26,3 +26,12 @@ def test_static_site_is_up_to_date():
     r = subprocess.run([sys.executable, str(root / "scripts" / "build_static.py"), "--check"],
                        capture_output=True, text=True)
     assert r.returncode == 0, r.stdout + r.stderr
+
+
+def test_nothing_is_left_invisible_when_animations_are_off():
+    """Elements that fade in from opacity 0 must be forced visible when fades are disabled
+    (instant text or reduced motion); otherwise choices exist but can't be seen."""
+    import re
+    css = (Path(__file__).resolve().parent.parent / "web" / "style.css").read_text()
+    for sel in (".choices", ".text p", ".stage-after", ".stage-color", ".trace-hint"):
+        assert re.search(r"body\.instant-text[^{]*" + re.escape(sel) + r"[^{]*\{[^}]*opacity:\s*1", css), sel

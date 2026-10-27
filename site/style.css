@@ -449,3 +449,9 @@ body.blackout main { animation: blackout 1.3s ease both; }
 body.instant-text.blackout main { animation: none; }
 /* The header (status, settings, mute, evidence) stays reachable above the crossing stage. */
 .bar { z-index: 35; }
+/* With animations off (Show text immediately / reduced motion), nothing may stay at its pre-fade opacity. */
+body.instant-text .choices, body.instant-text .text p, body.instant-text .stage-after,
+body.instant-text .stage-color, body.instant-text .trace-hint { opacity: 1 !important; transform: none !important; }
+@media (prefers-reduced-motion: reduce) {
+  .choices, .text p, .stage-after, .stage-color, .trace-hint { opacity: 1 !important; transform: none !important; }
+}
