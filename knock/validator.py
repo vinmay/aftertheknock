@@ -139,9 +139,11 @@ def validate(state: dict, proposal: dict, *, frozen: bool = False) -> Decision:
 
     elif action == "speak":
         aloud = tkind == "places" and target == here
-        if aloud:
+        if tkind == "places" and not aloud:
+            c.fail("R_REACH", f"{actor} is in {here}, not {target}; to speak aloud, the target is {here}")
+        elif aloud:
             c.pre.append(f"{actor} speaks aloud in {here}")
-        if aloud or (need_kind("chars") and colocated_char(target)):
+        if aloud or (tkind != "places" and need_kind("chars") and colocated_char(target)):
             if c.need(bool(text), "R_TEXT", "speak needs text") and \
                c.need(len(text) <= MAX_SPEECH, "R_TEXT", f"speech longer than {MAX_SPEECH} chars"):
                 delta.append(["append", f"chars.{actor}.said", text])

@@ -124,3 +124,9 @@ def test_hidden_object_must_be_discovered_before_taking(s):
 def test_frozen_branch_rejects_everything(s):
     d = validate(s, {"actor": "mara", "action": "move", "target": "stairwell"}, frozen=True)
     assert d.rules == ["R_FROZEN"]
+
+
+def test_speak_aloud_only_where_you_are(s):
+    assert validate(s, {"actor": "mara", "action": "speak", "target": "hall", "text": "Hello."}).accepted
+    d = validate(s, {"actor": "mara", "action": "speak", "target": "roof", "text": "Hello."})
+    assert d.rules == ["R_REACH"] and "to speak aloud, the target is hall" in d.violations[0][1]
