@@ -20,7 +20,7 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(ROOT))
 
-from knock.game import Game, verify_replay  # noqa: E402
+from knock.game import Game, replay_card, verify_replay  # noqa: E402
 from knock.models import ReplayModel  # noqa: E402
 
 WEB = ROOT / "web"
@@ -63,8 +63,8 @@ def build(out: Path) -> None:
         data = export(json.loads(p.read_text()))
         data["id"] = p.stem
         (out / "replays" / f"{p.stem}.json").write_text(json.dumps(data, separators=(",", ":"), sort_keys=True))
-        index.append({"id": p.stem, "pocket": data["pocket"], "path": data["path"], "seed": data["seed"],
-                      "model": data["model"].get("model")})
+        index.append(replay_card(p.stem, json.loads(p.read_text())))
+    index.sort(key=lambda c: not c["recommended"])
     (out / "replays" / "index.json").write_text(json.dumps(index, indent=1, sort_keys=True))
 
 

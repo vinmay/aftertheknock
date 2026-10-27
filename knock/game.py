@@ -72,6 +72,20 @@ def load_story() -> dict:
         return tomllib.load(f)
 
 
+RECOMMENDED_REPLAY = "lock_roof_erase_4711"    # the signature moment: you lock the door, digits on your object
+
+
+def replay_card(rec_id: str, rec: dict) -> dict:
+    """Listing for a recorded run. The title describes what happens in it (from its first crossing);
+    the path is shown only when a card is opened. Playtime isn't recorded, so it isn't shown."""
+    evs = {e["event_id"]: e for b in rec["timeline"]["branches"].values() for e in b["events"]}
+    first = evs[rec["crossings"]["B"]["intrusion"]["origin_event_id"]]
+    holder = "key" if first["target"] == "key07" else rec["pocket"]
+    return {"id": rec_id, "pocket": rec["pocket"], "title": f"The {holder} with four numbers",
+            "path": f"{rec['fork1']} / {rec['fork2']} / {rec['ending']['which']}", "seed": rec["seed"],
+            "model": rec["model"].get("model"), "recommended": rec_id == RECOMMENDED_REPLAY}
+
+
 def replay(record: dict) -> "Game":
     """Re-run a recorded game through the engine with the recorded model outputs."""
     from .models import ReplayModel

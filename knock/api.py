@@ -19,7 +19,7 @@ from http.server import SimpleHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
 from urllib.parse import parse_qs, urlparse
 
-from .game import Game, verify_replay
+from .game import Game, replay_card, verify_replay
 from .models import (DEFAULT_MODEL, RandomModel, ReplayModel, SpendCapReached, load_dotenv,
                      model_from_env)
 from .state import ROOT
@@ -113,12 +113,8 @@ def _save(g: Game) -> None:
 
 
 def _replay_list() -> list[dict]:
-    out = []
-    for p in sorted(REPLAYS.glob("*.json")):
-        d = json.loads(p.read_text())
-        out.append({"id": p.stem, "pocket": d["pocket"], "path": f"{d['fork1']} / {d['fork2']} / {d['ending']['which']}",
-                    "seed": d["seed"], "model": d["model"].get("model")})
-    return out
+    cards = [replay_card(p.stem, json.loads(p.read_text())) for p in sorted(REPLAYS.glob("*.json"))]
+    return sorted(cards, key=lambda c: not c["recommended"])
 
 
 class Handler(SimpleHTTPRequestHandler):
