@@ -17,20 +17,20 @@
  "replay_reproduces": "24/24 (100%)",
  "shadow_steps": {
   "total": 156,
-  "first_try": "143/156 (92%)",
-  "model_committed": "148/156 (95%)",
+  "first_try": "144/156 (92%)",
+  "model_committed": "147/156 (94%)",
   "fallback": "7/156 (4%)",
-  "skipped": "1/156 (1%)"
+  "skipped": "2/156 (1%)"
  },
  "validator": {
   "proposals": 177,
   "rejections_by_rule": {
    "R_ADJACENT": 18,
-   "R_NOOP": 5,
-   "R_TYPE": 4,
-   "R_REACH": 2
+   "R_NOOP": 9,
+   "R_REACH": 2,
+   "R_TYPE": 1
   },
-  "rejected": "29/177 (16%)"
+  "rejected": "30/177 (17%)"
  },
  "impossible_give": {
   "probe_calls": 30,
@@ -54,33 +54,33 @@
   "lock/basement": {
    "runs": 6,
    "distinct_chains": 6,
-   "mean_pairwise_event_overlap_jaccard": 0.23
+   "mean_pairwise_event_overlap_jaccard": 0.22
   },
   "lock/roof": {
    "runs": 6,
    "distinct_chains": 6,
-   "mean_pairwise_event_overlap_jaccard": 0.22
+   "mean_pairwise_event_overlap_jaccard": 0.24
   },
   "open/basement": {
    "runs": 6,
    "distinct_chains": 6,
-   "mean_pairwise_event_overlap_jaccard": 0.25
+   "mean_pairwise_event_overlap_jaccard": 0.26
   },
   "open/roof": {
    "runs": 6,
    "distinct_chains": 6,
-   "mean_pairwise_event_overlap_jaccard": 0.41
+   "mean_pairwise_event_overlap_jaccard": 0.42
   }
  },
  "performance": {
-  "model_call_latency_p50_s": 1.68,
-  "model_call_latency_p95_s": 2.28,
-  "shadow_sim_p50_s": 5.89,
-  "shadow_sim_p95_s": 8.29,
-  "crossing_scene_p50_s": 6.52,
-  "crossing_scene_p95_s": 8.78,
+  "model_call_latency_p50_s": 1.67,
+  "model_call_latency_p95_s": 2.12,
+  "shadow_sim_p50_s": 5.83,
+  "shadow_sim_p95_s": 7.97,
+  "crossing_scene_p50_s": 6.47,
+  "crossing_scene_p95_s": 8.49,
   "crossing_note": "time from click to crossing text with no reading pause; includes waiting for the shadow",
   "model_calls_per_playthrough_mean": 9.4,
-  "tokens_per_playthrough_mean": 5221
+  "tokens_per_playthrough_mean": 5215
  }
 }

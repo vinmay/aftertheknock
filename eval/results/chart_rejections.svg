@@ -5,12 +5,12 @@
 <rect x="230" y="44" width="360.0" height="20" fill="#b23a2f"/>
 <text x="596.0" y="59" fill="#e6dfd2">18</text>
 <text x="16" y="93" fill="#8d867b">R_NOOP</text>
-<rect x="230" y="78" width="100.0" height="20" fill="#b23a2f"/>
-<text x="336.0" y="93" fill="#e6dfd2">5</text>
-<text x="16" y="127" fill="#8d867b">R_TYPE</text>
-<rect x="230" y="112" width="80.0" height="20" fill="#b23a2f"/>
-<text x="316.0" y="127" fill="#e6dfd2">4</text>
-<text x="16" y="161" fill="#8d867b">R_REACH</text>
-<rect x="230" y="146" width="40.0" height="20" fill="#b23a2f"/>
-<text x="276.0" y="161" fill="#e6dfd2">2</text>
+<rect x="230" y="78" width="180.0" height="20" fill="#b23a2f"/>
+<text x="416.0" y="93" fill="#e6dfd2">9</text>
+<text x="16" y="127" fill="#8d867b">R_REACH</text>
+<rect x="230" y="112" width="40.0" height="20" fill="#b23a2f"/>
+<text x="276.0" y="127" fill="#e6dfd2">2</text>
+<text x="16" y="161" fill="#8d867b">R_TYPE</text>
+<rect x="230" y="146" width="20.0" height="20" fill="#b23a2f"/>
+<text x="256.0" y="161" fill="#e6dfd2">1</text>
 </svg>
