@@ -32,9 +32,9 @@ def canonical_view(timeline: Timeline, bid: str) -> dict:
 
 def _mark_fact(released: list) -> tuple[str, str] | None:
     for op, path, value in released:
-        kind, oid, fld = path.split(".")
-        if kind == "objects" and fld == "marks":
-            return oid, value
+        parts = path.split(".")
+        if len(parts) == 3 and parts[0] == "objects" and parts[2] == "marks":
+            return parts[1], value
     return None
 
 

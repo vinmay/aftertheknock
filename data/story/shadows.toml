@@ -30,7 +30,7 @@ setup = [["set", "chars.mara.location", "apt"]]
   ]
 
   [[B.open.steps]]
-  hint = "Mara writes four digits on the pocket object: a number that means something to her, never 1234 and not the time."
+  hint = "Mara writes four digits on the pocket object: never 1234 and not the time."
   mark = "digits"
   prefer = "pocket"
   fallback = [{ actor = "$holder:pocket", action = "mark", target = "pocket", text = "$mark" }]
@@ -61,7 +61,7 @@ setup = [["set", "places.apt.locked", true]]
   fallback = [{ actor = "mara", action = "give", target = "key07", to = "teo" }]
 
   [[B.lock.steps]]
-  hint = "Whoever holds the brass key scratches four digits into its tag: a number that means something to them, never 1234 and not the time."
+  hint = "Whoever holds the brass key scratches four digits into its tag: never 1234 and not the time."
   mark = "digits"
   prefer = "key07"
   fallback = [{ actor = "$holder:key07", action = "mark", target = "key07", text = "$mark" }]

@@ -17,6 +17,14 @@ from .validator import ACTIONS
 MAX_ATTEMPTS = 3
 WORDS_PATTERN = "^[A-Z][A-Z' ]{2,22}$"
 DIGITS_PATTERN = "^[0-9]{4}$"
+# Seeded hints that steer what a mark means, so the model's digits and words vary by seed.
+MEANINGS = {
+    "digits": ["the year someone disappeared", "a date written as month and day", "an apartment number in another building",
+               "the age someone will never reach", "the last four digits of a phone number nobody answers",
+               "a bus route that stopped running", "the number of days someone waited", "a locker combination"],
+    "words": ["a warning", "a plea", "an instruction", "an apology", "a name and a place", "a promise",
+              "a question", "something the other you wishes they had said"],
+}
 FALLBACK_WORDS = ["DON'T GO DOWN", "SHE IS STILL HERE", "WE STAYED", "NOT THIS NIGHT", "OPEN IT"]
 
 SYSTEM = ("You write one event at a time for a hidden timeline in a quiet horror story. "
@@ -82,7 +90,8 @@ def describe(state: dict) -> str:
     return "\n".join(lines)
 
 
-def build_messages(timeline: Timeline, bid: str, spec: dict, step: dict, feedback: str | None) -> list[dict]:
+def build_messages(timeline: Timeline, bid: str, spec: dict, step: dict, feedback: str | None,
+                   flavor: str | None = None) -> list[dict]:
     b = timeline.branch(bid)
     recent = [e for e in b.events][-4:]
     hist = "\n".join(f"- {e.summary or e.action}" for e in recent) or "- (nothing yet)"
@@ -98,7 +107,7 @@ def build_messages(timeline: Timeline, bid: str, spec: dict, step: dict, feedbac
         "mark = write text on an object you hold.",
         "Rules: act only where you are; give, mark or hide only what you hold; move one step to an "
         "adjacent place; a locked place needs its key.",
-        f"Next event: {step['hint']}",
+        f"Next event: {step['hint']}" + (f" What is written is {flavor}." if flavor else ""),
         "Fields: summary (what happens), actor, action, target, recipient (person receiving, for give "
         "only, else \"\"), text (words spoken or written, else \"\").",
     ]
@@ -220,9 +229,11 @@ def simulate_shadow(timeline: Timeline, bid: str, spec_key: str, model, seed: in
         rid = f"{bid}:step{i}"
         feedback = None
         event = None
+        flavor = (random.Random(f"{seed}:{bid}:{i}:meaning").choice(MEANINGS[step["mark"]])
+                  if step.get("mark") else None)
         for attempt in range(MAX_ATTEMPTS):
             state = timeline.state(bid)
-            msgs = build_messages(timeline, bid, spec, step, feedback)
+            msgs = build_messages(timeline, bid, spec, step, feedback, flavor)
             schema = step_schema(state, step)
             call_seed = seed * 1000 + (0 if bid == "B" else 500) + i * 10 + attempt
             t0 = time.perf_counter()
@@ -255,7 +266,15 @@ def simulate_shadow(timeline: Timeline, bid: str, spec_key: str, model, seed: in
             log.add(**rec)
             break
         if event is None:
-            for fb in step.get("fallback", []):
+            fallbacks = list(step.get("fallback", []))
+            if step.get("mark"):
+                # Last resort: whoever holds any markable object marks it, so every shadow
+                # still ends with a post-fork fact that can cross.
+                st = timeline.state(bid)
+                fallbacks += [{"actor": o["holder"], "action": "mark", "target": oid, "text": "$mark"}
+                              for oid, o in sorted(st["objects"].items())
+                              if o["markable"] and o["holder"] and st["chars"][o["holder"]]["status"] not in INACTIVE]
+            for fb in fallbacks:
                 p = resolve_fallback(timeline.state(bid), fb, rng, step.get("mark"))
                 d = timeline.check(bid, p)
                 if d.accepted and not beat_violations(step, p, d, timeline.state(bid)):

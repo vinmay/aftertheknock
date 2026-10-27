@@ -118,3 +118,13 @@ def test_replay_detects_tampering():
         if r["kind"] == "proposal" and r["decision"]["accepted"] and '"mark"' in r["raw"]:
             r["raw"] = r["raw"].replace(json.loads(r["raw"])["text"], "9999" if r["branch"] == "B" else "OTHER WORDS")
     assert not verify_replay(replay(rec), rec)
+
+
+def test_every_shadow_ends_in_a_mark_across_many_seeds():
+    """Random proposals over many seeds: every crossing still carries an inscription."""
+    from knock.sim import pick_origin
+    for seed in range(40):
+        f1, f2, end = PATHS[seed % len(PATHS)]
+        g = play(f1, f2, end, RandomModel(), seed=seed)
+        for shadow in ("B", "D"):
+            assert pick_origin(g.timeline, shadow).action == "mark", (seed, f1, f2, shadow)
