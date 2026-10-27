@@ -21,6 +21,7 @@
     <span id="settings" class="settings" hidden role="group" aria-label="Settings">
       <button class="tool" id="instant-toggle" aria-pressed="false">show text immediately</button>
       <button class="tool" id="sound-toggle" aria-pressed="true">sound</button>
+      <button class="tool menu-link" id="how-menu" aria-controls="drawer">how this works</button>
     </span>
   </span>
 </header>
@@ -75,7 +76,7 @@
   </section>
 </main>
 
-<footer class="foot"><button class="linkish" id="how">How this works</button></footer>
+<footer class="foot"><button class="linkish" id="how" aria-expanded="false" aria-controls="drawer">How this works</button></footer>
 
 <section id="crossing-stage" class="crossing-stage" hidden aria-live="assertive"></section>
 
