@@ -14,6 +14,7 @@
   <span class="mode" id="mode"></span>
   <span class="clock" id="clock" hidden aria-label="Time"></span>
   <span class="tools">
+    <button class="tool" id="instant-toggle" aria-pressed="false" title="Show text immediately, without fades or slow reveals">show text immediately</button>
     <button class="tool" id="sound-toggle" aria-pressed="true" title="Sound">sound</button>
     <button class="tool" id="evidence-toggle" aria-pressed="false" title="Evidence view (E)">evidence</button>
   </span>
@@ -23,17 +24,18 @@
   <section id="title" class="screen">
     <svg class="door" viewBox="0 0 220 300" aria-hidden="true" focusable="false">
       <defs>
-        <linearGradient id="seam" x1="0" x2="1"><stop offset="0" stop-color="#e9b86a" stop-opacity="0"/><stop offset="0.5" stop-color="#e9b86a" stop-opacity="0.55"/><stop offset="1" stop-color="#e9b86a" stop-opacity="0"/></linearGradient>
-        <radialGradient id="lens" cx="0.38" cy="0.35" r="0.7"><stop offset="0" stop-color="#f3e3c2"/><stop offset="0.35" stop-color="#8a6a3c"/><stop offset="1" stop-color="#2b2015"/></radialGradient>
+        <linearGradient id="seam" x1="0" x2="1"><stop offset="0" stop-color="#f0c27a" stop-opacity="0"/><stop offset="0.5" stop-color="#f0c27a" stop-opacity="0.9"/><stop offset="1" stop-color="#f0c27a" stop-opacity="0"/></linearGradient>
+        <radialGradient id="lens" cx="0.35" cy="0.32" r="0.75"><stop offset="0" stop-color="#fff4da"/><stop offset="0.25" stop-color="#c9a66a"/><stop offset="0.7" stop-color="#5e4524"/><stop offset="1" stop-color="#1e160d"/></radialGradient>
+        <linearGradient id="rim" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#e2c48c"/><stop offset="0.5" stop-color="#7a5a2e"/><stop offset="1" stop-color="#d8b67a"/></linearGradient>
       </defs>
-      <rect x="20" y="10" width="180" height="282" fill="#121010" stroke="#26221e" stroke-width="2"/>
-      <rect x="36" y="26" width="148" height="262" fill="#0c0b0a" stroke="#1d1a17"/>
-      <rect x="52" y="44" width="116" height="96" fill="none" stroke="#1a1714"/>
-      <rect x="52" y="160" width="116" height="112" fill="none" stroke="#1a1714"/>
-      <circle cx="110" cy="100" r="7.5" fill="url(#lens)" stroke="#5a4428" stroke-width="1.5"/>
-      <circle class="glint" cx="107.5" cy="97.5" r="1.4" fill="#fff6e0"/>
-      <circle cx="160" cy="176" r="4" fill="#3a2e1f"/>
-      <rect class="seam" x="36" y="288" width="148" height="3" fill="url(#seam)"/>
+      <rect x="18" y="8" width="184" height="286" fill="#16130f" stroke="#4a4036" stroke-width="2.5"/>
+      <rect x="36" y="26" width="148" height="262" fill="#0f0d0b" stroke="#2c2620" stroke-width="1.5"/>
+      <rect x="52" y="44" width="116" height="96" fill="none" stroke="#2a241e"/>
+      <rect x="52" y="160" width="116" height="112" fill="none" stroke="#2a241e"/>
+      <circle cx="110" cy="100" r="9" fill="url(#lens)" stroke="url(#rim)" stroke-width="3"/>
+      <circle cx="107" cy="97" r="1.6" fill="#fffaf0"/>
+      <circle cx="160" cy="178" r="4.5" fill="#5a4630" stroke="#8a6c44" stroke-width="1"/>
+      <rect class="seam" x="40" y="289" width="140" height="1.6" fill="url(#seam)"/>
     </svg>
     <h1>After the Knock</h1>
     <p class="sub">11:47 PM. A storm. Someone at your door who says you already let her in.</p>
@@ -86,7 +88,9 @@
     <div id="map-list" class="map-list" hidden></div>
   </div>
   <div id="map-intro" class="map-intro" hidden><p>There were other versions of tonight.</p><button class="linkish" id="map-skip">Skip</button></div>
-  <div id="map-tip" class="map-tip" hidden></div>
+  <div id="map-detail" class="map-detail" aria-live="off"></div>
+  <p id="map-announce" class="sr-only" aria-live="polite"></p>
+  <nav id="map-events" class="sr-only" aria-label="Every event in order"></nav>
 </section>
 
 <aside id="evidence" class="evidence" hidden aria-label="Evidence view">

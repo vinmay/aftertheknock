@@ -106,7 +106,7 @@ const LINKS = {
   replay: "https://knock-replay.onrender.com/",
   repo: "https://github.com/vinmay/aftertheknock",
 };
-const article = (w) => (/^[aeiou]/i.test(w) ? "an " : "a ") + w;
+const article = (w) => (/^(two|three|four|five|six|seven|eight|nine|ten|some|few|several)\b/i.test(w) || (/s$/i.test(w) && !/(ss|us|is)$/i.test(w)) ? w : (/^[aeiou]/i.test(w) ? "an " : "a ") + w);
 /* "lock / roof / erase" -> plain words. Shown only after a card is opened (no spoilers in the list). */
 function pathWords(path) {
   const [f1, f2, end] = path.split(" / ");
@@ -133,7 +133,8 @@ async function boot() {
       $("#replay-list").innerHTML = list.map((r, i) => `
         <li class="card-night">
           <button class="card-head" aria-expanded="false" aria-controls="night-${i}">
-            <span class="card-title">Night ${i + 1} · ${esc(article(r.pocket))}</span><span class="card-meta">Recorded run</span>
+            <span class="card-title">${esc(r.title || `Night ${i + 1}`)}${r.recommended ? ` <span class="rec-badge">Recommended first watch</span>` : ""}
+              <span class="card-sub">${esc(article(r.pocket))} \u00b7 Recorded run</span></span>
           </button>
           <div class="card-body" id="night-${i}" hidden>
             <p>${esc(pathWords(r.path))}</p>
@@ -171,6 +172,8 @@ uv run knock-server    # http://localhost:8047</pre>
     <p class="small">Code, tests and evaluation: <a href="${LINKS.repo}">${LINKS.repo.replace("https://", "")}</a>${st.static ? "" : ` · Replays: <a href="${LINKS.replay}">${LINKS.replay.replace("https://", "")}</a>`}</p>`);
 }
 $("#how").addEventListener("click", howItWorks);
+["mouseenter", "focus"].forEach((ev) => $("#begin").addEventListener(ev, () => $(".door")?.classList.add("lit")));
+["mouseleave", "blur"].forEach((ev) => $("#begin").addEventListener(ev, () => $(".door")?.classList.remove("lit")));
 
 $("#start").addEventListener("submit", async (ev) => {
   ev.preventDefault();
@@ -224,8 +227,20 @@ function paragraphs(text) {
   return text.split(/\n\s*\n/).map((p) => p.trim()).filter(Boolean);
 }
 
-const TYPE_MS = 14;              // per character; click, tap or Space skips
-const Typing = { timer: null, finish: null };
+/* Reading preferences. "Show text immediately" turns off every fade and slow reveal. */
+const Prefs = {
+  get(k) { try { return localStorage.getItem("knock." + k); } catch { return null; } },
+  set(k, v) { try { localStorage.setItem("knock." + k, v); } catch { /* private mode: keep for this page only */ } },
+};
+let INSTANT = Prefs.get("instant") === "1";
+const instantText = () => INSTANT || REDUCED;
+function applyInstant() {
+  document.body.classList.toggle("instant-text", instantText());
+  const b = $("#instant-toggle");
+  if (b) b.setAttribute("aria-pressed", String(INSTANT));
+}
+const FADE_MS = 250;
+const wait = (ms) => new Promise((r) => setTimeout(r, ms));
 
 function sceneHtml(v) {
   if (v.kind === "crossing") {
@@ -238,43 +253,13 @@ function sceneHtml(v) {
   return paragraphs(v.text).map((p) => `<p>${esc(p)}</p>`).join("");
 }
 
-/* Reveal text nodes character by character. Resolves when done or skipped. */
-function typeOut(root) {
-  const nodes = [];
-  const walk = (n) => n.childNodes.forEach((c) => (c.nodeType === 3 ? nodes.push([c, c.textContent]) : walk(c)));
-  walk(root);
-  if (REDUCED) return Promise.resolve();
-  nodes.forEach(([n]) => (n.textContent = ""));
-  root.classList.add("typing");
-  return new Promise((resolve) => {
-    let i = 0, j = 0;
-    const done = () => {
-      clearInterval(Typing.timer); Typing.timer = null; Typing.finish = null;
-      nodes.forEach(([n, t]) => (n.textContent = t));
-      root.classList.remove("typing");
-      resolve();
-    };
-    Typing.finish = done;
-    Typing.timer = setInterval(() => {
-      for (let k = 0; k < 2; k++) {
-        if (i >= nodes.length) return done();
-        const [n, t] = nodes[i];
-        n.textContent = t.slice(0, ++j);
-        if (j >= t.length) { i++; j = 0; }
-      }
-    }, TYPE_MS);
-  });
-}
-
-function skipTyping() { if (Typing.finish) { Typing.finish(); return true; } return false; }
-
 async function show(v) {
   S.view = v;
   $("#title").hidden = true;
   $("#scene").hidden = false;
   $("#scene").className = "screen kind-" + (v.kind || "scene");
   setClock(v.clock);
-  if (v.power === "out" && !REDUCED) {
+  if (v.power === "out" && !instantText()) {
     document.body.classList.add("flicker");
     setTimeout(() => document.body.classList.remove("flicker"), 1000);
   }
@@ -292,7 +277,7 @@ async function show(v) {
   else window.scrollTo({ top: 0 });
 
   if (v.kind === "crossing") stageCrossing(v.crossing, v.scene === "crossing2");
-  else await typeOut(text);
+  else if (!instantText()) await wait(FADE_MS);
   if (S.view !== v) return;
 
   const recorded = S.replay ? S.replay.choices[S.step] : null;
@@ -373,22 +358,18 @@ async function choose(i) {
   }
 }
 
-/* Click or tap the text to skip typing; Space skips; 1-9 choose; Enter takes a single choice. */
-document.addEventListener("click", (ev) => {
-  if (Typing.finish && ev.target.closest("#current") && !ev.target.closest("button")) skipTyping();
-});
+/* 1-9 choose; Enter takes a single choice. */
 document.addEventListener("keydown", (ev) => {
   if (ev.target.tagName === "INPUT" || ev.target.tagName === "TEXTAREA") return;
   if (!$("#crossing-stage").hidden || !$("#map").hidden || !$("#drawer").hidden) return;
-  if (ev.key === " " && skipTyping()) { ev.preventDefault(); return; }
   if ($("#scene").hidden || $("#choices").hidden) return;
   const buttons = [...$("#choices").querySelectorAll("button[data-index]:not([disabled])")];
   const n = parseInt(ev.key, 10);
   if (n >= 1) {
     const b = $("#choices").querySelector(`button[data-index="${n - 1}"]`);
-    if (b && !b.disabled) { ev.preventDefault(); b.click(); }
+    if (b && !b.disabled) { ev.preventDefault(); b.focus(); b.click(); }
   } else if (ev.key === "Enter" && buttons.length === 1 && document.activeElement === document.body) {
-    ev.preventDefault(); buttons[0].click();
+    ev.preventDefault(); buttons[0].focus(); buttons[0].click();
   }
 });
 
@@ -399,27 +380,65 @@ function setClock(t) {
 /* ---------------------------------------------------------------- the crossing */
 const REDUCED = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 
+/* Props: SVG only. The inscription is drawn last, in a hand, over the printed object. */
+function inscriptionSize(text, room = 380) {
+  return Math.max(22, Math.min(64, Math.round(room / Math.max(text.length, 5))));
+}
+function propSvg(c) {
+  const mark = esc(c.inscription), fs = inscriptionSize(c.inscription, c.object === "key07" ? 300 : 380);
+  const pocket = (S.pocket || "").toLowerCase();
+  if (c.object === "key07") {
+    return `<svg class="prop" viewBox="0 0 420 210" role="img" aria-label="The brass key's paper tag. Printed: BASEMENT 07. Handwritten: ${mark}">
+      <path d="M118,104 C80,96 52,70 44,48" fill="none" stroke="#b9975a" stroke-width="2.5"/>
+      <circle cx="40" cy="40" r="18" fill="none" stroke="#c9a96a" stroke-width="5"/>
+      <circle cx="40" cy="40" r="18" fill="none" stroke="#f3dfae" stroke-width="1" stroke-dasharray="6 40"/>
+      <path d="M160,34 L396,34 L396,186 L160,186 L118,146 L118,74 Z" fill="#cdb07a" stroke="#9c8050" stroke-width="1.5"/>
+      <circle cx="140" cy="110" r="11" fill="none" stroke="#9c8050" stroke-width="5"/>
+      <circle cx="140" cy="110" r="7" fill="#0e0d0c"/>
+      <text x="282" y="70" text-anchor="middle" class="printed">BASEMENT 07</text>
+      <line x1="178" y1="84" x2="384" y2="84" stroke="#8a6f43" stroke-width="1"/>
+      <text x="280" y="150" text-anchor="middle" class="ink-hand" style="font-size:${fs}px">${mark}</text>
+    </svg>`;
+  }
+  if (/ticket|stub|pass|transfer|fare/.test(pocket)) {
+    const holes = Array.from({ length: 15 }, (_, i) => `<circle cx="14" cy="${22 + i * 12}" r="4.2" fill="#0e0d0c"/>`).join("");
+    const tear = Array.from({ length: 15 }, (_, i) => `<circle cx="96" cy="${22 + i * 12}" r="2" fill="#0e0d0c" opacity="0.55"/>`).join("");
+    return `<svg class="prop" viewBox="0 0 420 210" role="img" aria-label="Your ${esc(S.pocket)}. Handwritten on it: ${mark}">
+      <rect x="10" y="12" width="400" height="186" rx="3" fill="#ece4d1"/>
+      ${holes}${tear}
+      <text transform="translate(60,105) rotate(-90)" text-anchor="middle" class="printed small">VALID TONIGHT ONLY</text>
+      <text x="112" y="44" class="printed route">NIGHT BUS \u00b7 ROUTE 14 \u00b7 2.75</text>
+      <line x1="112" y1="54" x2="398" y2="54" stroke="#b9ad93" stroke-width="1"/>
+      <path d="M300,12 L262,198" stroke="#000" stroke-opacity="0.07" stroke-width="3"/>
+      <path d="M302,12 L264,198" stroke="#fff" stroke-opacity="0.35" stroke-width="1"/>
+      <text x="398" y="188" text-anchor="end" class="printed serial">N\u00ba 0047193</text>
+      <text x="256" y="138" text-anchor="middle" class="ink-hand" style="font-size:${fs}px">${mark}</text>
+    </svg>`;
+  }
+  return `<svg class="prop" viewBox="0 0 420 210" role="img" aria-label="Your ${esc(S.pocket)}. Handwritten on it: ${mark}">
+    <path d="M14,16 L404,12 L408,196 L18,200 Z" fill="#e9e1cf"/>
+    <path d="M210,14 L212,198" stroke="#000" stroke-opacity="0.08" stroke-width="3"/>
+    <path d="M212,14 L214,198" stroke="#fff" stroke-opacity="0.4" stroke-width="1"/>
+    <text x="392" y="40" text-anchor="end" class="printed small">${esc((S.pocket || "").toUpperCase())}</text>
+    <text x="210" y="128" text-anchor="middle" class="ink-hand" style="font-size:${fs}px">${mark}</text>
+  </svg>`;
+}
+
 function stageCrossing(c, second = false) {
   const el = $("#crossing-stage");
-  const kind = c.object === "key07" ? "tag" : "paper";
-  const label = c.object === "key07" ? "BASEMENT 07" : esc(S.pocket || "");
+  el.classList.remove("ready", "instant");
   el.innerHTML = `
     <div class="stage-inner">
       <p class="stage-before">${esc(c.before)}</p>
-      <div class="card ${kind}">
-        ${label ? `<span class="card-label">${label}</span>` : ""}
-        <svg class="hand" viewBox="0 0 400 90" role="img" aria-label="${esc(c.inscription)}">
-          <text x="200" y="60" text-anchor="middle" style="font-size:${Math.max(30, Math.min(76, Math.round(420 / Math.max(c.inscription.length, 5))))}px">${esc(c.inscription)}</text>
-        </svg>
-      </div>
+      <div class="prop-wrap${c.object === "key07" ? " keytag" : ""}">${propSvg(c)}</div>
       <p class="stage-after">${esc(`${c.after} ${c.who}`.trim())}</p>
       ${c.color ? `<p class="stage-color">${esc(c.color)}</p>` : ""}
       <button class="primary stage-go" id="stage-go">Go on</button>
     </div>`;
   el.hidden = false;
-  el.classList.toggle("instant", REDUCED);
+  el.classList.toggle("instant", instantText());
   document.body.classList.add("staged");
-  if (!REDUCED) {
+  if (!instantText()) {
     document.body.classList.add("flicker");
     setTimeout(() => document.body.classList.remove("flicker"), 1000);
   }
@@ -428,7 +447,15 @@ function stageCrossing(c, second = false) {
   Sound.pen(c.inscription.length);
   const close = () => { el.hidden = true; document.body.classList.remove("staged"); $("#current .ink")?.focus(); };
   $("#stage-go").addEventListener("click", close);
-  setTimeout(() => $("#stage-go")?.focus(), REDUCED ? 0 : 3200);
+  const ready = () => { el.classList.add("ready"); $("#stage-go")?.focus(); };
+  if (instantText()) ready();
+  else {
+    const t = setTimeout(ready, 3100);              // the mark has finished writing itself
+    el.addEventListener("click", (ev) => {           // click anywhere: finish now
+      if (ev.target.closest("#stage-go")) return;
+      clearTimeout(t); el.classList.add("instant"); ready();
+    }, { once: true });
+  }
 }
 
 /* ---------------------------------------------------------------- trace */
@@ -451,8 +478,13 @@ function attemptsHtml(attempts) {
 /* Story -> memory -> proof. The memory and labels are built by the engine from committed events;
    raw ids, state paths and the model's own words stay inside "View proof". */
 function memoryHtml(mem, kicker = "where it came from") {
-  return `<p class="kicker">${esc(kicker)}</p>
-    <div class="quote shadowq memory">${esc(mem.memory)}</div>
+  // A flashback rendered from the shadow's committed events; the plain sentence if no scene.
+  const scene = mem.scene && mem.scene.length
+    ? `<p class="flash-night">${esc(mem.night[0].toUpperCase() + mem.night.slice(1))}:</p>
+       <div class="flashback">${mem.scene.map((l) => `<p>${esc(l.line)}</p>`).join("")}</div>
+       <p class="flash-close">${esc(mem.closing)}</p>`
+    : `<div class="quote shadowq memory">${esc(mem.memory)}</div>`;
+  return `<p class="kicker">${esc(kicker)}</p>${scene}
     <ol class="route">
       <li><span class="route-k">Written there</span> ${esc(mem.source.replace(/^Written there: /, ""))}</li>
       <li><span class="route-k">Appeared here</span> ${esc(mem.dest.replace(/^Appeared here: /, ""))}</li>
@@ -484,11 +516,20 @@ function openTrace(tr) {
 }
 
 function openDrawer(html) {
+  if ($("#drawer").hidden) S.drawerTrigger = document.activeElement;
   $("#drawer-body").innerHTML = html;
   $("#drawer").hidden = false;
-  $("#drawer-close").focus();
+  const body = $("#drawer-body");
+  body.setAttribute("tabindex", "-1");
+  body.focus();                                      // screen readers start at the memory, before the proof
+  body.scrollTop = 0;
 }
-$("#drawer-close").addEventListener("click", () => ($("#drawer").hidden = true));
+function closeDrawer() {
+  $("#drawer").hidden = true;
+  const t = S.drawerTrigger;
+  if (t && document.contains(t)) t.focus();
+}
+$("#drawer-close").addEventListener("click", closeDrawer);
 
 /* ---------------------------------------------------------------- verification */
 async function openVerify() {
@@ -510,20 +551,25 @@ async function openMap() {
   try {
     S.mapData = await api(`/api/map?game=${encodeURIComponent(S.game)}`);
   } catch (e) { return; }
+  S.mapTrigger = document.activeElement;
   $("#map").hidden = false;
   drawMap(S.mapData);
-  if (!S.mapRevealed) { S.mapRevealed = true; reveal(); }
-  else showAll();
+  if (!S.mapRevealed && !instantText()) { S.mapRevealed = true; reveal(); }
+  else { S.mapRevealed = true; showAll(); }
 }
 
-/* The reveal: a line of text, then your path, each rejected branch at its fork, then the threads.
-   A presentation of committed data only; skippable, and instant under reduced motion. */
+/* The reveal: a line of text, then your path, each rejected branch at its fork, then the threads,
+   then the first crossing is lit and explained. Committed data only; skippable; instant under
+   reduced motion or "show text immediately". */
 const Reveal = { timers: [] };
 function showAll() {
   Reveal.timers.forEach(clearTimeout); Reveal.timers = [];
   $("#map").classList.remove("revealing");
   $("#map-intro").hidden = true;
   $("#map").querySelectorAll("[data-stage]").forEach((el) => el.classList.add("on"));
+  if (S.mapData && S.mapData.intrusions.length) selectCrossing(0, false);
+  // Keyboard users land on the first crossing's "Follow this thread" (or the first night card on phones).
+  if (!$("#map").hidden) ($("#map-detail:not([hidden]) .cta") || $("#map-list .ev-row.crossing") || $("#map-close")).focus();
 }
 function reveal() {
   if (REDUCED) return showAll();
@@ -531,17 +577,78 @@ function reveal() {
   map.classList.add("revealing");
   map.querySelectorAll("[data-stage]").forEach((el) => el.classList.remove("on"));
   $("#map-intro").hidden = false;
+  $("#map-skip").focus();
   const at = (ms, fn) => Reveal.timers.push(setTimeout(fn, ms));
   const stage = (n) => map.querySelectorAll(`[data-stage="${n}"]`).forEach((el) => el.classList.add("on"));
-  at(2200, () => { $("#map-intro").hidden = true; stage(1); });
-  at(3200, () => stage(2));
-  at(4400, () => stage(3));
-  at(5600, () => { stage(4); Sound.crossing(); });
-  at(7400, () => { stage(5); });
-  at(9000, showAll);
+  at(1800, () => { $("#map-intro").hidden = true; stage(1); });
+  at(2600, () => stage(2));
+  at(3400, () => stage(3));
+  at(4200, () => { stage(4); Sound.crossing(); });
+  at(5400, () => stage(5));
+  at(6600, showAll);
 }
 $("#map-skip").addEventListener("click", showAll);
-$("#map-close").addEventListener("click", () => ($("#map").hidden = true));
+function closeMap() {
+  Reveal.timers.forEach(clearTimeout); Reveal.timers = [];
+  $("#map").classList.remove("revealing");
+  $("#map").hidden = true;
+  const t = S.mapTrigger;
+  const back = t && t !== document.body && document.contains(t) ? t : $("#choices button");
+  back?.focus();
+}
+$("#map-close").addEventListener("click", closeMap);
+
+const ORDINAL = ["FIRST CROSSING", "SECOND CROSSING"];
+function laneTitle(label) {
+  if (!label) return "";
+  const m = label.match(/^(Your night|The other night): (.*)$/);
+  if (!m) return label.toUpperCase().replace(/, BEFORE THE CHOICE$/, "") + " — before the choice";
+  const rest = m[2][0].toUpperCase() + m[2].slice(1);
+  return `${m[1] === "Your night" ? "YOUR NIGHT" : "OTHER NIGHT"} — ${rest}`;
+}
+
+/* The detail card under the graph: hover previews, click/Enter/Space selects (announced). */
+function detailFor(id) {
+  const d = S.mapData, e = d.events.find((x) => x.event_id === id);
+  const i = d.intrusions.findIndex((x) => x.origin_event_id === id || x.manifestation_event_id === id);
+  if (i >= 0) return crossingDetail(i, d.intrusions[i].origin_event_id === id ? "source" : "dest");
+  return `<p class="kicker">${esc(laneTitle(d.labels[e.branch]))}</p><p class="detail-title">${esc(e.desc)}</p>
+    <button class="linkish" data-open="${esc(id)}">Details</button>`;
+}
+function crossingDetail(i, end = "source") {
+  const x = S.mapData.intrusions[i], m = x.memory;
+  return `<p class="kicker">${ORDINAL[i] || "CROSSING"}</p>
+    <p class="detail-title"><span class="ink-text">“${esc(m.inscription)}”</span> on ${esc(m.object)}</p>
+    <p class="detail-route"><b>Written there</b> ${esc(m.source.replace(/^Written there: /, ""))}<br>
+    <b>Appeared here</b> ${esc(m.dest.replace(/^Appeared here: /, ""))}</p>
+    <button class="cta small" data-open="${esc(end === "source" ? x.origin_event_id : x.manifestation_event_id)}">See what happened there</button>`;
+}
+function setDetail(html, announce) {
+  const card = $("#map-detail");
+  card.innerHTML = html;
+  card.querySelectorAll("[data-open]").forEach((b) => b.addEventListener("click", () => openEvent(b.dataset.open)));
+  if (announce) $("#map-announce").textContent = card.textContent.replace(/\s+/g, " ").trim();
+}
+function selectNode(id) {
+  S.mapSelected = id;
+  $("#map-svg").querySelectorAll(".node, .thread").forEach((n) => n.classList.remove("selected", "lit"));
+  const n = $("#map-svg").querySelector(`.node[data-id="${CSS.escape(id)}"]`);
+  if (n) n.classList.add("selected");
+  const i = S.mapData.intrusions.findIndex((x) => x.origin_event_id === id || x.manifestation_event_id === id);
+  if (i >= 0) $("#map-svg").querySelectorAll(".thread")[i]?.classList.add("lit");
+  setDetail(detailFor(id), true);
+}
+function selectCrossing(i, announce = true) {
+  const x = S.mapData.intrusions[i];
+  selectNode(x.origin_event_id);
+  setDetail(`<p class="kicker">${ORDINAL[i]}</p>
+    <p class="detail-title"><span class="ink-text">“${esc(x.memory.inscription)}”</span> was written there. It appeared here.</p>
+    <p class="detail-route"><b>Written there</b> ${esc(x.memory.source.replace(/^Written there: /, ""))}<br>
+    <b>Appeared here</b> ${esc(x.memory.dest.replace(/^Appeared here: /, ""))}</p>
+    <button class="cta small" data-open="${esc(x.origin_event_id)}">Follow this thread</button>
+    ${S.mapData.intrusions.length > 1 ? `<button class="linkish" id="next-crossing">${ORDINAL[1 - i]?.toLowerCase() || ""} →</button>` : ""}`, announce);
+  $("#next-crossing")?.addEventListener("click", () => selectCrossing(1 - i));
+}
 
 function drawMap(d) {
   const svg = $("#map-svg");
@@ -549,13 +656,18 @@ function drawMap(d) {
   const narrow = window.matchMedia("(max-width: 40rem)").matches;
   svg.toggleAttribute("hidden", narrow);
   $("#map-list").hidden = !narrow;
+  $("#map-detail").hidden = narrow;
+  drawEventList(d);
   if (narrow) return drawMapList(d);
-  const vertical = false;
   const evidence = !$("#evidence").hidden;
   const br = Object.fromEntries(d.branches.map((b) => [b.id, b]));
   // Causal x order: shadows start right after their fork; a crossing lands after its origin.
-  const col = {}, lastCol = {};
+  const col = {};
   const byBranch = (id) => d.events.filter((e) => e.branch === id).sort((a, b) => a.seq - b.seq);
+  function lastColAt(parent, forkSeq) {
+    const evs = d.events.filter((e) => [parent, br[parent].parent].includes(e.branch) && e.seq < forkSeq);
+    return Math.max(-1, ...evs.map((e) => col[e.event_id] ?? -1));
+  }
   for (const id of ["S", "B", "A", "D", "C"]) {
     const b = br[id];
     if (!b) continue;
@@ -565,32 +677,18 @@ function drawMap(d) {
       if (e.origin && col[e.origin] !== undefined) c = Math.max(c, col[e.origin] + 1);
       col[e.event_id] = c;
     }
-    lastCol[id] = c;
   }
-  function lastColAt(parent, forkSeq) {
-    const evs = d.events.filter((e) => [parent, br[parent].parent].includes(e.branch) && e.seq < forkSeq);
-    return Math.max(-1, ...evs.map((e) => col[e.event_id] ?? -1));
-  }
+  S.mapCol = col;
   const maxSeq = Math.max(...Object.values(col));
-  const lane = vertical ? { B: 0.22, S: 0.55, A: 0.55, C: 0.55, D: 0.86 } : { B: 0.2, S: 0.5, A: 0.5, C: 0.5, D: 0.8 };
-  let W, H, P;
-  if (vertical) {
-    const step = 64;
-    W = Math.max(320, box); H = 90 + maxSeq * step + 220;
-    P = (seq, b) => [W * lane[b], 70 + seq * step];
-  } else {
-    const step = Math.max(76, (box - 160) / Math.max(maxSeq, 1));
-    W = 80 + maxSeq * step + 80; H = 420;
-    P = (seq, b) => [80 + seq * step, H * lane[b]];
-  }
+  const lane = { B: 0.17, S: 0.5, A: 0.5, C: 0.5, D: 0.83 };
+  const step = Math.max(84, (box - 180) / Math.max(maxSeq, 1));
+  const W = 90 + maxSeq * step + 90, H = Math.max(460, Math.min(window.innerHeight - 330, 620));
+  const P = (seq, b) => [90 + seq * step, H * lane[b]];
   svg.setAttribute("viewBox", `0 0 ${W} ${H}`);
   svg.setAttribute("width", W); svg.setAttribute("height", H);
   const pos = {};
   d.events.forEach((e) => (pos[e.event_id] = P(col[e.event_id], e.branch)));
-  const origins = new Set(d.intrusions.map((x) => x.origin_event_id));
-  const curve = ([x1, y1], [x2, y2]) => vertical
-    ? `M${x1},${y1} C${x1},${(y1 + y2) / 2} ${x2},${(y1 + y2) / 2} ${x2},${y2}`
-    : `M${x1},${y1} C${(x1 + x2) / 2},${y1} ${(x1 + x2) / 2},${y2} ${x2},${y2}`;
+  const curve = ([x1, y1], [x2, y2]) => `M${x1},${y1} C${(x1 + x2) / 2},${y1} ${(x1 + x2) / 2},${y2} ${x2},${y2}`;
   let out = "";
   const stageOf = { S: 1, A: 1, C: 1, B: 2, D: 3 };
   const forkAt = Object.fromEntries((d.forks || []).map((f) => [f.at === "S" ? "B" : "D", f]));
@@ -602,55 +700,57 @@ function drawMap(d) {
     const first = pos[evs[0].event_id], last = pos[evs[evs.length - 1].event_id];
     if (b.parent) out += `<path class="${cls}" d="${curve(P(lastColAt(b.parent, b.fork_seq), b.parent), first)}"/>`;
     out += `<path class="${cls}" d="M${first[0]},${first[1]} L${last[0]},${last[1]}"/>`;
-    const label = esc(d.labels[b.id] || b.id);
-    if (vertical && b.id === "S") continue;
-    out += vertical
-      ? `<text class="lane-label" transform="translate(${first[0] - 16},${first[1] + 14}) rotate(90)">${label}</text>`
-      : `<text class="lane-label" x="${first[0] - 8}" y="${first[1] + (b.id === "B" ? -26 : b.id === "D" ? 38 : b.id === "A" ? 58 : 38)}">${label}</text>`;
+    const dy = b.id === "B" ? -30 : b.id === "D" ? 42 : b.id === "A" ? 64 : 42;
+    out += `<text class="lane-label${br[b.id].kind === "shadow" ? " other" : ""}" x="${first[0] - 10}" y="${first[1] + dy}">${esc(laneTitle(d.labels[b.id]))}</text>`;
     const f = forkAt[b.id];
-    if (f && !vertical) {
+    if (f) {
       const [fx, fy] = P(lastColAt(b.parent, b.fork_seq), b.parent);
-      out += `<text class="fork-label" x="${fx}" y="${fy + (b.id === "B" ? -16 : 22)}" text-anchor="middle">\u201c${esc(f.not_taken)}\u201d</text>`;
+      out += `<text class="fork-label" x="${fx}" y="${fy + (b.id === "B" ? -18 : 26)}" text-anchor="middle">“${esc(f.not_taken)}”</text>`;
     }
     out += `</g>`;
   }
   d.intrusions.forEach((x, i) => {
-    out += `<path class="thread" data-stage="${4 + i}" pathLength="1" d="${curve(pos[x.origin_event_id], pos[x.manifestation_event_id])}"/>`;
+    const [a, b] = [pos[x.origin_event_id], pos[x.manifestation_event_id]];
+    out += `<g data-stage="${4 + i}" class="thread-g"><path class="thread" pathLength="1" d="${curve(a, b)}"/>` +
+      ((a[0] + b[0]) / 2 > W - 180
+        ? `<text class="cross-label" x="${(a[0] + b[0]) / 2 - 14}" y="${(a[1] + b[1]) / 2}" text-anchor="end">${ORDINAL[i] || ""}</text></g>`
+        : `<text class="cross-label" x="${(a[0] + b[0]) / 2 + 12}" y="${(a[1] + b[1]) / 2}">${ORDINAL[i] || ""}</text></g>`);
   });
+  const anchors = new Set(d.intrusions.flatMap((x) => [x.origin_event_id, x.manifestation_event_id]));
   for (const e of d.events) {
     const [x, y] = pos[e.event_id];
     const kind = br[e.branch].kind === "shadow" ? "shadow" : "canonical";
-    const cls = ["node", kind, e.source, origins.has(e.event_id) ? "origin" : ""].join(" ");
-    const r = e.source === "story" ? 5 : 9;
-    const xo = d.intrusions.find((i) => i.origin_event_id === e.event_id);
-    const xm = d.intrusions.find((i) => i.manifestation_event_id === e.event_id);
-    const role = xo ? ` This is where \u201c${xo.memory.inscription}\u201d was written.` : xm ? ` \u201c${xm.memory.inscription}\u201d appeared here, from another night.` : "";
-    const name = `${d.labels[e.branch] || ""}. ${e.desc}${role}`;
+    const anchor = anchors.has(e.event_id);
+    const cls = ["node", kind, e.source, anchor ? "anchor" : ""].join(" ");
+    const r = anchor ? 8 : e.source === "story" ? 4 : 5.5;
+    const xi = d.intrusions.findIndex((i) => i.origin_event_id === e.event_id || i.manifestation_event_id === e.event_id);
+    const role = xi >= 0 ? ` ${ORDINAL[xi].toLowerCase()}: “${d.intrusions[xi].memory.inscription}” ${d.intrusions[xi].origin_event_id === e.event_id ? "was written here" : "appeared here"}.` : "";
+    const name = `${laneTitle(d.labels[e.branch])}. ${e.desc}${role}`;
     out += `<g class="${cls}" data-stage="${stageOf[e.branch]}" tabindex="0" role="button" aria-label="${esc(name)}" data-id="${esc(e.event_id)}">` +
-      `<circle cx="${x}" cy="${y}" r="14" class="hit"/><circle cx="${x}" cy="${y}" r="${r}" class="dot"/>` +
-      (evidence ? `<text x="${x}" y="${y + (vertical ? 4 : 26)}" dx="${vertical ? 16 : 0}" text-anchor="${vertical ? "start" : "middle"}" class="eid">${esc(e.event_id)}</text>` : "") +
-      `</g>`;
+      `<circle cx="${x}" cy="${y}" r="20" class="hit"/><circle cx="${x}" cy="${y}" r="${r}" class="dot"/>` +
+      (evidence ? `<text x="${x}" y="${y + 30}" text-anchor="middle" class="eid">${esc(e.event_id)}</text>` : "") + `</g>`;
   }
   svg.innerHTML = out;
-  const tip = $("#map-tip");
   svg.querySelectorAll(".node").forEach((n) => {
-    const e = d.events.find((x) => x.event_id === n.dataset.id);
-    const show = () => {
-      const r = n.getBoundingClientRect(), host = $("#map").getBoundingClientRect();
-      const xo = d.intrusions.find((i) => i.origin_event_id === e.event_id);
-      const xm = d.intrusions.find((i) => i.manifestation_event_id === e.event_id);
-      tip.textContent = e.desc + (xo ? " (written there)" : xm ? " (appeared here)" : "");
-      tip.hidden = false;
-      tip.style.left = `${Math.min(r.left - host.left, host.width - 260)}px`;
-      tip.style.top = `${r.bottom - host.top + 8}px`;
-    };
-    n.addEventListener("mouseenter", show);
-    n.addEventListener("focus", show);
-    n.addEventListener("mouseleave", () => (tip.hidden = true));
-    n.addEventListener("blur", () => (tip.hidden = true));
-    n.addEventListener("click", () => { tip.hidden = true; openEvent(n.dataset.id); });
-    n.addEventListener("keydown", (ev) => { if (ev.key === "Enter" || ev.key === " ") { ev.preventDefault(); openEvent(n.dataset.id); } });
+    const id = n.dataset.id;
+    n.addEventListener("mouseenter", () => { if (S.mapSelected !== id) setDetail(detailFor(id), false); });
+    n.addEventListener("mouseleave", () => { if (S.mapSelected && S.mapSelected !== id) setDetail(detailFor(S.mapSelected), false); });
+    n.addEventListener("click", () => selectNode(id));
+    n.addEventListener("keydown", (ev) => {
+      if (ev.key === "Enter" || ev.key === " ") { ev.preventDefault(); selectNode(id); $("#map-detail [data-open]")?.focus(); }
+    });
   });
+}
+
+/* Screen readers: the same night as a chronological list. */
+function drawEventList(d) {
+  const order = [...d.events].sort((a, b) => (S.mapCol?.[a.event_id] ?? a.seq) - (S.mapCol?.[b.event_id] ?? b.seq) || a.branch.localeCompare(b.branch));
+  $("#map-events").innerHTML = `<h3>Every event, in order</h3><ol>${order.map((e) => {
+    const i = d.intrusions.findIndex((x) => x.origin_event_id === e.event_id || x.manifestation_event_id === e.event_id);
+    const role = i >= 0 ? ` (${ORDINAL[i].toLowerCase()}, ${d.intrusions[i].origin_event_id === e.event_id ? "written there" : "appeared here"})` : "";
+    return `<li><button data-open="${esc(e.event_id)}">${esc(laneTitle(d.labels[e.branch]))}: ${esc(e.desc)}${role}</button></li>`;
+  }).join("")}</ol>`;
+  $("#map-events").querySelectorAll("[data-open]").forEach((b) => b.addEventListener("click", () => openEvent(b.dataset.open)));
 }
 
 /* Phones: the same data as a vertical list of nights, linked by crossing markers. */
@@ -660,7 +760,8 @@ function drawMapList(d) {
   const evBtn = (e) => {
     const xo = d.intrusions.find((i) => i.origin_event_id === e.event_id);
     const xm = d.intrusions.find((i) => i.manifestation_event_id === e.event_id);
-    const mark = xo ? `<span class="xmark">written there \u2198</span>` : xm ? `<span class="xmark">appeared here</span>` : "";
+    const xi = d.intrusions.findIndex((i) => i.origin_event_id === e.event_id || i.manifestation_event_id === e.event_id);
+    const mark = xo ? `<span class="xmark">${ORDINAL[xi]} \u00b7 written there \u2198</span>` : xm ? `<span class="xmark">${ORDINAL[xi]} \u00b7 appeared here</span>` : "";
     return `<li><button class="ev-row${xo || xm ? " crossing" : ""}" data-id="${esc(e.event_id)}" data-stage="1">${esc(e.desc)}${mark}</button></li>`;
   };
   const card = (id, title, cls) => {
@@ -730,13 +831,15 @@ function toggleEvidence() {
 $("#evidence-toggle").addEventListener("click", toggleEvidence);
 $("#evidence-close").addEventListener("click", toggleEvidence);
 $("#sound-toggle").addEventListener("click", () => { Sound.init(); Sound.toggle(); });
+$("#instant-toggle").addEventListener("click", () => { INSTANT = !INSTANT; Prefs.set("instant", INSTANT ? "1" : "0"); applyInstant(); });
+applyInstant();
 document.addEventListener("keydown", (ev) => {
   if (ev.target.tagName === "INPUT") return;
   if (ev.key === "e" || ev.key === "E") toggleEvidence();
   if (ev.key === "Escape") {
-    if (!$("#drawer").hidden) $("#drawer").hidden = true;
+    if (!$("#drawer").hidden) closeDrawer();
     else if (!$("#evidence").hidden) toggleEvidence();
-    else $("#map").hidden = true;
+    else if (!$("#map").hidden) { if ($("#map").classList.contains("revealing")) showAll(); else closeMap(); }
   }
 });
 

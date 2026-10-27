@@ -192,33 +192,12 @@ pre { white-space: pre-wrap; overflow-wrap: anywhere; margin: 0.3rem 0 0; color:
 body.staged main { filter: blur(2px) brightness(0.5); }
 .stage-inner { max-width: 30rem; width: 100%; text-align: center; }
 .stage-before { color: var(--muted); font-style: italic; margin: 0 0 1.4rem; }
-.card {
-  position: relative; margin: 0 auto 1.6rem; width: min(22rem, 100%); padding: 2.2rem 1rem 1rem;
-  border-radius: 3px; box-shadow: 0 18px 50px rgba(0, 0, 0, 0.7); transform: rotate(-1.5deg);
-}
-.card.paper { background: #e9e1cf; color: #2a2620; border-left: 6px dotted #0e0d0c; }
-.card.tag { background: #c9a96e; color: #2a2014; border-radius: 4px 4px 4px 40px; }
-.card.tag::before { content: ""; position: absolute; top: 0.8rem; left: 1rem; width: 0.9rem; height: 0.9rem; border-radius: 50%; background: #0e0d0c; }
-.card.voice { background: #121417; color: var(--ink); border: 1px solid var(--faint); transform: none; }
-.card-label { position: absolute; top: 0.7rem; right: 1rem; font-family: var(--mono); font-size: 0.68rem; letter-spacing: 0.12em; text-transform: uppercase; opacity: 0.6; }
-.hand { width: 100%; height: auto; display: block; overflow: visible; }
-.hand text {
-  font-family: "Caveat", "Segoe Script", "Bradley Hand", cursive; font-size: 76px;
-  fill: transparent; stroke: #7a1e17; stroke-width: 1.2;
-  stroke-dasharray: 900; stroke-dashoffset: 900;
-  animation: write 2.6s cubic-bezier(.5,.1,.4,1) 0.5s forwards, ink-in 0.8s ease 2.6s forwards;
-}
-.card.voice .hand text { stroke: var(--ink); font-family: var(--serif); font-style: italic; font-size: 30px; }
 @keyframes write { to { stroke-dashoffset: 0; } }
 @keyframes ink-in { to { fill: currentColor; stroke-width: 0.4; } }
-.card.paper .hand text, .card.tag .hand text { color: #7a1e17; }
-.card.voice .hand text { color: var(--ink); }
 .stage-after { margin: 0 0 1rem; opacity: 0; animation: in 1s ease 3s forwards; }
 .stage-color { color: var(--muted); margin: 0 0 1.4rem; opacity: 0; animation: in 1s ease 3.6s forwards; }
 .stage-go { opacity: 0; animation: in 0.6s ease 3.8s forwards; justify-self: center; }
-.crossing-stage.instant *, .crossing-stage.instant .hand text { animation: none !important; opacity: 1 !important; }
-.crossing-stage.instant .hand text { fill: currentColor; stroke-dashoffset: 0; }
-
+.crossing-stage.instant *, 
 .play-live { margin: 2.5rem 0 1rem; }
 .play-live a { color: var(--ink); text-decoration: none; display: inline-block; }
 .foot { position: fixed; bottom: 0; right: 0; padding: 0.6rem 1rem; z-index: 4; }
@@ -351,14 +330,85 @@ label[for="pocket"] { color: var(--ink); }
 #map-svg[hidden] { display: none; }
 
 /* Landing: one closed door, light under it, a peephole that catches the light */
-.door { display: block; width: 7.5rem; height: auto; margin: 0 0 -1rem; }
-.door .seam { animation: seam 6s ease-in-out infinite; }
-.door .glint { animation: glint 9s ease-in-out infinite; }
-@keyframes seam { 0%, 100% { opacity: 0.55; } 50% { opacity: 1; } }
-@keyframes glint { 0%, 88%, 100% { opacity: 0.25; } 92% { opacity: 1; } }
-@media (max-width: 40rem) { .door { width: 5.5rem; margin-bottom: -0.5rem; } }
-@media (prefers-reduced-motion: reduce) { .door .seam, .door .glint { animation: none; } }
+.door { display: block; width: 12rem; height: auto; margin: 0 0 -0.5rem; }
+.door .seam { opacity: 0.6; transition: opacity 0.6s ease; }
+.door.lit .seam { opacity: 1; }
+@media (max-width: 40rem) { .door { width: 8.5rem; } }
+@media (prefers-reduced-motion: reduce) { .door .seam { transition: none; } }
 input::placeholder { color: #8f887c; font-style: italic; }
 @media (max-width: 40rem) {
   .foot { position: static; text-align: center; padding: 0 1rem 2rem; }
 }
+
+/* ---------- final polish ---------- */
+.sr-only { position: absolute !important; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; border: 0; }
+.sr-only:focus-within { position: fixed !important; width: auto; height: auto; clip: auto; inset: 1rem; z-index: 50; background: var(--bg-raised); padding: 1rem; overflow: auto; white-space: normal; }
+
+/* Pacing: routine text fades quickly; slow effects only for crossings and the map. */
+.text p { animation: in 0.25s ease both !important; opacity: 1; }
+.current.fade-in { animation-duration: 0.25s; }
+.choices { animation: in 0.2s ease both; }
+body.instant-text .text p, body.instant-text .current.fade-in, body.instant-text .choices { animation: none !important; }
+body.instant-text main { animation: none !important; }
+
+/* Crossing stage: "Go on" appears and takes focus the moment the mark is written. */
+.stage-go { opacity: 0; animation: none; pointer-events: none; }
+.crossing-stage.ready .stage-go, .crossing-stage.instant .stage-go { opacity: 1; pointer-events: auto; transition: opacity 0.2s; }
+.stage-after { animation-delay: 2.9s; }
+.stage-color { animation-delay: 3.1s; }
+
+/* Map anchors and threads */
+#map-svg .node .hit { fill: transparent; }
+#map-svg .node .dot { stroke-width: 1.5; }
+#map-svg .node.anchor .dot { stroke-width: 3; }
+#map-svg .node.canonical.anchor .dot { fill: var(--blood); stroke: #e98a7e; }
+#map-svg .node.shadow.anchor .dot { fill: var(--bg); stroke: #e98a7e; }
+#map-svg .node:hover .dot, #map-svg .node:focus .dot { r: 9; }
+#map-svg .node.anchor:hover .dot, #map-svg .node.anchor:focus .dot, #map-svg .node.selected .dot { r: 11; }
+#map-svg .node.selected .hit { stroke: var(--ink); stroke-width: 1.5; stroke-dasharray: 3 3; }
+#map-svg .thread { stroke-width: 3.5; opacity: 0.75; }
+#map-svg .thread.lit { opacity: 1; stroke: #e98a7e; filter: drop-shadow(0 0 4px rgba(233, 138, 126, 0.6)); }
+#map-svg .cross-label { fill: var(--blood-text); font-family: var(--mono); font-size: 12px; letter-spacing: 0.1em; }
+#map-svg .lane-label { fill: var(--ink); font-family: var(--mono); font-style: normal; font-size: 13px; letter-spacing: 0.04em; }
+#map-svg .lane-label.other { fill: #b9c3cc; }
+.map { grid-template-rows: auto 1fr auto; overflow-y: auto; }
+.map-detail {
+  max-width: 44rem; width: 100%; margin: 0.6rem auto 0; padding: 0.9rem 1.1rem; min-height: 7.5rem;
+  border: 1px solid var(--faint); background: var(--bg-raised);
+}
+.map-detail .kicker { font-family: var(--mono); font-size: 0.72rem; letter-spacing: 0.1em; color: var(--blood-text); margin: 0 0 0.3rem; }
+.map-detail .detail-title { font-size: 1.1rem; margin: 0 0 0.4rem; }
+.map-detail .detail-route { color: var(--muted); font-size: 0.95rem; margin: 0 0 0.6rem; }
+.map-detail .detail-route b { color: var(--ink); font-weight: normal; font-family: var(--mono); font-size: 0.72rem; letter-spacing: 0.08em; text-transform: uppercase; margin-right: 0.4rem; }
+.ink-text { color: var(--blood-text); font-style: italic; }
+.cta.small { min-height: 44px; padding: 0.4rem 1rem; margin-right: 1rem; }
+.tool[aria-pressed="false"] { color: var(--muted); }
+#instant-toggle[aria-pressed="true"] { color: var(--ink); }
+@media (max-width: 40rem) { #instant-toggle { max-width: 7rem; line-height: 1.2; text-align: right; } }
+
+/* Props */
+.prop-wrap { width: min(26rem, 100%); margin: 0 auto 1.4rem; transform: rotate(-1.5deg); filter: drop-shadow(0 18px 40px rgba(0, 0, 0, 0.7)); }
+.prop-wrap.keytag { transform: rotate(2deg); }
+.prop { display: block; width: 100%; height: auto; overflow: visible; }
+.prop .printed { font-family: ui-monospace, "SF Mono", Menlo, monospace; fill: #5f5545; font-size: 13px; letter-spacing: 0.08em; }
+.prop .printed.small { font-size: 11px; letter-spacing: 0.14em; }
+.prop .printed.serial { fill: #a99e86; font-size: 11px; }
+.prop .printed.route { font-size: 12.5px; }
+.prop-wrap.keytag .printed { fill: #2a2014; font-family: "Arial Black", "Helvetica Neue", Arial, sans-serif; font-weight: 900; font-size: 24px; letter-spacing: 0.16em; }
+.prop .ink-hand {
+  font-family: "Caveat", "Segoe Script", "Bradley Hand", cursive; color: #8a1f15;
+  fill: transparent; stroke: #8a1f15; stroke-width: 1.2; stroke-dasharray: 900; stroke-dashoffset: 900;
+  animation: write 2.2s cubic-bezier(.5,.1,.4,1) 0.4s forwards, ink-in 0.6s ease 2.4s forwards;
+}
+.crossing-stage.instant .prop .ink-hand { animation: none !important; fill: currentColor; stroke-dashoffset: 0; stroke-width: 0.4; }
+
+/* Flashback memories */
+.flash-night { font-family: var(--mono); font-size: 0.75rem; letter-spacing: 0.06em; color: #b9c3cc; margin: 0.4rem 0 0.4rem; text-transform: uppercase; }
+.flashback { border-left: 2px dashed var(--shadow); padding-left: 0.9rem; margin: 0 0 0.6rem; font-style: italic; color: #d9d2c5; }
+.flashback p { margin: 0 0 0.45rem; line-height: 1.55; }
+.flashback p:last-child { color: var(--ink); font-style: normal; }
+.flash-close { margin: 0.4rem 0 0.2rem; }
+
+.card-title { display: block; }
+.card-sub { display: block; font-size: 0.88rem; color: var(--muted); margin-top: 0.15rem; }
+.rec-badge { display: inline-block; font-family: var(--mono); font-size: 0.66rem; letter-spacing: 0.08em; text-transform: uppercase; color: var(--bg); background: #c9a96a; padding: 0.05rem 0.4rem; border-radius: 2px; vertical-align: 2px; margin-left: 0.4rem; }

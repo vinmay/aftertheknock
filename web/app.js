@@ -367,9 +367,9 @@ document.addEventListener("keydown", (ev) => {
   const n = parseInt(ev.key, 10);
   if (n >= 1) {
     const b = $("#choices").querySelector(`button[data-index="${n - 1}"]`);
-    if (b && !b.disabled) { ev.preventDefault(); b.click(); }
+    if (b && !b.disabled) { ev.preventDefault(); b.focus(); b.click(); }
   } else if (ev.key === "Enter" && buttons.length === 1 && document.activeElement === document.body) {
-    ev.preventDefault(); buttons[0].click();
+    ev.preventDefault(); buttons[0].focus(); buttons[0].click();
   }
 });
 
@@ -568,6 +568,8 @@ function showAll() {
   $("#map-intro").hidden = true;
   $("#map").querySelectorAll("[data-stage]").forEach((el) => el.classList.add("on"));
   if (S.mapData && S.mapData.intrusions.length) selectCrossing(0, false);
+  // Keyboard users land on the first crossing's "Follow this thread" (or the first night card on phones).
+  if (!$("#map").hidden) ($("#map-detail:not([hidden]) .cta") || $("#map-list .ev-row.crossing") || $("#map-close")).focus();
 }
 function reveal() {
   if (REDUCED) return showAll();
@@ -587,9 +589,12 @@ function reveal() {
 }
 $("#map-skip").addEventListener("click", showAll);
 function closeMap() {
-  showAll();
+  Reveal.timers.forEach(clearTimeout); Reveal.timers = [];
+  $("#map").classList.remove("revealing");
   $("#map").hidden = true;
-  (S.mapTrigger && document.contains(S.mapTrigger) ? S.mapTrigger : $("#choices button") || document.body).focus?.();
+  const t = S.mapTrigger;
+  const back = t && t !== document.body && document.contains(t) ? t : $("#choices button");
+  back?.focus();
 }
 $("#map-close").addEventListener("click", closeMap);
 
@@ -731,7 +736,9 @@ function drawMap(d) {
     n.addEventListener("mouseenter", () => { if (S.mapSelected !== id) setDetail(detailFor(id), false); });
     n.addEventListener("mouseleave", () => { if (S.mapSelected && S.mapSelected !== id) setDetail(detailFor(S.mapSelected), false); });
     n.addEventListener("click", () => selectNode(id));
-    n.addEventListener("keydown", (ev) => { if (ev.key === "Enter" || ev.key === " ") { ev.preventDefault(); selectNode(id); } });
+    n.addEventListener("keydown", (ev) => {
+      if (ev.key === "Enter" || ev.key === " ") { ev.preventDefault(); selectNode(id); $("#map-detail [data-open]")?.focus(); }
+    });
   });
 }
 
