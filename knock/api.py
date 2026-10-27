@@ -8,6 +8,7 @@ Live mode needs Ollama. Replay mode serves recorded runs from data/runs/ and nee
 from __future__ import annotations
 
 import argparse
+import hashlib
 import json
 import os
 import threading
@@ -156,7 +157,9 @@ class Handler(SimpleHTTPRequestHandler):
                 if info.get("hosted") and not live:
                     # Why the live model is off: the provider's status and message, never the key.
                     out["live_error"] = getattr(_model, "last_error", None)
-                    out["key_length"] = len(getattr(_model, "_key", "") or "")   # length only, to spot paste errors
+                    key = getattr(_model, "_key", "") or ""
+                    out["key_length"] = len(key)                                   # to spot paste errors
+                    out["key_fingerprint"] = hashlib.sha256(key.encode()).hexdigest()[:8]   # not reversible
                 return self._json(out)
             if u.path == "/api/replays":
                 return self._json(_replay_list())
