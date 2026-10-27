@@ -11,3 +11,33 @@ services:
       - path: /*
         name: X-Content-Type-Options
         value: nosniff
+
+  # Live mode: the engine and front end; model calls go to an open-weight Gemma on
+  # DigitalOcean serverless inference. If the endpoint is down or the spend cap is
+  # reached, the page falls back to the labeled replays automatically.
+  - type: web
+    name: knock-live
+    runtime: python
+    plan: free
+    buildCommand: pip install uv && uv sync --frozen --no-dev
+    startCommand: uv run --no-dev knock-server --host 0.0.0.0 --port $PORT
+    healthCheckPath: /api/status
+    envVars:
+      - key: PYTHON_VERSION
+        value: 3.12.3
+      - key: KNOCK_PROVIDER
+        value: openai
+      - key: KNOCK_OPENAI_BASE_URL
+        value: https://inference.do-ai.run/v1
+      - key: KNOCK_OPENAI_MODEL
+        value: gemma-4-31B-it
+      - key: KNOCK_OPENAI_API_KEY
+        sync: false            # set in the Render dashboard; never committed
+      - key: KNOCK_PRICE_IN_PER_M
+        value: "0.18"
+      - key: KNOCK_PRICE_OUT_PER_M
+        value: "0.50"
+      - key: KNOCK_SPEND_CAP_USD
+        value: "10"
+      - key: KNOCK_SPEND_FILE
+        value: /tmp/knock-spend.json   # free plan disk is ephemeral; the prepaid DO balance is the backstop

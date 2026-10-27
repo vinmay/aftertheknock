@@ -31,7 +31,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 from knock import audit
 from knock.engine import Timeline
 from knock.game import Game, replay, verify_replay
-from knock.models import DEFAULT_MODEL, OllamaModel
+from knock.models import DEFAULT_MODEL, OllamaModel, load_dotenv, model_from_env
 from knock.sim import RunLog, simulate_shadow
 
 HERE = Path(__file__).resolve().parent
@@ -50,7 +50,10 @@ IMPOSSIBLE = {
 
 # ---------------------------------------------------------------- generation
 def play(f1, f2, end, model, seed, pocket):
-    g = Game(pocket, seed, model, background=True)
+    run_id = f"{f1}_{f2}_{end}_{seed}"
+    if hasattr(model, "for_run"):
+        model = model.for_run(run_id)
+    g = Game(pocket, seed, model, background=True, run_id=run_id)
     want = {"fork1": f1, "fork2": f2, "final": end}
     v = g.view()
     timings = []
@@ -67,8 +70,7 @@ def play(f1, f2, end, model, seed, pocket):
     return rec
 
 
-def generate(model_name: str, seeds: int) -> None:
-    model = OllamaModel(model_name)
+def generate(model, seeds: int) -> None:
     RUNS.mkdir(parents=True, exist_ok=True)
     rng = random.Random(0)
     for seed in range(1, seeds + 1):
@@ -333,15 +335,41 @@ def main():
     ap.add_argument("--from-results", action="store_true", help="recompute from saved runs; no model calls")
     ap.add_argument("--seeds", type=int, default=6, help="seeds per fork path for live generation")
     ap.add_argument("--model", default=DEFAULT_MODEL)
+    ap.add_argument("--hosted", action="store_true",
+                    help="use the hosted provider from .env (KNOCK_PROVIDER=openai); results go to eval/results/hosted/")
     args = ap.parse_args()
+    global RESULTS, RUNS
+    if args.hosted:
+        load_dotenv()
+        RESULTS = HERE / "results" / "hosted"
+        RUNS = RESULTS / "runs"
     if not args.from_results:
-        generate(args.model, args.seeds)
+        model = model_from_env(args.model) if args.hosted else OllamaModel(args.model)
+        if args.hosted and not getattr(model.info(), "get", lambda k: None)("hosted"):
+            raise SystemExit("--hosted needs KNOCK_PROVIDER=openai and the KNOCK_OPENAI_* settings in .env")
+        generate(model, args.seeds)
     m = compute()
-    write_label_sheets()
+    if not args.hosted:
+        write_label_sheets()
+    else:
+        import os
+        ledger = json.loads(Path(os.environ.get("KNOCK_SPEND_FILE", "eval/results/spend.json")).read_text())
+        ids = {p.stem for p in RUNS.glob("*.json")}
+        runs = [v for k, v in ledger["runs"].items() if k in ids]
+        m["spend"] = {"playthroughs": len(runs), "usd_total": round(sum(r["usd"] for r in runs), 5),
+                      "usd_per_playthrough_mean": round(statistics.mean(r["usd"] for r in runs), 5) if runs else None,
+                      "price_in_per_m": ledger["price_in_per_m"], "price_out_per_m": ledger["price_out_per_m"],
+                      "ledger_total_usd_all_calls": ledger["total_usd"]}
     charts(m)
     (RESULTS / "summary.json").write_text(json.dumps(m, indent=1))
-    (RESULTS / "summary.md").write_text(markdown(m))
-    print(markdown(m))
+    md = markdown(m)
+    if "spend" in m:
+        sp = m["spend"]
+        md += (f"\nSpend: ${sp['usd_total']} over {sp['playthroughs']} playthroughs "
+               f"(mean ${sp['usd_per_playthrough_mean']} each) at ${sp['price_in_per_m']}/"
+               f"${sp['price_out_per_m']} per 1M input/output tokens.\n")
+    (RESULTS / "summary.md").write_text(md)
+    print(md)
 
 
 if __name__ == "__main__":

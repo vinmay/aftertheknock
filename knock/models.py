@@ -145,3 +145,167 @@ class ReplayModel:
             self.misses += 1
             return Reply("", 0.0, model=self.name)
         return Reply(q.pop(0), 0.0, model=self.name)
+
+
+# ---------------------------------------------------------------- hosted (OpenAI-compatible)
+class SpendCapReached(RuntimeError):
+    pass
+
+
+class SpendLedger:
+    """Running spend for a hosted model, persisted to a JSON file and capped.
+
+    The cap is checked before every call. The provider's own prepaid balance is the
+    backstop if the file is lost (for example on a host with an ephemeral disk).
+    """
+
+    def __init__(self, path: str, cap_usd: float, price_in_per_m: float, price_out_per_m: float):
+        import threading
+        from pathlib import Path
+        self.path = Path(path)
+        self.cap = cap_usd
+        self.price_in, self.price_out = price_in_per_m, price_out_per_m
+        self.lock = threading.Lock()
+        self.data = {"cap_usd": cap_usd, "price_in_per_m": price_in_per_m,
+                     "price_out_per_m": price_out_per_m, "total_usd": 0.0, "calls": 0, "runs": {}}
+        if self.path.exists():
+            saved = json.loads(self.path.read_text())
+            self.data.update({k: saved[k] for k in ("total_usd", "calls", "runs") if k in saved})
+
+    @property
+    def total(self) -> float:
+        return self.data["total_usd"]
+
+    def check(self) -> None:
+        if self.total >= self.cap:
+            raise SpendCapReached(f"spend cap ${self.cap:.2f} reached (${self.total:.4f} spent)")
+
+    def add(self, run_id: str | None, prompt_tokens: int, output_tokens: int) -> float:
+        usd = prompt_tokens / 1e6 * self.price_in + output_tokens / 1e6 * self.price_out
+        with self.lock:
+            self.data["total_usd"] = round(self.data["total_usd"] + usd, 8)
+            self.data["calls"] += 1
+            run = self.data["runs"].setdefault(run_id or "unattributed",
+                                               {"calls": 0, "prompt_tokens": 0, "output_tokens": 0, "usd": 0.0})
+            run["calls"] += 1
+            run["prompt_tokens"] += prompt_tokens
+            run["output_tokens"] += output_tokens
+            run["usd"] = round(run["usd"] + usd, 8)
+            self.path.parent.mkdir(parents=True, exist_ok=True)
+            tmp = self.path.with_suffix(".tmp")
+            tmp.write_text(json.dumps(self.data, indent=1))
+            tmp.replace(self.path)
+        return usd
+
+
+def _strip_fences(text: str) -> str:
+    t = text.strip()
+    if t.startswith("```"):
+        t = t.split("\n", 1)[1] if "\n" in t else ""
+        t = t.rsplit("```", 1)[0]
+    return t.strip()
+
+
+class OpenAICompatModel:
+    """An open-weight model behind an OpenAI-compatible chat completions API.
+
+    Configured only through environment variables (see .env.example). The API key is
+    never logged or recorded.
+    """
+    live = True
+
+    def __init__(self, base_url: str, model: str, api_key: str, ledger: SpendLedger,
+                 temperature: float = 0.8, timeout: float = 60, run_id: str | None = None):
+        self.url = base_url.rstrip("/")
+        self.name = model
+        self._key = api_key
+        self.ledger = ledger
+        self.temperature, self.timeout = temperature, timeout
+        self.run_id = run_id
+        self.schema_supported: bool | None = None
+
+    @classmethod
+    def from_env(cls) -> "OpenAICompatModel":
+        e = os.environ
+        ledger = SpendLedger(e.get("KNOCK_SPEND_FILE", "eval/results/spend.json"),
+                             float(e.get("KNOCK_SPEND_CAP_USD", "10")),
+                             float(e["KNOCK_PRICE_IN_PER_M"]), float(e["KNOCK_PRICE_OUT_PER_M"]))
+        return cls(e["KNOCK_OPENAI_BASE_URL"], e["KNOCK_OPENAI_MODEL"], e["KNOCK_OPENAI_API_KEY"], ledger)
+
+    def for_run(self, run_id: str) -> "OpenAICompatModel":
+        m = OpenAICompatModel(self.url, self.name, self._key, self.ledger, self.temperature, self.timeout, run_id)
+        m.schema_supported = self.schema_supported
+        return m
+
+    def info(self) -> dict:
+        return {"model": self.name, "provider": self.url.split("//")[-1].split("/")[0],
+                "quantization": "provider-managed", "hosted": True}
+
+    def _post(self, body: dict) -> dict:
+        req = urllib.request.Request(f"{self.url}/chat/completions", data=json.dumps(body).encode(),
+                                     headers={"Content-Type": "application/json",
+                                              "Authorization": f"Bearer {self._key}"})
+        with urllib.request.urlopen(req, timeout=self.timeout) as r:
+            return json.load(r)
+
+    def ping(self) -> bool:
+        try:
+            self.ledger.check()
+            req = urllib.request.Request(f"{self.url}/models", headers={"Authorization": f"Bearer {self._key}"})
+            with urllib.request.urlopen(req, timeout=10) as r:
+                return r.status == 200
+        except Exception:
+            return False
+
+    def generate(self, messages: list[dict], schema: dict | None = None, seed: int = 0,
+                 max_tokens: int = 200) -> Reply:
+        import urllib.error
+        self.ledger.check()
+        body = {"model": self.name, "messages": list(messages), "temperature": self.temperature,
+                "seed": seed, "max_tokens": max_tokens}
+        if schema is not None:
+            if self.schema_supported is not False:
+                body["response_format"] = {"type": "json_schema",
+                                           "json_schema": {"name": "event", "schema": schema, "strict": True}}
+            else:
+                body["messages"] = body["messages"] + [{"role": "user", "content":
+                    "Reply with one JSON object only, no prose, with exactly these keys: "
+                    + ", ".join(schema["properties"]) + ". Allowed values: "
+                    + json.dumps({k: v.get("enum") or v.get("pattern") or "string"
+                                  for k, v in schema["properties"].items()})}]
+        t0 = time.perf_counter()
+        try:
+            d = self._post(body)
+        except urllib.error.HTTPError as exc:
+            if exc.code in (400, 422) and "response_format" in body:
+                self.schema_supported = False
+                return self.generate(messages, schema, seed, max_tokens)
+            raise
+        dt = time.perf_counter() - t0
+        if schema is not None and "response_format" in body:
+            self.schema_supported = True
+        usage = d.get("usage") or {}
+        pt, ot = usage.get("prompt_tokens", 0), usage.get("completion_tokens", 0)
+        self.ledger.add(self.run_id, pt, ot)
+        text = d["choices"][0]["message"].get("content") or ""
+        return Reply(_strip_fences(text) if schema is not None else text.strip(), dt, pt, ot, self.name)
+
+
+def load_dotenv(path: str = ".env") -> None:
+    """Minimal .env reader: KEY=VALUE lines; existing environment variables win."""
+    from pathlib import Path
+    p = Path(path)
+    if not p.exists():
+        return
+    for line in p.read_text().splitlines():
+        line = line.strip()
+        if line and not line.startswith("#") and "=" in line:
+            k, v = line.split("=", 1)
+            os.environ.setdefault(k.strip(), v.strip().strip('"').strip("'"))
+
+
+def model_from_env(default_name: str = DEFAULT_MODEL):
+    """KNOCK_PROVIDER=ollama (default, local) or openai (hosted open-weight model)."""
+    if os.environ.get("KNOCK_PROVIDER", "ollama") == "openai":
+        return OpenAICompatModel.from_env()
+    return OllamaModel(default_name)

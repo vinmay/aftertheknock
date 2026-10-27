@@ -12,13 +12,15 @@ import json
 import os
 import threading
 import time
+import uuid
 from http import HTTPStatus
 from http.server import SimpleHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
 from urllib.parse import parse_qs, urlparse
 
 from .game import Game, verify_replay
-from .models import DEFAULT_MODEL, OllamaModel, RandomModel, ReplayModel
+from .models import (DEFAULT_MODEL, RandomModel, ReplayModel, SpendCapReached, load_dotenv,
+                     model_from_env)
 from .state import ROOT
 
 WEB = ROOT / "web"
@@ -27,9 +29,46 @@ REPLAYS = RUNS / "replays"
 MAX_GAMES = 200
 MAP_SCENES = {"map", "final"}
 
+NEW_GAMES_PER_IP_HOUR = 20
+LIVE_CHECK_S = 60
+
 _games: dict[str, Game] = {}
 _lock = threading.Lock()
 _model = None
+_live = {"ok": False, "checked": 0.0}
+_starts: dict[str, list[float]] = {}
+
+
+def live_ok() -> bool:
+    """Is generation available right now? Cached; hosted models are pinged, Ollama is asked for its version."""
+    if isinstance(_model, RandomModel):
+        return True                     # offline test mode
+    if _model is None or not getattr(_model, "live", False):
+        return False
+    now = time.time()
+    if now - _live["checked"] > LIVE_CHECK_S:
+        if hasattr(_model, "ping"):
+            ok = _model.ping()
+        else:
+            try:
+                import urllib.request
+                with urllib.request.urlopen(f"{_model.url}/api/version", timeout=5):
+                    ok = True
+            except Exception:
+                ok = False
+        _live.update(ok=ok, checked=now)
+    return _live["ok"]
+
+
+def _rate_ok(ip: str) -> bool:
+    now = time.time()
+    with _lock:
+        recent = [t for t in _starts.get(ip, []) if now - t < 3600]
+        if len(recent) >= NEW_GAMES_PER_IP_HOUR:
+            _starts[ip] = recent
+            return False
+        _starts[ip] = recent + [now]
+    return True
 
 
 def _get(gid: str) -> Game:
@@ -82,8 +121,10 @@ class Handler(SimpleHTTPRequestHandler):
         q = {k: v[0] for k, v in parse_qs(u.query).items()}
         try:
             if u.path == "/api/status":
-                return self._json({"live": _model is not None and getattr(_model, "live", False),
-                                   "model": getattr(_model, "name", None), "replays": len(_replay_list())})
+                info = _model.info() if _model is not None else {}
+                return self._json({"live": live_ok(), "model": getattr(_model, "name", None),
+                                   "hosted": bool(info.get("hosted")), "provider": info.get("provider"),
+                                   "replays": len(_replay_list())})
             if u.path == "/api/replays":
                 return self._json(_replay_list())
             if u.path == "/api/replay":
@@ -111,15 +152,29 @@ class Handler(SimpleHTTPRequestHandler):
         try:
             body = self._body()
             if u.path == "/api/new":
-                if _model is None:
-                    return self._json({"error": "live mode is off; try a replay"}, HTTPStatus.SERVICE_UNAVAILABLE)
+                if not live_ok():
+                    return self._json({"error": "The live model isn't available right now.", "fallback": "replay"},
+                                      HTTPStatus.SERVICE_UNAVAILABLE)
+                ip = self.headers.get("X-Forwarded-For", self.client_address[0]).split(",")[0].strip()
+                if not _rate_ok(ip):
+                    return self._json({"error": "Too many new nights from here; try a replay.", "fallback": "replay"},
+                                      HTTPStatus.TOO_MANY_REQUESTS)
                 seed = int(body.get("seed") or time.time_ns() % 1_000_000)
-                g = Game(str(body.get("pocket", ""))[:200], seed, _model)
+                run_id = uuid.uuid4().hex[:10]
+                model = _model.for_run(run_id) if hasattr(_model, "for_run") else _model
+                try:
+                    model.ledger.check() if hasattr(model, "ledger") else None
+                except SpendCapReached:
+                    _live.update(ok=False, checked=time.time())
+                    return self._json({"error": "The live model's budget is used up.", "fallback": "replay"},
+                                      HTTPStatus.SERVICE_UNAVAILABLE)
+                g = Game(str(body.get("pocket", ""))[:200], seed, model, run_id=run_id)
                 with _lock:
                     if len(_games) >= MAX_GAMES:
                         _games.pop(next(iter(_games)))
                     _games[g.run_id] = g
-                return self._json({"game": g.run_id, "seed": seed, "pocket": g.pocket, "view": g.view()})
+                return self._json({"game": g.run_id, "seed": seed, "pocket": g.pocket, "view": g.view(),
+                                   "model": f"{g.log.model.get('model')}{' (hosted)' if g.log.model.get('hosted') else ''} ·"})
             if u.path == "/api/replay/start":
                 rid = str(body["id"])
                 if not rid.replace("_", "").isalnum():
@@ -156,10 +211,11 @@ def main(argv=None) -> None:
     ap.add_argument("--model", default=DEFAULT_MODEL, help="Ollama model, 'random' for offline testing")
     ap.add_argument("--replay-only", action="store_true", help="serve recorded runs only")
     args = ap.parse_args(argv)
+    load_dotenv()
     if not args.replay_only:
-        _model = RandomModel() if args.model == "random" else OllamaModel(args.model)
+        _model = RandomModel() if args.model == "random" else model_from_env(args.model)
     srv = ThreadingHTTPServer((args.host, args.port), Handler)
-    mode = "replay only" if args.replay_only else f"live ({args.model})"
+    mode = "replay only" if args.replay_only else f"live ({_model.info().get('model')}, {'hosted' if _model.info().get('hosted') else 'local'})"
     print(f"After the Knock on http://{args.host}:{args.port}  [{mode}]", flush=True)
     srv.serve_forever()
 

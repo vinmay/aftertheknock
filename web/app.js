@@ -40,7 +40,7 @@ async function api(path, body) {
   const opt = body === undefined ? {} : { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body) };
   const r = await fetch(path, opt);
   const d = await r.json();
-  if (!r.ok) throw new Error(d.error || r.statusText);
+  if (!r.ok) throw Object.assign(new Error(d.error || r.statusText), { fallback: d.fallback });
   return d;
 }
 
@@ -92,8 +92,9 @@ async function boot() {
       $("#status-line").textContent = "";
       $("#static-note").hidden = false;
     } else if (!st.live) {
-      $("#begin").disabled = true;
-      $("#status-line").textContent = "Live generation is off on this server. You can watch recorded runs below.";
+      fallBackToReplays("The live model isn't available right now, so this page is showing recorded runs.");
+    } else if (st.hosted) {
+      $("#status-line").textContent = `Live: shadow timelines are generated now by ${st.model}, an open-weight Gemma model, through ${st.provider}.`;
     } else {
       $("#status-line").textContent = `Live: shadow timelines are generated now, on this machine, by ${st.model}.`;
     }
@@ -117,11 +118,12 @@ $("#start").addEventListener("submit", async (ev) => {
   try {
     const d = await api("/api/new", { pocket: $("#pocket").value });
     S.game = d.game; S.replay = null;
-    setMode(`<span class="tag live">live</span> seed ${esc(d.seed)}`);
+    setMode(`<span class="tag live">live</span> ${esc(d.model || "")} seed ${esc(d.seed)}`);
     show(d.view);
     Sound.knock();
   } catch (e) {
-    $("#status-line").textContent = e.message;
+    if (e.fallback === "replay") fallBackToReplays(`${e.message} Showing recorded runs instead.`);
+    else $("#status-line").textContent = e.message;
   } finally {
     S.busy = false; $("#begin").disabled = false; $("#begin").textContent = "Begin";
   }
@@ -134,6 +136,12 @@ async function startReplay(id) {
   setMode(`<span class="tag replay">replay</span> ${esc(REPLAY_LABEL)} · ${esc(d.replay.model.model)} · seed ${esc(d.seed)}`);
   show(d.view);
   Sound.knock();
+}
+
+function fallBackToReplays(why) {
+  $("#start").hidden = true;
+  $("#status-line").textContent = why;
+  $("#static-note").hidden = false;
 }
 
 function setMode(html) { $("#mode").innerHTML = html; }
