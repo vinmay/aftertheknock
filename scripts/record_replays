@@ -1,0 +1,31 @@
+#!/usr/bin/env bash
+# Record one live run per fork path into data/runs/replays/ (needs Ollama).
+set -euo pipefail
+cd "$(dirname "$0")/.."
+uv run python - <<'PY'
+import json
+from pathlib import Path
+from knock.game import Game, replay, verify_replay
+from knock.models import OllamaModel
+
+OUT = Path("data/runs/replays")
+OUT.mkdir(parents=True, exist_ok=True)
+for old in OUT.glob("*.json"):
+    old.unlink()
+model = OllamaModel()
+plans = [("lock", "roof", "erase", 4711, "a folded receipt"), ("lock", "basement", "open", 4712, "my bus ticket"),
+         ("open", "basement", "erase", 4713, "a guitar pick"), ("open", "roof", "open", 4714, "an old lighter")]
+for f1, f2, end, seed, pocket in plans:
+    g = Game(pocket, seed, model, background=False)
+    want = {"fork1": f1, "fork2": f2, "final": end}
+    v = g.view()
+    while v["choices"]:
+        sc = g.story["scenes"][g.scene]
+        w = want.get(sc.get("kind"))
+        v = g.choose(next((i for i, c in enumerate(sc["choices"]) if w in (c.get("fork"), c.get("ending"))), 0))
+    rec = json.loads(json.dumps(g.record()))
+    assert verify_replay(replay(rec), rec)
+    path = OUT / f"{f1}_{f2}_{end}_{seed}.json"
+    path.write_text(json.dumps(rec))
+    print(path, [c["narration"] for c in rec["crossings"].values()])
+PY

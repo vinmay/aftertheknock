@@ -69,14 +69,53 @@ flowchart LR
 ## Results
 
 <!-- RESULTS:BEGIN -->
-*Pending: filled from `eval/results/summary.md`.*
+Model: gemma4:e2b Q4_K_M, 24 live playthroughs (every fork path), raw logs in `eval/results/runs/`.
+
+| Measurement | Result |
+|---|---|
+| Unintended state crossings | 0 |
+| Narrator saw unreleased shadow text | 0 |
+| Intrusions revealing a post-fork fact | 48/48 (100%) |
+| Intrusions with valid origin event | 48/48 (100%) |
+| Replays reproducing every state hash | 24/24 (100%) |
+| Shadow events accepted on the model's first proposal | 129/156 (83%) |
+| Shadow events committed from the model | 141/156 (90%) |
+| Shadow events from hand-written fallback | 13/156 (8%) |
+| Proposals rejected by the validator | 58/199 (29%) |
+| Deliberate impossible give rejected | 30/30 (100%) |
+| Raw narration failing rule checks (first attempt) | 5/48 (10%) |
+| Final narration from the model (rest is fallback) | 46/48 (96%) |
+| Narration contradictions, hand-labeled | not labeled |
+| Intrusion accuracy, hand-labeled | not labeled |
+| Model call latency p50 / p95 | 1.61 s / 1.95 s |
+| Whole shadow timeline p50 / p95 | 5.97 s / 8.39 s |
+| Model calls per playthrough (mean) | 10.5 |
+| Tokens per playthrough (mean) | 5588 |
+
+Variation (same choices, different seeds):
+
+| Path | Runs | Distinct event chains | Mean pairwise overlap (Jaccard) |
+|---|---|---|---|
+| lock/basement | 6 | 6 | 0.29 |
+| lock/roof | 6 | 6 | 0.25 |
+| open/basement | 6 | 6 | 0.35 |
+| open/roof | 6 | 6 | 0.4 |
+
+Rejections by rule: R_NOOP 23, R_ADJACENT 18, R_BEAT 7, R_REACH 6, R_SELF 2, R_TYPE 2.
+
+Notes on these numbers:
+
+- A *shadow step* is one shadow event: up to three model proposals, then a hand-written fallback. 2 of 156 steps were skipped (the model failed and no fallback fitted the state). Those shadows still ended with a committed inscription.
+- "Rejected" counts proposals stopped by the validator or by a story-beat check (`R_BEAT`). A rejected proposal never changes state.
+- Narration checks are rules on the critical facts (the inscription, numbers, names, the object), not a proof that the prose never contradicts anything. Hand labels go in `eval/labels/` and show as "not labeled" until a person fills them.
+- Time from the click to the crossing text, with no reading pause at all: p50 6.92 s, p95 9.19 s. In real play the shadow runs while you read the two or three scenes before it.
 <!-- RESULTS:END -->
 
 Every number above comes from `uv run python eval/run_all.py` (or `--from-results` to recompute from the committed raw logs). Charts: `eval/results/chart_*.svg`. Model choice and the day-one benchmark: [MODELS.md](MODELS.md).
 
 ## Why open models
 
-- **Many background calls.** Each playthrough makes dozens of model calls that the player never sees directly. Running locally, they cost nothing and need no account.
+- **Many background calls.** Each playthrough makes about 10 model calls (about 5,600 tokens) that the player never sees directly, and most of them happen in a world the player never visits. Running locally, they cost nothing and need no account.
 - **Pinned weights.** The validator, the prompts and the fallback rates were tuned against one exact model file (digest in MODELS.md). A hosted model that changes underneath would silently change how often the story falls back.
 - **Inspectable.** The whole simulation runs on your machine: model, prompts, proposals, rejections and commits. The evidence view (press `E`) shows all of it.
 

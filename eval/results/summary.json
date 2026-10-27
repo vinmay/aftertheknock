@@ -1,0 +1,90 @@
+{
+ "runs": 24,
+ "model": {
+  "model": "gemma4:e2b",
+  "quantization": "Q4_K_M",
+  "parameter_size": "4.6B",
+  "family": "gemma4",
+  "digest": "b37049369adf"
+ },
+ "isolation": {
+  "unintended_crossings": 0,
+  "narrator_leaks": 0,
+  "details": []
+ },
+ "post_fork_evidence": "48/48 (100%)",
+ "provenance": "48/48 (100%)",
+ "replay_reproduces": "24/24 (100%)",
+ "shadow_steps": {
+  "total": 156,
+  "first_try": "129/156 (83%)",
+  "model_committed": "141/156 (90%)",
+  "fallback": "13/156 (8%)",
+  "skipped": "2/156 (1%)"
+ },
+ "validator": {
+  "proposals": 199,
+  "rejections_by_rule": {
+   "R_NOOP": 23,
+   "R_ADJACENT": 18,
+   "R_BEAT": 7,
+   "R_REACH": 6,
+   "R_SELF": 2,
+   "R_TYPE": 2
+  },
+  "rejected": "58/199 (29%)"
+ },
+ "impossible_give": {
+  "probe_calls": 30,
+  "impossible_proposed": 30,
+  "rejected": "30/30 (100%)",
+  "rules": {
+   "R_HOLDS": 30
+  }
+ },
+ "narration": {
+  "crossings": 48,
+  "raw_first_attempt_failed_rule_checks": "5/48 (10%)",
+  "raw_failure_kinds": {
+   "C_META": 3,
+   "C_TEXT": 2
+  },
+  "final_text_from_model": "46/48 (96%)",
+  "final_text_fallback": "2/48 (4%)",
+  "hand_labeled": "not labeled"
+ },
+ "intrusion_accuracy_hand_labeled": "not labeled",
+ "variation": {
+  "lock/basement": {
+   "runs": 6,
+   "distinct_chains": 6,
+   "mean_pairwise_event_overlap_jaccard": 0.29
+  },
+  "lock/roof": {
+   "runs": 6,
+   "distinct_chains": 6,
+   "mean_pairwise_event_overlap_jaccard": 0.25
+  },
+  "open/basement": {
+   "runs": 6,
+   "distinct_chains": 6,
+   "mean_pairwise_event_overlap_jaccard": 0.35
+  },
+  "open/roof": {
+   "runs": 6,
+   "distinct_chains": 6,
+   "mean_pairwise_event_overlap_jaccard": 0.4
+  }
+ },
+ "performance": {
+  "model_call_latency_p50_s": 1.61,
+  "model_call_latency_p95_s": 1.95,
+  "shadow_sim_p50_s": 5.97,
+  "shadow_sim_p95_s": 8.39,
+  "crossing_scene_p50_s": 6.92,
+  "crossing_scene_p95_s": 9.19,
+  "crossing_note": "time from click to crossing text with no reading pause; includes waiting for the shadow",
+  "model_calls_per_playthrough_mean": 10.5,
+  "tokens_per_playthrough_mean": 5588
+ }
+}
