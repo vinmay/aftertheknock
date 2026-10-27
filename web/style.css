@@ -81,8 +81,6 @@ input::placeholder { color: #8a8378; }
 }
 .choices button::before { content: "→ "; color: var(--faint); }
 .choices button:hover, .choices button:focus-visible { color: var(--ink); }
-.choices button.recorded { color: var(--ink); }
-.choices button.recorded::after { content: "  (recorded choice)"; font-family: var(--mono); font-size: 0.7rem; color: var(--shadow); }
 .choices button:disabled { opacity: 0.3; cursor: default; }
 
 .waiting { color: var(--muted); font-style: italic; animation: breathe 1.6s ease-in-out infinite; }

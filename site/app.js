@@ -409,7 +409,7 @@ function stageCrossing(c, second = false) {
       <div class="card ${kind}">
         ${label ? `<span class="card-label">${label}</span>` : ""}
         <svg class="hand" viewBox="0 0 400 90" role="img" aria-label="${esc(c.inscription)}">
-          <text x="200" y="60" text-anchor="middle">${esc(c.inscription)}</text>
+          <text x="200" y="60" text-anchor="middle" style="font-size:${Math.max(30, Math.min(76, Math.round(420 / Math.max(c.inscription.length, 5))))}px">${esc(c.inscription)}</text>
         </svg>
       </div>
       <p class="stage-after">${esc(`${c.after} ${c.who}`.trim())}</p>
