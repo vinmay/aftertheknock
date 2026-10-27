@@ -364,6 +364,10 @@ function pathWords(path) {
 async function boot() {
   try {
     const st = (S.status = await api("/api/status"));
+    // A quiet, true line about where the typed text goes (not a modal).
+    $("#pocket-note").textContent = st.hosted
+      ? "Live play sends what you type to a hosted Gemma model. Keep it fictional. Best with sound."
+      : "Live play runs a Gemma model on this machine; what you type stays here. Best with sound.";
     if (st.static) {
       $("#start").hidden = true;
       $("#play-live").hidden = false;

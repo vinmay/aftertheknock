@@ -1,7 +1,17 @@
 #!/usr/bin/env bash
-# Deterministic walkthrough for recording.
-#   scripts/demo          plays the committed recorded run (no model needed, identical every time)
-#   scripts/demo --live   plays live with a fixed seed (needs Ollama)
+# Deterministic walkthrough for recording the demo GIF / video.
+#   scripts/demo          serve the committed recording (no model; identical every take)
+#   scripts/demo --live   play live with a fixed seed in the terminal (needs Ollama)
+#
+# Recording the GIF (about 30-40 s), using the recommended recording "The folded receipt, then the key":
+#   1. Open the URL printed below. It starts the recorded night directly.
+#   2. Opening: pause on "Please. You already let me in." Choose "Recorded choice: Lock it".
+#   3. Click through to the first crossing. Let the receipt card finish writing its four digits. Click "Go on".
+#   4. Click the red digits in the story: the flashback of the other night opens. Hold 3 s. Close it.
+#   5. Continue to the map. Let the reveal play; the first crossing lights up with its thread.
+#      Click "Follow this thread" once, then close it.
+#   6. Close the map, choose the recorded ending, then click "Verify this run". Hold on "Reproduced exactly."
+# Tips: 1280x800 window, browser zoom 100%, sound on if recording video, hide bookmarks and other tabs.
 set -euo pipefail
 cd "$(dirname "$0")/.."
 PORT="${PORT:-8047}"
@@ -11,5 +21,7 @@ if [[ "${1:-}" == "--live" ]]; then
   uv run knock auto lock roof erase --seed 4711 --pocket "a folded receipt"
   exit 0
 fi
+sed -n '5,14p' "$0" | sed 's/^# \{0,1\}//'
+echo
 echo "Open http://localhost:$PORT/?replay=$REPLAY"
 uv run knock-server --port "$PORT" --replay-only

@@ -10,7 +10,7 @@ Branching horror, timelines that remember, and AI-generated branching stories al
 
 It is 11:47 PM. A storm. A woman you have never met knocks on your door and says, *"Please. You already let me in."* Lock the door, and later you find four digits written on the thing in your pocket. Mara wrote them, in the night where you opened the door. Later, in the basement, those digits open the padlock on unit 07. And once more before the night ends, a second object turns up with words on it that were only ever written in the other night. Both crossings trace back to the exact events that made them.
 
-<!-- GIF: owner records from scripts/demo -->
+<!-- GIF: owner records from scripts/demo (steps below, under "Recording the demo"). -->
 
 ## Play it
 
@@ -187,6 +187,10 @@ The same open-weight family runs in both live modes. Gemma 4 E2B runs locally on
 - **Many background calls.** Each playthrough makes about 9 model calls (about 5,200 tokens) that the player never sees directly, and most of them happen in a world the player never visits. Locally they cost nothing and need no account. Hosted, they cost about a tenth of a cent per playthrough at the listed price ($0.18 / $0.50 per million input / output tokens), which an open model makes possible at hobby scale.
 - **Pinned weights.** The validator, prompts and fallback rates were tuned against one exact local model file (digest in MODELS.md). A closed model that changed underneath would silently change how often the story falls back. With open weights, the local mode can always be checked against the same file.
 - **Inspectable.** In local mode the whole simulation runs on your machine: model, prompts, proposals, rejections and commits. In both modes the evidence view (press `E`) shows every proposal and validator decision.
+
+## Recording the demo
+
+`scripts/demo` serves the recommended recorded night with no model, identical on every take, and prints the steps. The path is: lock the door → the first mark appears on the receipt → open its flashback → the map lights the first crossing's thread → after the ending, **Verify this run**. `scripts/demo --live` plays the same choices live with a fixed seed instead.
 
 ## Tests
 
