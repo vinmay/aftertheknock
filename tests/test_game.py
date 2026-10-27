@@ -155,13 +155,14 @@ def test_every_shadow_ends_in_a_mark_across_many_seeds():
         assert b.target != d.target, (seed, f1, f2)
 
 
-def test_trace_teaser_comes_from_committed_event():
+def test_crossing_memory_comes_from_committed_events():
     g = play("lock", "roof", "erase", ScriptedModel([]), seed=5)
-    tr = g.trace("X1")
-    o = tr["origin"]
-    assert o["actor"] == "mara" and o["action"] == "mark"
-    assert tr["teaser"] == "Your apartment, with the door open. A pen. Her hand."
-    assert o["text"] not in tr["teaser"]           # the teaser never repeats the evidence itself
+    mem = g.trace("X1")["memory"]
+    o = g.timeline.event(g.timeline.intrusions[0].origin_event_id)
+    assert mem["memory"] == (f"In the night where you opened the door, Mara took the bus ticket and wrote "
+                             f"\u201c{o.text}\u201d on it. This is where the numbers came from.")
+    assert mem["source"].startswith("Written there: the night where you opened the door")
+    assert mem["dest"].startswith("Appeared here: your night")
 
 
 @pytest.mark.parametrize("f1,f2", [("lock", "basement"), ("lock", "roof"), ("open", "basement"), ("open", "roof")])

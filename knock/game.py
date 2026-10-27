@@ -8,7 +8,7 @@ import time
 import tomllib
 import uuid
 
-from .describe import describe, display_name, teaser
+from .describe import describe, display_name
 from .engine import Timeline
 from .narrator import CHAR_NAMES, narrate_crossing
 from .sim import RunLog, load_shadows, pick_origin, simulate_shadow
@@ -276,19 +276,61 @@ class Game:
             v["trace"] = self.trace(cr["intrusion"]["intrusion_id"])
         return v
 
+    BRANCH_PHRASE = {"open": "the night where you opened the door", "lock": "the night where you kept the door locked",
+                     "basement": "the night where you went down to the basement", "roof": "the night where you went up to the roof"}
+
+    def _state_before(self, e) -> dict:
+        s = initial_state(None, self.timeline.pocket_name)
+        for prior in self.timeline.lineage(e.branch)[: e.seq]:
+            s = apply_delta(s, prior.state_delta)
+        return s
+
+    def memory(self, intrusion_id: str) -> dict:
+        """A plain-language memory of where a crossing came from, built only from committed events."""
+        t = self.timeline
+        x = next(i for i in t.intrusions if i.intrusion_id == intrusion_id)
+        o = t.event(x.origin_event_id)
+        branch_choice = OTHER[self.f1] if x.origin_branch == "B" else OTHER[self.f2]
+        night = self.BRANCH_PHRASE[branch_choice]
+        name = lambda c: "the other you" if c == "player" else CHAR_NAMES.get(c, c)  # noqa: E731
+        obj = display_name(o.target, self.pocket)
+        # The committed event that put the object in the writer's hands, if it happened in this shadow.
+        pre = None
+        for e in reversed(t.branch(o.branch).events[: t.branch(o.branch).events.index(o)]):
+            if ["set", f"objects.{o.target}.holder", o.actor] in [list(d) for d in e.state_delta]:
+                pre = e
+                break
+        writer = name(o.actor)
+        cap = lambda w: w[0].upper() + w[1:]  # noqa: E731
+        on_it = "on its paper tag" if o.target == "key07" else "on it"
+        mark = f"\u201c{o.text}\u201d"
+        if pre is not None and pre.action == "take":
+            what = f"{cap(writer)} took {obj} and wrote {mark} {on_it}."
+        elif pre is not None and pre.action == "give":
+            what = f"{cap(name(pre.actor))} gave {obj} to {writer}, and {writer} wrote {mark} {on_it}."
+        else:
+            what = f"{cap(writer)} wrote {mark} on {display_name(o.target, self.pocket, 'on')}."
+        kind = "numbers" if o.text.isdigit() else "words"
+        before = self._state_before(o)
+        there = before["places"][before["chars"][o.actor]["location"]]["name"]
+        man = t.event(x.manifestation_event_id)
+        here_state = self._state_before(man)
+        here = here_state["places"][here_state["chars"]["player"]["location"]]["name"]
+        what = what[0].lower() + what[1:] if what.startswith("The other") else what
+        return {"memory": f"In {night}, {what} This is where the {kind} came from.",
+                "source": f"Written there: {night}, {there}",
+                "dest": f"Appeared here: your night, {here}",
+                "inscription": o.text, "object": display_name(o.target, self.pocket)}
+
     def trace(self, intrusion_id: str) -> dict:
         """Everything about one intrusion: its origin event, the validator decision, released facts."""
         x = next(i for i in self.timeline.intrusions if i.intrusion_id == intrusion_id)
         origin = self.timeline.event(x.origin_event_id)
         od = origin.to_dict()
         od["desc"] = describe(od, self.timeline.state(origin.branch), self.pocket)
-        before = initial_state(None, self.timeline.pocket_name)
-        for e in self.timeline.lineage(origin.branch)[: origin.seq]:
-            before = apply_delta(before, e.state_delta)
-        return {"intrusion": x.to_dict(), "origin": od,
+        return {"intrusion": x.to_dict(), "origin": od, "memory": self.memory(intrusion_id),
                 "manifestation": self.timeline.event(x.manifestation_event_id).to_dict(),
-                "attempts": self.attempts(origin.request_id),
-                "teaser": teaser(od, before)}
+                "attempts": self.attempts(origin.request_id)}
 
     def branch_labels(self) -> dict:
         f1, f2 = self.f1, self.f2
@@ -301,6 +343,25 @@ class Game:
             labels["C"] = f"Your night: you went to the {f2}"
             labels["D"] = f"The other night: you went to the {OTHER[f2]}"
         return labels
+
+    def fork_labels(self) -> list[dict]:
+        """The actual choice text at each fork: the one taken and the one the shadow lived."""
+        out = []
+        for ch in self.choices:
+            sc = self.story["scenes"].get(ch["scene"], {})
+            if sc.get("kind") in ("fork1", "fork2"):
+                labels = [self.fmt(c["label"]) for c in sc["choices"]]
+                out.append({"at": "S" if sc["kind"] == "fork1" else "A", "taken": labels[ch["index"]],
+                            "not_taken": labels[1 - ch["index"]]})
+        return out
+
+    def verify(self) -> dict:
+        """Re-run this game's own log through the engine and compare every timeline's state hash."""
+        import json
+        rec = json.loads(json.dumps(self.record()))
+        again = replay(rec)
+        return {"verified": verify_replay(again, rec), "hashes": rec["state_hashes"],
+                "replayed": again.record()["state_hashes"]}
 
     def attempts(self, request_id: str) -> list[dict]:
         return [{"attempt": r.get("attempt"), "proposal": r.get("proposal"), "kind": r["kind"],
@@ -324,7 +385,8 @@ class Game:
                 "branches": [{"id": bid, "kind": b.kind, "parent": b.parent, "fork_seq": b.fork_seq,
                               "frozen": b.frozen} for bid, b in t.branches.items()],
                 "events": events,
-                "intrusions": [x.to_dict() for x in t.intrusions],
+                "intrusions": [x.to_dict() | {"memory": self.memory(x.intrusion_id)} for x in t.intrusions],
+                "forks": self.fork_labels(),
                 "narration": {k: {"text": c["narration"], "source": c["narration_source"], "raw": c["raw"]}
                               for k, c in self.crossings.items()}}
 

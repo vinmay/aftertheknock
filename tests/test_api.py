@@ -56,3 +56,13 @@ def test_hourly_spend_ceiling_holds_without_the_file(tmp_path):
         raise AssertionError("ceiling not enforced")
     except SpendCapReached:
         pass
+
+
+def test_verify_reruns_the_log():
+    from knock.game import Game
+    from knock.models import RandomModel
+    g = Game("bus ticket", 3, RandomModel(), background=False)
+    while g.view()["choices"]:
+        g.choose(0)
+    v = g.verify()
+    assert v["verified"] and v["hashes"] == v["replayed"]

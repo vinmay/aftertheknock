@@ -166,10 +166,20 @@ class Handler(SimpleHTTPRequestHandler):
                 if g.scene not in MAP_SCENES and not g.ending:
                     return self._json({"error": "the map is not open yet"}, HTTPStatus.FORBIDDEN)
                 return self._json(g.map_data())
+            if u.path == "/api/verify":
+                g = _get(q["game"])
+                if not g.ending:
+                    return self._json({"error": "verify at the end of the night"}, HTTPStatus.FORBIDDEN)
+                rec = getattr(g, "replay_of", None)
+                if rec is not None:
+                    return self._json({"verified": verify_replay(g, rec), "hashes": rec["state_hashes"],
+                                       "replayed": g.record()["state_hashes"], "against": "recording"})
+                return self._json(g.verify() | {"against": "this run's own log"})
             if u.path == "/api/evidence":
                 g = _get(q["game"])
                 return self._json({"log": g.log.records, "ops": g.timeline.ops,
-                                   "model": g.log.model, "seed": g.seed})
+                                   "model": g.log.model, "seed": g.seed,
+                                   "crossings": [g.memory(x.intrusion_id) for x in g.timeline.intrusions]})
         except (KeyError, FileNotFoundError, StopIteration) as exc:
             return self._json({"error": str(exc)}, HTTPStatus.NOT_FOUND)
         return super().do_GET()
