@@ -4,7 +4,7 @@
 
 A short horror story where the choice you didn't make keeps happening in a hidden timeline, and its events start appearing in yours as evidence you can trace.
 
-**What's new here:** a horror game that simulates rejected choices as separate worlds and lets their recorded events manifest as evidence in the player's chosen reality.
+**The idea:** a horror game that simulates rejected choices as separate worlds and lets their recorded events manifest as evidence in the player's chosen reality.
 
 Branching horror, timelines that remember, and AI-generated branching stories all exist already (see [Prior art](#prior-art)). This project combines three things: rejected branches that keep simulating, intrusions that carry facts created after the fork, and inspectable provenance for every intrusion.
 
@@ -142,13 +142,13 @@ scripts/    setup, demo
 
 ## Prior art
 
-Rejected-branch and memory mechanics have a long history in games and research. This project builds on, and does not claim to replace:
+Rejected branches, alternate timelines and memory across branches are well explored in games, tools and research. This project is related work, not a first. What it adds is one combination: rejected branches that keep simulating, intrusions that carry facts created after the fork, and inspectable provenance for every intrusion.
 
 - *Undertale* (Toby Fox, 2015): the game remembers what you did in runs you reset.
 - *Slay the Princess* (Black Tabby Games, 2023): branching horror where earlier choices reshape later loops.
 - *Until Dawn* (Supermassive Games, 2015): branching horror with consequences tracked across a night.
-- ECHO.
-- BRING.
+- [ECHO](https://github.com/kishore1035/ECHO): a voice-command game where rewriting reality splits the world into alternate branches, and one character remembers the erased timelines. It uses Google Gemini to parse commands.
+- [BRING](https://github.com/Eva-E1/BRING) (Apache-2.0): an LLM role-play framework that can create, switch and merge branches for alternate storylines.
 - WHAT-IF (arXiv [2412.10582](https://arxiv.org/abs/2412.10582)): branching interactive fiction generated with LLMs.
 - Narrative Studio (arXiv [2504.02426](https://arxiv.org/abs/2504.02426)): exploring branching story trees with LLMs.
 
