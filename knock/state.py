@@ -122,3 +122,26 @@ def is_plural(name: str) -> bool:
         return False
     last = words[-1]
     return last.endswith("s") and not last.endswith(("ss", "us", "is", "ous"))
+
+
+MATERIALS = {
+    "paper": {"ticket", "stub", "pass", "receipt", "note", "photo", "photograph", "letter", "card", "map",
+              "transfer", "postcard", "envelope", "napkin", "page", "list", "tickets", "notes", "photos",
+              "letters", "cards", "maps", "receipts"},
+    "metal": {"ring", "coin", "key", "locket", "watch", "chain", "medal", "pin", "rings", "coins", "keys",
+              "pennies", "penny", "dime", "quarter", "band", "bracelet", "necklace", "tag"},
+    "small": {"pick", "lighter", "button", "die", "dice", "stone", "shell", "marble", "lipstick", "pen", "usb",
+              "pebble", "rock", "chalk", "eraser", "buttons", "stones", "shells", "marbles", "pens", "crayon"},
+}
+
+
+def material_of(name: str) -> str:
+    """paper | metal | small | unknown, from the player's object name (head noun first)."""
+    words = name.lower().split()
+    if not words:
+        return "unknown"
+    for w in [words[-1]] + words[:-1]:
+        for kind, vocab in MATERIALS.items():
+            if w in vocab:
+                return kind
+    return "unknown"

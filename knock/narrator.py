@@ -103,14 +103,15 @@ def _fill(t: str, slots: dict) -> str:
     return t
 
 
-def template_parts(m: dict, templates: dict, pocket: str) -> dict:
+def template_parts(m: dict, templates: dict, pocket: str, style: str = "paper") -> dict:
     """Hand-written lines for this crossing, with the committed facts slotted in."""
     holder = CHAR_NAMES.get(m["holder"] or "", "")
     slots = {"pocket": pocket, "place": m["place"], "holder": holder, "it": "them" if is_plural(pocket) else "it"}
     situation = m["situation"]
     t = (templates.get(f"mark_{m['object']}_{situation}") or templates.get(f"mark_{m['object']}_{situation.split('_')[0]}")
          or templates.get(f"mark_{m['object']}") or templates["mark_other"])
-    who = templates["writer"].get(m["writer"], templates["writer"]["mara"])
+    writers = templates.get("writer" if style == "paper" else f"writer_{style}", templates["writer"])
+    who = writers.get(m["writer"], writers["mara"])
     return {"object": m["object"], "situation": m["situation"], "before": _fill(t["before"], slots),
             "inscription": m["text"], "after": _fill(t["after"], slots), "who": _fill(who, slots)}
 
@@ -156,11 +157,11 @@ def compose(parts: dict, color: str | None) -> str:
 
 
 def narrate_crossing(timeline: Timeline, x: Intrusion, model, pocket: str, seed: int, log=None,
-                     templates: dict | None = None) -> dict:
+                     templates: dict | None = None, style: str = "paper") -> dict:
     view = canonical_view(timeline, x.target_branch)
     oid = _crossing_fact([f for f in view["released"] if f in x.released])[0]
     m = moment(view, x, seen_before(timeline, x, oid))
-    parts = template_parts(m, templates, pocket)
+    parts = template_parts(m, templates, pocket, style)
     msgs = build_messages(m)
     raw, color = None, None
     for attempt in range(2):

@@ -486,3 +486,18 @@ body.instant-text .stage-color, body.instant-text .trace-hint { opacity: 1 !impo
 @media (max-width: 40rem) {
   body.drawer-open .foot { background: var(--bg); padding: 0.2rem 1rem 0.3rem 0.8rem; border-top-left-radius: 3px; }
 }
+
+/* Engraved (metal) and scratched (small solids) marks: thin light strokes that draw in, no ink. */
+.prop .engrave, .prop .scratch {
+  font-family: "Caveat", "Segoe Script", "Bradley Hand", cursive; fill: transparent;
+  stroke-dasharray: 900; stroke-dashoffset: 900;
+  animation: write 2.2s cubic-bezier(.5,.1,.4,1) 0.4s forwards;
+}
+.prop .engrave { stroke: #241906; stroke-width: 1.8; paint-order: stroke; filter: drop-shadow(0 1px 0 rgba(255, 240, 210, 0.6)); }
+.crossing-stage .prop .engrave { animation: write 2.2s cubic-bezier(.5,.1,.4,1) 0.4s forwards, cut-in 0.6s ease 2.4s forwards; }
+.crossing-stage.instant .prop .engrave { fill: rgba(36, 25, 6, 0.55); }
+@keyframes cut-in { to { fill: rgba(36, 25, 6, 0.55); } }
+.prop .scratch { stroke: #f2ead8; stroke-width: 1.2; opacity: 0.92; }
+.prop .scratch.chalk { stroke: #e8e0cf; stroke-width: 1.4; }
+.prop .printed.own { fill: #8f887c; font-size: 11px; letter-spacing: 0.14em; }
+.crossing-stage.instant .prop .engrave, .crossing-stage.instant .prop .scratch { animation: none !important; stroke-dashoffset: 0; }

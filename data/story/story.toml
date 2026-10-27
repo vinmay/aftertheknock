@@ -331,7 +331,10 @@ open_teo_hurt = "In 6D, Teo is sitting on the floor of his own kitchen, holding 
 open_teo_dead = "In 6D, there is no sound at all. There won't be, again."
 open_teo_fine = "In 6D, Teo turns off his radio, and you hear him say, to no one, \"Finally.\""
 
-open_marks = "\"{b_text}\" on {b_on}, in {b_writing}. \"{d_text}\" on {d_on}, in {d_writing}. Both written in a night you never lived."
+open_marks = "{b_line} {d_line} Both made in a night you never lived."
+mark_line_paper = "\"{text}\" on {on}, in {writing}."
+mark_line_scratched = "\"{text}\" scratched into {on}, by {hand}."
+mark_line_unknown = "\"{text}\" on {on}, marked by {hand}."
 
 # ---------------------------------------------------------------- crossings
 # Hand-written lines around each crossing. The engine slots in the committed facts:
@@ -362,10 +365,22 @@ after = "You've never seen this key before. Yet someone has written on its tag."
 before = "You look down."
 after = "That wasn't there a minute ago."
 
+# Who made the mark, by what it was made on: paper is written on; metal and small hard
+# things are scratched; anything else is just "marked". Never call a ring "paper".
 [crossings.writer]
 mara = "The handwriting isn't yours."
 teo = "The handwriting isn't yours, and it isn't hers."
 player = "It's your handwriting. You don't remember writing it."
+
+[crossings.writer_scratched]
+mara = "The hand that cut it isn't yours."
+teo = "The hand that cut it isn't yours, and it isn't hers."
+player = "It's your hand that cut it. You don't remember doing it."
+
+[crossings.writer_unknown]
+mara = "Whoever marked it, it wasn't you."
+teo = "Whoever marked it, it wasn't you, and it wasn't her."
+player = "It's your mark. You don't remember making it."
 
 # ---------------------------------------------------------------- flashbacks
 # A crossing's memory: one line per event committed in that shadow, up to the mark.
@@ -380,6 +395,11 @@ take = "{A} takes {obj}{from}."
 mark = "{A} writes “{text}” on {on}."
 # used when the line before already named the same object
 mark_again = "{A} writes “{text}” across {it}."
+# metal and small hard objects: scratched in; anything else: marked
+mark_scratched = "{A} scratches “{text}” into {on}."
+mark_again_scratched = "{A} scratches “{text}” into {it}."
+mark_unknown = "{A} marks {on} with “{text}”."
+mark_again_unknown = "{A} marks {it} with “{text}”."
 open = "{A} unlocks {place}."
 hide = "{A} hides {obj}."
 discover = "{A} finds {obj}."

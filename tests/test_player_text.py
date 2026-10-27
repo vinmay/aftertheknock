@@ -18,6 +18,9 @@ ROOT = Path(__file__).resolve().parent.parent
 RECORDS = sorted((ROOT / "data" / "runs" / "replays").glob("*.json")) + sorted((ROOT / "eval" / "results" / "runs").glob("*.json"))
 POCKETS = ["nothing", "my keys", "two pennies", "a very long folded note from someone I used to know well",
            "<b>receipt</b>", "Gloves"]
+# The review's material set: paper, metal, small solids, and inputs that fall back to the ticket stub.
+MATERIAL_POCKETS = ["guitar pick", "wedding ring", "lighter", "house key", "photo", "coin", "bus ticket", "receipt",
+                    "nothing", "regret"]
 PATHS = [(f1, f2, end) for f1 in ("lock", "open") for f2 in ("basement", "roof") for end in ("erase", "open")]
 
 # Internal ids and state paths. "pocket" is fine in prose ("your pocket") but never as an object.
@@ -112,7 +115,7 @@ def test_ending_matches_committed_state(name, g, views):
     for shadow in ("B", "D"):
         o = t.event(g.crossings[shadow]["intrusion"]["origin_event_id"])
         crossed[o.text] = o
-        assert f'"{o.text}" on {display_name(o.target, g.pocket, "on")}, in {g._writing(o.actor)}' in opened, name
+        assert g._mark_line(o.text, o.target, o.actor) in opened, name
     for ending in (opened, g.ending_text("erase")):
         quoted = set(re.findall(r'"([^"]+)"', ending)) - {"Finally."}
         assert quoted == set(crossed), (name, quoted)
@@ -125,6 +128,7 @@ def test_ending_matches_committed_state(name, g, views):
 def test_flashback_lines_come_from_committed_events(name, g, views):
     """Every action in a flashback is an event committed in that shadow, in order, ending on the mark."""
     verbs = {"goes": "move", "says": "speak", "hands": "give", "takes": "take", "writes": "mark",
+             "scratches": "mark", "marks": "mark",
              "unlocks": "open", "hides": "hide", "finds": "discover", "hurts": "harm"}
     t = g.timeline
     for x in t.intrusions:
@@ -159,3 +163,56 @@ def test_crossing_text_only_claims_what_your_night_saw(name, g, views):
             assert parts["situation"] == ("arrived_seen" if seen else "arrived_unseen"), name
             if not seen:
                 assert "last saw" not in parts["after"] and "last time you saw" not in parts["after"], name
+
+
+def material_runs():
+    for i, pocket in enumerate(MATERIAL_POCKETS):
+        f1, f2, end = PATHS[i % len(PATHS)]
+        g = Game(pocket, 60 + i, RandomModel(), background=False)
+        want = {"fork1": f1, "fork2": f2, "final": end}
+        views = [g.view()]
+        while views[-1]["choices"]:
+            sc = g.story["scenes"][g.scene]
+            w = want.get(sc.get("kind"))
+            views.append(g.choose(next((k for k, c in enumerate(sc["choices"]) if w in (c.get("fork"), c.get("ending"))), 0)))
+        yield pocket, g, views
+
+
+PAPER_WORDS = re.compile(r"\b(paper|ticket|handwriting|the back|writes|wrote|written|ink)\b", re.I)
+
+
+@pytest.mark.parametrize("name,g,views", list(material_runs()) + list(recorded_runs()), ids=lambda v: v if isinstance(v, str) else "")
+def test_non_paper_objects_are_never_called_paper(name, g, views):
+    """A ring is engraved, a pick is scratched: no sentence about a non-paper pocket object
+    calls it paper, a ticket, its back, or says it was written on."""
+    if g.material == "paper":
+        return
+    texts = player_facing(g, views)
+    for x in g.timeline.intrusions:
+        mem = g.memory(x.intrusion_id)
+        texts += [l["line"] for l in mem["scene"]] + [mem["memory"]]
+    obj = g.pocket
+    for t in texts:
+        for sentence in re.split(r"(?<=[.!?\u201d])\s+", t):
+            if obj in sentence or (sentence.strip().startswith(("She ", "He ", "The other you")) and " it" in sentence):
+                if "key's paper tag" in sentence:
+                    continue
+                m = PAPER_WORDS.search(sentence)
+                assert not m, (name, g.material, sentence)
+    # Crossings that land on the object use the material's writer line.
+    for x in g.timeline.intrusions:
+        p = g.crossings[x.origin_branch]["parts"]
+        if p["object"] == "pocket":
+            assert "handwriting" not in p["who"], (name, p["who"])
+            assert p["material"] == g.material
+
+
+def test_material_classification():
+    from knock.state import material_of
+    from knock.game import pocket_info
+    expect = {"guitar pick": "small", "wedding ring": "metal", "lighter": "small", "house key": "metal",
+              "photo": "paper", "coin": "metal", "bus ticket": "paper", "receipt": "paper"}
+    for raw, kind in expect.items():
+        assert material_of(pocket_info(raw)[0]) == kind, raw
+    for raw in ("nothing", "regret"):
+        assert material_of(pocket_info(raw)[0]) == "paper"      # the ticket stub fallback

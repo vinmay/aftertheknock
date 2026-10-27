@@ -12,7 +12,7 @@ from .describe import describe, display_name
 from .engine import Timeline
 from .narrator import CHAR_NAMES, narrate_crossing
 from .sim import RunLog, load_shadows, pick_origin, simulate_shadow
-from .state import STORY_DIR, apply_delta, initial_state, is_plural, state_hash
+from .state import STORY_DIR, apply_delta, initial_state, is_plural, material_of, state_hash
 
 DEFAULT_POCKET = "ticket stub"
 NOT_AN_OBJECT = {"nothing", "none", "no", "idk", "dunno", "empty", "nada", "na", "n a", "nothing at all"}
@@ -114,6 +114,7 @@ class Game:
         self.pocket, self.pocket_kind = pocket_info(pocket_raw)
         self.pocket_said = _clean(pocket_raw)
         self.plural = is_plural(self.pocket)
+        self.material = material_of(self.pocket)
         self.story = load_story()
         self.specs = load_shadows()
         self.timeline = Timeline(f"the {self.pocket}")
@@ -205,8 +206,10 @@ class Game:
         origin = pick_origin(self.timeline, shadow)
         x = self.timeline.cross(shadow, origin.event_id)
         t0 = time.perf_counter()
+        oid = self.timeline.event(x.origin_event_id).target
         narration = narrate_crossing(self.timeline, x, self.narrator_model, self.pocket, self.seed, self.log,
-                                     self.story["crossings"])
+                                     self.story["crossings"], style=self.style_for(oid))
+        narration["parts"]["material"] = self.material_for(oid)
         self.crossings[shadow] = {"intrusion": x.to_dict(), "narration": narration["text"],
                                   "parts": narration["parts"],
                                   "narration_source": narration["source"], "raw": narration["raw"],
@@ -253,6 +256,22 @@ class Game:
         self.scene = f"ending_{which}"
         self.ending = {"which": which, "text": self.ending_text(which)}
 
+    def material_for(self, oid: str) -> str:
+        """The key's tag is paper; the pocket object is whatever the player said it was."""
+        return "paper" if oid == "key07" else self.material
+
+    def style_for(self, oid: str) -> str:
+        """How a mark is made on it: written (paper), scratched (metal, small solids), marked (unknown)."""
+        return {"paper": "paper", "metal": "scratched", "small": "scratched"}.get(self.material_for(oid), "unknown")
+
+    def _mark_line(self, text: str, oid: str, actor: str) -> str:
+        style = self.style_for(oid)
+        hand = "your own hand" if actor == "player" else f"{CHAR_NAMES.get(actor, 'someone')}'s hand"
+        line = self.story["endings"]["slots"][f"mark_line_{style}"]
+        for k, v in {"text": text, "on": self._on(oid), "writing": self._writing(actor), "hand": hand}.items():
+            line = line.replace("{" + k + "}", v)
+        return line
+
     def _writing(self, actor: str) -> str:
         return "your own handwriting" if actor == "player" else f"{CHAR_NAMES.get(actor, 'someone')}'s handwriting"
 
@@ -287,9 +306,9 @@ class Game:
         c = t.state("C")
         b = t.state("B")
         place = lambda s, pid: s["places"][pid]["name"] if pid else "nowhere"  # noqa: E731
-        fill = {"pocket": self.pocket, "b_text": b_o.text, "b_on": self._on(b_o.target),
-                "b_writing": self._writing(b_o.actor), "d_text": d_o.text, "d_on": self._on(d_o.target),
-                "d_writing": self._writing(d_o.actor)}
+        fill = {"pocket": self.pocket, "b_text": b_o.text, "b_on": self._on(b_o.target), "d_text": d_o.text,
+                "d_on": self._on(d_o.target), "b_line": self._mark_line(b_o.text, b_o.target, b_o.actor),
+                "d_line": self._mark_line(d_o.text, d_o.target, d_o.actor)}
         here = c["chars"]["player"]["location"]
         fill["erase_mara"] = slots["erase_mara_present" if c["chars"]["mara"]["location"] == here else "erase_mara_absent"]
         lines = []
@@ -361,14 +380,20 @@ class Game:
                 break
         writer = name(o.actor)
         cap = lambda w: w[0].upper() + w[1:]  # noqa: E731
-        on_it = "on its paper tag" if o.target == "key07" else "on it"
+        style = self.style_for(o.target)
+        it = "them" if (o.target == "pocket" and self.plural) else "it"
         mark = f"\u201c{o.text}\u201d"
+        made = {"paper": f"wrote {mark} on " + ("its paper tag" if o.target == "key07" else it),
+                "scratched": f"scratched {mark} into {it}", "unknown": f"marked {it} with {mark}"}[style]
+        made_on = {"paper": f"wrote {mark} on {display_name(o.target, self.pocket, 'on')}",
+                   "scratched": f"scratched {mark} into {display_name(o.target, self.pocket, 'on')}",
+                   "unknown": f"marked {display_name(o.target, self.pocket, 'on')} with {mark}"}[style]
         if pre is not None and pre.action == "take":
-            what = f"{cap(writer)} took {obj} and wrote {mark} {on_it}."
+            what = f"{cap(writer)} took {obj} and {made}."
         elif pre is not None and pre.action == "give":
-            what = f"{cap(name(pre.actor))} gave {obj} to {writer}, and {writer} wrote {mark} {on_it}."
+            what = f"{cap(name(pre.actor))} gave {obj} to {writer}, and {writer} {made}."
         else:
-            what = f"{cap(writer)} wrote {mark} on {display_name(o.target, self.pocket, 'on')}."
+            what = f"{cap(writer)} {made_on}."
         kind = "numbers" if o.text.isdigit() else "words"
         before = self._state_before(o)
         there = before["places"][before["chars"][o.actor]["location"]]["name"]
@@ -407,8 +432,10 @@ class Game:
             if e.action == "speak":
                 key = "speak_aloud" if e.target in places else "speak_to"
             is_obj = e.target in before["objects"]
-            if e.action == "mark" and is_obj and e.target == prev_obj and "mark_again" in tmpl:
-                key = "mark_again"
+            if e.action == "mark" and is_obj:
+                style = self.style_for(e.target)
+                again = e.target == prev_obj
+                key = ("mark_again" if again else "mark") + ("" if style == "paper" else f"_{style}")
             if key not in tmpl:
                 return None
             prev = before["objects"].get(e.target, {}).get("holder") if e.action == "take" else None
@@ -435,7 +462,7 @@ class Game:
         x = next(i for i in self.timeline.intrusions if i.intrusion_id == intrusion_id)
         origin = self.timeline.event(x.origin_event_id)
         od = origin.to_dict()
-        od["desc"] = describe(od, self.timeline.state(origin.branch), self.pocket)
+        od["desc"] = describe(od, self.timeline.state(origin.branch), self.pocket, self.style_for)
         return {"intrusion": x.to_dict(), "origin": od, "memory": self.memory(intrusion_id),
                 "manifestation": self.timeline.event(x.manifestation_event_id).to_dict(),
                 "attempts": self.attempts(origin.request_id)}
@@ -485,7 +512,7 @@ class Game:
             state = t.state(bid)
             for e in b.events:
                 d = e.to_dict()
-                d["desc"] = describe(d, state, self.pocket)
+                d["desc"] = describe(d, state, self.pocket, self.style_for)
                 if e.source in ("model", "fallback"):
                     d["attempts"] = self.attempts(e.request_id)
                 events.append(d)

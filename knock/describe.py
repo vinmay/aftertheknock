@@ -35,7 +35,8 @@ def what(state: dict, eid: str, pocket: str) -> str:
     return eid
 
 
-def describe(e: dict, state: dict, pocket: str) -> str:
+def describe(e: dict, state: dict, pocket: str, style_for=None) -> str:
+    """style_for(object_id) -> "paper" | "scratched" | "unknown" decides the verb for marks."""
     shadow = e["branch"] in ("B", "D")
     a = who(e["actor"], shadow)
     a = a[0].upper() + a[1:]
@@ -62,6 +63,11 @@ def describe(e: dict, state: dict, pocket: str) -> str:
     if act == "take":
         return f"{a} took {t}."
     if act == "mark":
+        style = style_for(e["target"]) if style_for else "paper"
+        if style == "scratched":
+            return f'{a} scratched "{e["text"]}" into {t}.'
+        if style == "unknown":
+            return f'{a} marked {t} with "{e["text"]}".'
         return f'{a} wrote "{e["text"]}" on {t}.'
     if act == "open":
         return f"{a} unlocked {t}."
