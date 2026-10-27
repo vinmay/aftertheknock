@@ -6,12 +6,12 @@
 # setup:     hand-authored effect of the rejected choice (committed, not simulated)
 # steps:     one model call each (plus retries). `hint` guides the model;
 #            `actions` limits the action enum; `mark` forces a mark event
-#            ("digits" = four digits); `speak` forces words said aloud.
-#            B ends in a mark (crossing 1: something written); D ends in speech
-#            (crossing 2: something heard), so the two crossings never use the same sense.
+#            ("digits" = four digits, "words" = a short phrase in capitals).
+#            `prefer` picks the object to mark. D prefers the object crossing 1 did NOT use
+#            (crossing 1 marks the pocket object on the lock path, the key's tag on the open
+#            path), so the two crossings land on different objects; the engine enforces it.
 # fallback:  tried in order if the model fails three times. "$holder:<obj>"
-#            means whoever holds that object; "$mark" / "$speech" are seeded values;
-#            target "$here" is the actor's current place (speaking aloud).
+#            means whoever holds that object; "$mark" is a seeded value.
 
 [B.open]
 premise = "In this timeline you opened the door at 11:47, and Mara came inside."
@@ -85,9 +85,13 @@ setup = [["set", "chars.player.location", "stairwell"], ["set", "chars.player.lo
   fallback = [{ actor = "mara", action = "move", target = "roof" }]
 
   [[D.lock.roof.steps]]
-  hint = "Someone says one quiet sentence aloud, 4 to 12 words, the kind of line you overhear through a wall and can't stop thinking about. Like: \"The third stair is the loud one.\" or \"She always takes the long way down.\" Write a new one; never reuse these."
-  speak = "aloud"
-  fallback = [{ actor = "mara", action = "speak", target = "$here", text = "$speech" }]
+  hint = "Whoever holds the paper tag of the brass key writes a few words on it, in capitals."
+  mark = "words"
+  prefer = "key07"
+  fallback = [
+    { actor = "$holder:key07", action = "mark", target = "key07", text = "$mark" },
+    { actor = "$holder:pocket", action = "mark", target = "pocket", text = "$mark" },
+  ]
 
 [D.lock.basement]
 premise = "You locked the door at 11:47. Later you went down to the basement instead of the roof."
@@ -105,9 +109,13 @@ setup = [["set", "chars.player.location", "stairwell"], ["set", "chars.player.lo
   fallback = [{ actor = "mara", action = "open", target = "unit07" }]
 
   [[D.lock.basement.steps]]
-  hint = "Someone says one quiet sentence aloud, 4 to 12 words, the kind of line you overhear through a wall and can't stop thinking about. Like: \"The third stair is the loud one.\" or \"She always takes the long way down.\" Write a new one; never reuse these."
-  speak = "aloud"
-  fallback = [{ actor = "mara", action = "speak", target = "$here", text = "$speech" }]
+  hint = "Whoever holds the paper tag of the brass key writes a few words on it, in capitals."
+  mark = "words"
+  prefer = "key07"
+  fallback = [
+    { actor = "$holder:key07", action = "mark", target = "key07", text = "$mark" },
+    { actor = "$holder:pocket", action = "mark", target = "pocket", text = "$mark" },
+  ]
 
 [D.open.roof]
 premise = "You let Mara in at 11:47. Later you climbed to the roof with her instead of going down."
@@ -126,9 +134,13 @@ setup = [["set", "chars.player.location", "stairwell"], ["set", "chars.mara.loca
   fallback = [{ actor = "mara", action = "give", target = "key07", to = "player" }]
 
   [[D.open.roof.steps]]
-  hint = "Someone says one quiet sentence aloud, 4 to 12 words, the kind of line you overhear through a wall and can't stop thinking about. Like: \"The third stair is the loud one.\" or \"She always takes the long way down.\" Write a new one; never reuse these."
-  speak = "aloud"
-  fallback = [{ actor = "mara", action = "speak", target = "$here", text = "$speech" }]
+  hint = "Whoever holds the pocket object writes a few words on it, in capitals."
+  mark = "words"
+  prefer = "pocket"
+  fallback = [
+    { actor = "$holder:pocket", action = "mark", target = "pocket", text = "$mark" },
+    { actor = "$holder:key07", action = "mark", target = "key07", text = "$mark" },
+  ]
 
 [D.open.basement]
 premise = "You let Mara in at 11:47. Later you went down to the basement with her instead of the roof."
@@ -147,6 +159,10 @@ setup = [["set", "chars.player.location", "stairwell"], ["set", "chars.mara.loca
   fallback = [{ actor = "mara", action = "move", target = "unit07" }]
 
   [[D.open.basement.steps]]
-  hint = "Someone says one quiet sentence aloud, 4 to 12 words, the kind of line you overhear through a wall and can't stop thinking about. Like: \"The third stair is the loud one.\" or \"She always takes the long way down.\" Write a new one; never reuse these."
-  speak = "aloud"
-  fallback = [{ actor = "mara", action = "speak", target = "$here", text = "$speech" }]
+  hint = "Whoever holds the pocket object writes a few words on it, in capitals."
+  mark = "words"
+  prefer = "pocket"
+  fallback = [
+    { actor = "$holder:pocket", action = "mark", target = "pocket", text = "$mark" },
+    { actor = "$holder:key07", action = "mark", target = "key07", text = "$mark" },
+  ]

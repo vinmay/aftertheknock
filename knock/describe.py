@@ -14,11 +14,21 @@ def who(cid: str, shadow: bool) -> str:
     return CHAR_NAMES.get(cid, cid)
 
 
+def display_name(oid: str, pocket: str, form: str = "object") -> str:
+    """The only way an object id becomes player-facing text.
+
+    form: "object" (the bus ticket), "subject" (Your bus ticket / The brass key), "on" (the key's tag).
+    """
+    if oid == "pocket":
+        return {"subject": f"Your {pocket}", "on": f"the {pocket}"}.get(form, f"the {pocket}")
+    if oid == "key07":
+        return {"subject": "The brass key", "on": "the key's paper tag"}.get(form, "the brass key")
+    return oid.replace("_", " ")
+
+
 def what(state: dict, eid: str, pocket: str) -> str:
-    if eid == "pocket":
-        return f"the {pocket}"
-    if eid == "key07":
-        return "the brass key"
+    if eid in ("pocket", "key07"):
+        return display_name(eid, pocket)
     for kind in ("chars", "places"):
         if eid in state[kind]:
             return CHAR_NAMES.get(eid) or state[kind][eid]["name"]
@@ -40,8 +50,6 @@ def describe(e: dict, state: dict, pocket: str) -> str:
         for op, p, v in e["released"]:
             if p.endswith(".marks"):
                 bits.append(f'"{v}" appears on {what(state, p.split(".")[1], pocket)}')
-            elif p.endswith(".said"):
-                bits.append(f'You hear {who(p.split(".")[1], False) if p.split(".")[1] != "player" else "your own voice"} say "{v}"')
         return "; ".join(bits) + "."
     if act == "move":
         return f"{a} went to {t}."

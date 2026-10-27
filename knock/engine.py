@@ -105,15 +105,13 @@ class Intrusion:
         return asdict(self)
 
 
-def crossing_senses(facts) -> set[tuple[str, str]]:
-    """What a crossing shows the player: ("mark", object) or ("voice", speaker)."""
+def crossed_objects(facts) -> set[str]:
+    """Objects a crossing marks (the only kind of fact that manifests)."""
     out = set()
     for _, path, _ in facts:
         kind, eid, fld = path.split(".")
         if kind == "objects" and fld == "marks":
-            out.add(("mark", eid))
-        elif kind == "chars" and fld == "said":
-            out.add(("voice", eid))
+            out.add(eid)
     return out
 
 
@@ -299,10 +297,9 @@ class Timeline:
                      if not fact_holds(shadow.base_state, *f) and not fact_holds(target.state, *f)]
         if not post_fork:
             raise IntrusionError(f"{origin_event_id} created no fact after the fork")
-        earlier = set().union(*(crossing_senses(x.post_fork) for x in self.intrusions)) if self.intrusions else set()
-        mine = crossing_senses(post_fork)
-        if earlier and (mine & earlier or ("mark", "pocket") in mine):
-            raise IntrusionError("a later crossing must use a different object or sense, never the pocket object again")
+        earlier = set().union(*(crossed_objects(x.post_fork) for x in self.intrusions)) if self.intrusions else set()
+        if crossed_objects(post_fork) & earlier:
+            raise IntrusionError("a later crossing must land on a different object than an earlier one")
         released = [list(f) for f in origin.state_delta] + [["set", f"events.{origin.event_id}.actor", origin.actor]]
 
         delta = self._manifest(target.state, post_fork)
@@ -322,17 +319,14 @@ class Timeline:
     def _manifest(canon: dict, facts: list) -> list:
         """Map released shadow facts onto canonical state.
 
-        Marks: the same mark appears on the same object; if that object is not within the
-        player's reach, it arrives where the player is. Words spoken in the shadow are heard
-        by the player. Other facts (who held what, who went where) are revealed but change nothing.
+        Only marks change canonical state: the same mark appears on the same object.
+        If that object is not within the player's reach, it arrives where the player is.
+        Other facts (who held what, who went where) are revealed but change nothing.
         """
         delta = []
         player_loc = canon["chars"]["player"]["location"]
         for op, path, value in facts:
             kind, oid, fld = path.split(".")
-            if kind == "chars" and fld == "said":
-                delta.append(["append", "chars.player.heard", value])
-                continue
             if kind == "objects" and fld == "marks" and oid in canon["objects"]:
                 delta.append(["append", path, value])
                 if location_of(canon, oid) != player_loc:

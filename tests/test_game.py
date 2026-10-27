@@ -144,14 +144,15 @@ def test_replay_detects_tampering():
     assert not verify_replay(replay(rec), rec)
 
 
-def test_every_shadow_ends_in_its_crossing_across_many_seeds():
-    """Random proposals over many seeds: B always crosses as writing, D always as a voice."""
+def test_every_shadow_ends_in_a_mark_across_many_seeds():
+    """Random proposals over many seeds: both shadows end in a mark, on different objects."""
     from knock.sim import pick_origin
     for seed in range(40):
         f1, f2, end = PATHS[seed % len(PATHS)]
         g = play(f1, f2, end, RandomModel(), seed=seed)
-        assert pick_origin(g.timeline, "B", "mark").action == "mark", (seed, f1, f2)
-        assert pick_origin(g.timeline, "D", "speak").action == "speak", (seed, f1, f2)
+        b, d = pick_origin(g.timeline, "B"), pick_origin(g.timeline, "D")
+        assert b.action == d.action == "mark", (seed, f1, f2)
+        assert b.target != d.target, (seed, f1, f2)
 
 
 def test_trace_teaser_comes_from_committed_event():
@@ -164,16 +165,14 @@ def test_trace_teaser_comes_from_committed_event():
 
 
 @pytest.mark.parametrize("f1,f2", [("lock", "basement"), ("lock", "roof"), ("open", "basement"), ("open", "roof")])
-def test_second_crossing_uses_a_different_sense(f1, f2):
-    from knock.engine import crossing_senses
+def test_second_crossing_lands_on_a_different_object(f1, f2):
+    from knock.engine import crossed_objects
     g = play(f1, f2, "open", RandomModel(), seed=8)
     x1, x2 = g.timeline.intrusions
-    s1, s2 = crossing_senses(x1.post_fork), crossing_senses(x2.post_fork)
-    assert {k for k, _ in s1} == {"mark"} and {k for k, _ in s2} == {"voice"}
-    assert ("mark", "pocket") not in s2
-    heard = g.timeline.state("C")["chars"]["player"]["heard"]
-    assert heard == [g.timeline.event(x2.origin_event_id).text]
-    assert g.crossings["D"]["parts"]["sense"] == "voice"
+    o1, o2 = crossed_objects(x1.post_fork), crossed_objects(x2.post_fork)
+    assert o1 and o2 and not (o1 & o2)
+    # Preferred objects: lock path -> pocket first, key's tag second; open path -> the reverse.
+    assert (o1, o2) == (({"pocket"}, {"key07"}) if f1 == "lock" else ({"key07"}, {"pocket"}))
 
 
 @pytest.mark.parametrize("f1", ["lock", "open"])

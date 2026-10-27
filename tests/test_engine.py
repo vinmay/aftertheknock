@@ -194,28 +194,21 @@ def test_replay_reproduces_state():
         assert t.replay_state(bid) == t.state(bid)
 
 
-def test_later_crossing_never_repeats_object_or_sense():
-    """Crossing 2 may not show the pocket object again, nor repeat crossing 1's object or sense."""
+def test_later_crossing_must_land_on_a_different_object():
     t = forked()
-    mark = signature(t)
+    mark = signature(t)                       # crossing 1 marks the pocket object
     t.cross("B", mark.event_id)
-    t.fork("A", budget=2)
+    t.fork("A", budget=1)
     t.author("D", [], "setup", request_id="D:setup")
-    t.commit("D", {"actor": "player", "action": "move", "target": "hall"}, request_id="D:1")
-    again = t.commit("D", {"actor": "player", "action": "mark", "target": "pocket", "text": "AGAIN"}, request_id="D:2")
-    with pytest.raises(IntrusionError, match="different object or sense"):
+    again = t.commit("D", {"actor": "player", "action": "mark", "target": "pocket", "text": "AGAIN"}, request_id="D:1")
+    with pytest.raises(IntrusionError, match="different object"):
         t.cross("D", again.event_id)
 
 
-def test_voice_crossing_is_heard_not_said():
+def test_only_marks_manifest():
+    """Speech in a shadow can cross only as a revealed fact; it never changes canonical state."""
     t = forked()
     t.cross("B", signature(t).event_id)
-    t.fork("A", budget=1)
-    t.author("D", [], "setup", request_id="D:setup")
-    words = t.commit("D", {"actor": "mara", "action": "speak", "target": "hall", "text": "Leave the light off."},
-                     request_id="D:1")
-    x = t.cross("D", words.event_id)
-    c = t.state("C")
-    assert c["chars"]["player"]["heard"] == ["Leave the light off."]
-    assert c["chars"]["mara"]["said"] == []          # canonical Mara never said it
-    assert x.post_fork == [["append", "chars.mara.said", "Leave the light off."]]
+    c = t.state("A")
+    assert "heard" not in c["chars"]["player"]
+    assert c["chars"]["mara"]["said"] == []

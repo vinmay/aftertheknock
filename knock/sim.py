@@ -12,7 +12,8 @@ from dataclasses import dataclass, field
 from .engine import Timeline
 from .models import prompt_hash
 from .state import STORY_DIR, INACTIVE, apply_delta
-from .narrator import BANNED_PHRASES, banned_in, normalize
+from .engine import crossed_objects
+from .narrator import banned_in
 from .validator import ACTIONS
 
 MAX_ATTEMPTS = 3
@@ -23,18 +24,13 @@ MEANINGS = {
     "digits": ["the year someone disappeared", "a date written as month and day", "an apartment number in another building",
                "the age someone will never reach", "the last four digits of a phone number nobody answers",
                "a bus route that stopped running", "the number of days someone waited", "a locker combination"],
-    "words": ["a warning", "a plea", "an instruction", "an apology", "a name and a place", "a promise",
-              "a question", "something the other you wishes they had said"],
-    "spoken": ["a confession", "directions to somewhere", "something a parent says to a child", "an apology",
-               "a reason", "a promise", "a name, said like a question", "a thank-you that comes too late"],
+    "words": ["a name", "a place in this building", "an instruction", "a name and a place",
+              "an instruction about the stairs", "a floor and a door", "someone's first name, twice",
+              "a short instruction about what to do with the key"],
 }
-FALLBACK_WORDS = ["SHE IS STILL HERE", "WE STAYED", "NOT THIS NIGHT", "OPEN IT", "COUNT THE STAIRS"]
-FALLBACK_SPOKEN = ["It was always going to be you.", "Count the stairs on the way down.", "I kept your place.",
-                   "Leave the light off.", "You can stop holding the door now."]
-SPOKEN_PATTERN = "^[A-Za-z][A-Za-z ,.'?!-]{2,70}$"
-MAX_SPOKEN_WORDS = 12
-MIN_SPOKEN_WORDS = 4
-SPEAK_EXAMPLES = {"the third stair is the loud one.", "she always takes the long way down."}
+FALLBACK_WORDS = ["ASK FOR ELENA", "SIXTH STEP DOWN", "LEAVE IT UNLOCKED", "ROOM SEVEN AGAIN", "COUNT THE STAIRS"]
+# Shown to the model; the full list (knock.narrator.BANNED_PHRASES) is enforced at validation.
+BANNED_IN_PROMPT = ["HELP ME", "GET OUT", "YOU'RE NEXT", "RUN", "BEHIND YOU", "IT'S NOT OVER", "DON'T LOOK BACK"]
 
 SYSTEM = ("You write one event at a time for a hidden timeline in a quiet horror story. "
           "Reply with JSON only. Use only the ids listed. The summary is one short past-tense "
@@ -117,9 +113,8 @@ def build_messages(timeline: Timeline, bid: str, spec: dict, step: dict, feedbac
         "mark = write text on an object you hold.",
         "Rules: act only where you are; give, mark or hide only what you hold; move one step to an "
         "adjacent place; a locked place needs its key.",
-        f"Next event: {step['hint']}"
-        + (f" What is {'said' if step.get('speak') else 'written'} is {flavor}." if flavor else ""),
-        "Never use these phrases: " + ", ".join(f'"{p}"' for p in BANNED_PHRASES[::2]) + ".",
+        f"Next event: {step['hint']}" + (f" What is written is {flavor}." if flavor else ""),
+        "Never write these: " + ", ".join(BANNED_IN_PROMPT) + ". Write something specific to this night instead.",
         "Fields: summary (what happens), actor, action, target, recipient (person receiving, for give "
         "only, else \"\"), text (words spoken or written, else \"\").",
     ]
@@ -129,7 +124,7 @@ def build_messages(timeline: Timeline, bid: str, spec: dict, step: dict, feedbac
     return [{"role": "system", "content": SYSTEM}, {"role": "user", "content": "\n\n".join(parts)}]
 
 
-def step_schema(state: dict, step: dict) -> dict:
+def step_schema(state: dict, step: dict, crossed: set[str] = frozenset()) -> dict:
     chars = [c for c, v in state["chars"].items() if v["status"] not in INACTIVE]
     ids = list(state["chars"]) + list(state["objects"]) + list(state["places"])
     props = {
@@ -142,18 +137,16 @@ def step_schema(state: dict, step: dict) -> dict:
     }
     if step.get("mark"):
         held = {o: v["holder"] for o, v in state["objects"].items()
-                if v["markable"] and v["holder"] in chars}
+                if v["markable"] and v["holder"] in chars and o not in crossed}
         prefer = step.get("prefer")
         if prefer in held:
             held = {prefer: held[prefer]}
         props["actor"] = {"enum": sorted(set(held.values())) or chars}
         props["action"] = {"enum": ["mark"]}
-        props["target"] = {"enum": sorted(held) or [o for o, v in state["objects"].items() if v["markable"]]}
+        props["target"] = {"enum": sorted(held) or [o for o, v in state["objects"].items()
+                                                      if v["markable"] and o not in crossed]}
         props["text"] = {"type": "string",
                          "pattern": DIGITS_PATTERN if step["mark"] == "digits" else WORDS_PATTERN}
-    if step.get("speak"):
-        props["action"] = {"enum": ["speak"]}
-        props["text"] = {"type": "string", "pattern": SPOKEN_PATTERN}
     return {"type": "object", "properties": props, "required": list(props)}
 
 
@@ -180,26 +173,24 @@ def goal_unmet(step: dict, after: dict) -> str | None:
     return None
 
 
-def beat_violations(step: dict, p: dict, decision=None, state: dict | None = None) -> list[tuple[str, str]]:
+def beat_violations(step: dict, p: dict, decision=None, state: dict | None = None,
+                    crossed: set[str] = frozenset()) -> list[tuple[str, str]]:
     """Story constraints for this step, separate from world rules."""
     out = []
     if decision is not None and decision.accepted and state is not None:
-        unmet = goal_unmet(step, apply_delta(state, decision.delta))
+        after = apply_delta(state, decision.delta)
+        unmet = goal_unmet(step, after)
         if unmet:
             out.append(("R_BEAT", unmet))
-    if p.get("action") not in step.get("actions", ACTIONS) and not (step.get("mark") or step.get("speak")):
+        if not step.get("mark") and not markable_in_hand(after, crossed):
+            out.append(("R_BEAT", "someone must still be holding an object that can be written on"))
+    if p.get("action") not in step.get("actions", ACTIONS) and not step.get("mark"):
         out.append(("R_BEAT", f"action {p.get('action')!r} not allowed for this step"))
-    if step.get("speak") and normalize(p.get("text") or "") in SPEAK_EXAMPLES:
-        out.append(("R_BEAT", "that is one of the examples; write a new sentence"))
     banned = banned_in(p.get("text") or "")
     if banned:
         out.append(("R_BEAT", f"banned phrase {banned[0]!r}; write something specific to this night"))
-    if step.get("speak"):
-        text = p.get("text") or ""
-        if p.get("action") != "speak":
-            out.append(("R_BEAT", "this step must be someone speaking"))
-        elif not re.fullmatch(SPOKEN_PATTERN, text) or not MIN_SPOKEN_WORDS <= len(text.split()) <= MAX_SPOKEN_WORDS:
-            out.append(("R_BEAT", f"say one plain sentence of {MIN_SPOKEN_WORDS} to {MAX_SPOKEN_WORDS} words"))
+    if step.get("mark") and p.get("target") in crossed:
+        out.append(("R_BEAT", f"{p.get('target')} already carried a crossing; mark a different object"))
     if step.get("mark"):
         pat = DIGITS_PATTERN if step["mark"] == "digits" else WORDS_PATTERN
         if p.get("action") != "mark":
@@ -209,6 +200,13 @@ def beat_violations(step: dict, p: dict, decision=None, state: dict | None = Non
         elif step["mark"] == "digits" and trivial_code(p["text"]):
             out.append(("R_BEAT", f"{p['text']} is too obvious; choose digits that mean something to the writer"))
     return out
+
+
+def markable_in_hand(state: dict, crossed: set[str] = frozenset()) -> bool:
+    """The shadow's final mark needs an active character holding an object that hasn't crossed yet."""
+    return any(o["markable"] and oid not in crossed and o["holder"]
+               and state["chars"][o["holder"]]["status"] not in INACTIVE
+               for oid, o in state["objects"].items())
 
 
 def trivial_code(code: str) -> bool:
@@ -241,10 +239,6 @@ def resolve_fallback(state: dict, fb: dict, rng: random.Random, mark_kind: str |
                 p["text"] = f"{rng.randrange(10000):04d}"
         else:
             p["text"] = rng.choice(FALLBACK_WORDS)
-    if p.get("text") == "$speech":
-        p["text"] = rng.choice(FALLBACK_SPOKEN)
-    if p.get("target") == "$here":
-        p["target"] = state["chars"].get(p["actor"], {}).get("location", "nowhere")
     return p
 
 
@@ -253,18 +247,20 @@ def simulate_shadow(timeline: Timeline, bid: str, spec_key: str, model, seed: in
     """Run a shadow to its budget, then freeze it. Returns the committed events."""
     spec = (specs or load_shadows())[spec_key]
     rng = random.Random(f"{seed}:{bid}:fallback")
+    # Objects that already carried a crossing into the player's night; a later crossing must differ.
+    crossed = set().union(*(crossed_objects(x.post_fork) for x in timeline.intrusions)) if timeline.intrusions else set()
     timeline.author(bid, spec["setup"], spec["setup_summary"], request_id=f"{bid}:setup")
     committed = []
     for i, step in enumerate(spec["steps"]):
         rid = f"{bid}:step{i}"
         feedback = None
         event = None
-        kind = step.get("mark") or ("spoken" if step.get("speak") else None)
-        flavor = random.Random(f"{seed}:{bid}:{i}:meaning").choice(MEANINGS[kind]) if kind else None
+        flavor = (random.Random(f"{seed}:{bid}:{i}:meaning").choice(MEANINGS[step["mark"]])
+                  if step.get("mark") else None)
         for attempt in range(MAX_ATTEMPTS):
             state = timeline.state(bid)
             msgs = build_messages(timeline, bid, spec, step, feedback, flavor)
-            schema = step_schema(state, step)
+            schema = step_schema(state, step, crossed)
             call_seed = seed * 1000 + (0 if bid == "B" else 500) + i * 10 + attempt
             t0 = time.perf_counter()
             try:
@@ -282,7 +278,7 @@ def simulate_shadow(timeline: Timeline, bid: str, spec_key: str, model, seed: in
                 log.add(**rec)
                 continue
             decision = timeline.check(bid, proposal)
-            beat = beat_violations(step, proposal, decision, state)
+            beat = beat_violations(step, proposal, decision, state, crossed)
             violations = beat + decision.violations
             rec["decision"] = {"accepted": not violations,
                                "violations": [{"rule": r, "detail": d} for r, d in violations],
@@ -303,16 +299,12 @@ def simulate_shadow(timeline: Timeline, bid: str, spec_key: str, model, seed: in
                 st = timeline.state(bid)
                 fallbacks += [{"actor": o["holder"], "action": "mark", "target": oid, "text": "$mark"}
                               for oid, o in sorted(st["objects"].items())
-                              if o["markable"] and o["holder"] and st["chars"][o["holder"]]["status"] not in INACTIVE]
-            if step.get("speak"):
-                # Last resort: someone still standing says something aloud where they are.
-                st = timeline.state(bid)
-                fallbacks += [{"actor": cid, "action": "speak", "target": "$here", "text": "$speech"}
-                              for cid, c in st["chars"].items() if c["status"] not in INACTIVE]
+                              if o["markable"] and o["holder"] and oid not in crossed
+                              and st["chars"][o["holder"]]["status"] not in INACTIVE]
             for fb in fallbacks:
                 p = resolve_fallback(timeline.state(bid), fb, rng, step.get("mark"))
                 d = timeline.check(bid, p)
-                if d.accepted and not beat_violations(step, p, d, timeline.state(bid)):
+                if d.accepted and not beat_violations(step, p, d, timeline.state(bid), crossed):
                     p["summary"] = p["summary"] or ""
                     event = timeline.commit(bid, p, source="fallback", request_id=rid)
                     log.add(kind="fallback", branch=bid, step=i, request_id=rid, proposal=p,
@@ -327,12 +319,8 @@ def simulate_shadow(timeline: Timeline, bid: str, spec_key: str, model, seed: in
 
 
 def pick_origin(timeline: Timeline, bid: str, action: str = "mark"):
-    """The shadow event that crosses: the latest event of the given action (a mark for B,
-    words spoken for D), else the latest simulated event."""
+    """The shadow event that crosses: the latest mark, else the latest simulated event."""
     events = [e for e in timeline.branch(bid).events if e.source in ("model", "fallback")]
     chosen = [e for e in events if e.action == action]
     return (chosen or events)[-1] if (chosen or events) else None
 
-
-def crossing_action(spec: dict) -> str:
-    return "speak" if spec["steps"][-1].get("speak") else "mark"

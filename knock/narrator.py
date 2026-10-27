@@ -22,7 +22,8 @@ FORBIDDEN_WORDS = ("timeline", "shadow", "branch", "json", "simulation")
 # Cliches the story never uses, in shadow text or narration.
 BANNED_PHRASES = ("help me", "get out", "you're next", "youre next", "it's not over", "its not over",
                   "don't look back", "dont look back", "i'm watching you", "im watching you",
-                  "watch out", "too late", "behind you", "run while you can")
+                  "watch out", "too late", "behind you", "run while you can", "run", "you will die",
+                  "die", "kill", "blood")
 MAX_COLOR = 160
 
 
@@ -42,14 +43,12 @@ def canonical_view(timeline: Timeline, bid: str) -> dict:
     return {"branch": bid, "state": timeline.state(bid), "released": timeline.released_facts(bid)}
 
 
-def _crossing_fact(released: list) -> tuple[str, str, str] | None:
-    """(sense, entity, value) of the fact that crossed: a mark on an object, or words spoken."""
+def _crossing_fact(released: list) -> tuple[str, str] | None:
+    """(object, inscription) of the mark that crossed."""
     for op, path, value in released:
         parts = path.split(".")
         if len(parts) == 3 and parts[0] == "objects" and parts[2] == "marks":
-            return "mark", parts[1], value
-        if len(parts) == 3 and parts[0] == "chars" and parts[2] == "said":
-            return "voice", parts[1], value
+            return parts[1], value
     return None
 
 
@@ -64,16 +63,20 @@ def moment(view: dict, x: Intrusion) -> dict:
     """The facts of one crossing, as the canonical side is allowed to see them."""
     s = view["state"]
     released = [f for f in view["released"] if f in x.released]
-    sense, entity, text = _crossing_fact(released)
+    oid, text = _crossing_fact(released)
     writer = _writer(released)
     here = s["chars"]["player"]["location"]
     with_you = [c for c, v in s["chars"].items()
                 if c != "player" and v["location"] == here and v["status"] not in ("dead", "departed")]
-    m = {"sense": sense, "object": entity if sense == "mark" else None, "text": text, "writer": writer,
-         "here": here, "place": s["places"][here]["name"], "with_you": with_you}
-    if sense == "mark":
-        m["holder"] = s["objects"][entity]["holder"]
-    return m
+    obj = s["objects"][oid]
+    if obj["holder"] == "player":
+        situation = "yours"
+    elif obj["holder"] in with_you:
+        situation = "held"
+    else:
+        situation = "arrived"
+    return {"object": oid, "text": text, "writer": writer, "here": here, "place": s["places"][here]["name"],
+            "with_you": with_you, "holder": obj["holder"], "situation": situation}
 
 
 def _fill(t: str, slots: dict) -> str:
@@ -84,16 +87,12 @@ def _fill(t: str, slots: dict) -> str:
 
 def template_parts(m: dict, templates: dict, pocket: str) -> dict:
     """Hand-written lines for this crossing, with the committed facts slotted in."""
-    slots = {"pocket": pocket, "place": m["place"]}
-    if m["sense"] == "mark":
-        t = templates.get(f"mark_{m['object']}") or templates["mark_other"]
-        who = templates["writer"].get(m["writer"], templates["writer"]["mara"])
-    else:
-        t = templates["voice"]
-        speaker = m["writer"]
-        key = f"{speaker}_here" if speaker in m["with_you"] else speaker
-        who = templates["speaker"].get(key) or templates["speaker"]["mara"]
-    return {"sense": m["sense"], "object": m["object"], "before": _fill(t["before"], slots),
+    holder = CHAR_NAMES.get(m["holder"] or "", "")
+    slots = {"pocket": pocket, "place": m["place"], "holder": holder}
+    t = (templates.get(f"mark_{m['object']}_{m['situation']}") or templates.get(f"mark_{m['object']}")
+         or templates["mark_other"])
+    who = templates["writer"].get(m["writer"], templates["writer"]["mara"])
+    return {"object": m["object"], "situation": m["situation"], "before": _fill(t["before"], slots),
             "inscription": m["text"], "after": _fill(t["after"], slots), "who": _fill(who, slots)}
 
 

@@ -1,3 +1,5 @@
+import pytest
+
 from knock.engine import Timeline
 from knock.models import RandomModel, ScriptedModel
 from knock.sim import RunLog, load_shadows, pick_origin, simulate_shadow, trivial_code
@@ -50,9 +52,9 @@ def test_every_spec_completes_with_fallbacks_only():
     for f1 in ("lock", "open"):
         for f2 in ("basement", "roof"):
             g = play(f1, f2, "open", ScriptedModel([]), seed=3)
-            for shadow, action in (("B", "mark"), ("D", "speak")):
-                o = pick_origin(g.timeline, shadow, action)
-                assert o.action == action and o.source == "fallback", (f1, f2, shadow)
+            for shadow in ("B", "D"):
+                o = pick_origin(g.timeline, shadow)
+                assert o.action == "mark" and o.source == "fallback", (f1, f2, shadow)
 
 
 def test_random_model_runs_vary_by_seed():
@@ -70,11 +72,11 @@ def test_specs_load():
     for k, v in specs.items():
         assert 2 <= len(v["steps"]) <= 4, k
         last = v["steps"][-1]
-        assert last.get("mark") if k.startswith("B") else last.get("speak"), k
+        assert last.get("mark") == ("digits" if k.startswith("B") else "words"), k
 
 
 def test_banned_phrases_are_rejected():
-    """A proposal using a cliche is rejected even when the world allows it."""
+    """A proposal using a cliche is rejected (R_BEAT) even when the world allows it."""
     cliche = {"summary": "Mara says it.", "actor": "mara", "action": "speak", "target": "player",
               "recipient": "", "text": "Help me, please."}
     fine = {"summary": "Mara says it.", "actor": "mara", "action": "speak", "target": "player",
@@ -84,7 +86,7 @@ def test_banned_phrases_are_rejected():
     simulate_shadow(t, "B", "B.open", ScriptedModel([cliche, fine, "{}", "{}", "{}", "{}", "{}", "{}"]), 1, log)
     first, second = [r for r in log.records if r["kind"] == "proposal"][:2]
     assert not first["decision"]["accepted"]
-    assert any("banned phrase" in v["detail"] for v in first["decision"]["violations"])
+    assert any(v["rule"] == "R_BEAT" and "banned phrase" in v["detail"] for v in first["decision"]["violations"])
     assert second["decision"]["accepted"]
 
 
@@ -94,3 +96,22 @@ def test_banned_phrase_matching():
     assert banned_in("You\u2019re next.") == ["you're next"]
     assert banned_in("It's not over yet") == ["it's not over"]
     assert banned_in("Helpme") == [] and banned_in("whelp merely") == []
+
+
+@pytest.mark.parametrize("words", ["HELP ME", "GET OUT", "YOU'RE NEXT", "RUN", "BEHIND YOU", "RUN NOW"])
+def test_cliche_words_marks_rejected_with_r_beat(words):
+    from knock.sim import beat_violations
+    step = {"mark": "words"}
+    p = {"actor": "mara", "action": "mark", "target": "key07", "text": words}
+    assert any(r == "R_BEAT" and d.startswith("banned phrase") for r, d in beat_violations(step, p))
+
+
+def test_words_mark_never_lands_on_an_already_crossed_object():
+    from knock.sim import beat_violations, step_schema
+    from knock.state import initial_state
+    step = {"mark": "words", "prefer": "pocket"}
+    s = initial_state()
+    schema = step_schema(s, step, crossed={"pocket"})
+    assert "pocket" not in schema["properties"]["target"]["enum"]
+    p = {"actor": "player", "action": "mark", "target": "pocket", "text": "ROOM SEVEN"}
+    assert any("already carried a crossing" in d for _, d in beat_violations(step, p, crossed={"pocket"}))

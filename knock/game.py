@@ -8,10 +8,10 @@ import time
 import tomllib
 import uuid
 
-from .describe import describe, teaser
+from .describe import describe, display_name, teaser
 from .engine import Timeline
 from .narrator import CHAR_NAMES, narrate_crossing
-from .sim import RunLog, crossing_action, load_shadows, pick_origin, simulate_shadow
+from .sim import RunLog, load_shadows, pick_origin, simulate_shadow
 from .state import STORY_DIR, apply_delta, initial_state, state_hash
 
 DEFAULT_POCKET = "ticket stub"
@@ -149,7 +149,7 @@ class Game:
 
     def _cross(self, shadow: str) -> None:
         waited = self._wait_shadow(shadow)
-        origin = pick_origin(self.timeline, shadow, crossing_action(self.specs[self.shadow_time[shadow]["spec"]]))
+        origin = pick_origin(self.timeline, shadow)
         x = self.timeline.cross(shadow, origin.event_id)
         t0 = time.perf_counter()
         narration = narrate_crossing(self.timeline, x, self.narrator_model, self.pocket, self.seed, self.log,
@@ -200,11 +200,26 @@ class Game:
         self.scene = f"ending_{which}"
         self.ending = {"which": which, "text": self.ending_text(which)}
 
-    def _hand(self, actor: str) -> str:
-        return "your own hand" if actor == "player" else f"{CHAR_NAMES.get(actor, 'someone')}'s hand"
+    def _writing(self, actor: str) -> str:
+        return "your own handwriting" if actor == "player" else f"{CHAR_NAMES.get(actor, 'someone')}'s handwriting"
 
     def _on(self, oid: str) -> str:
-        return "the key's tag" if oid == "key07" else f"the {self.pocket}"
+        return display_name(oid, self.pocket, "on")
+
+    def _where(self, s: dict, oid: str) -> str:
+        """Where an object is in a given night, in plain words, from committed state only."""
+        o = s["objects"][oid]
+        here = s["chars"]["player"]["location"]
+        if o["holder"] == "player":
+            return "in your hand"
+        if o["holder"]:
+            who = CHAR_NAMES.get(o["holder"], o["holder"])
+            if s["chars"][o["holder"]]["location"] == here:
+                return f"in {who}'s hand, beside you"
+            return f"with {who}, in {s['places'][s['chars'][o['holder']]['location']]['name']}"
+        if o["location"] == here:
+            return "at your feet"
+        return f"in {s['places'][o['location']]['name']}" if o["location"] else "nowhere you can find"
 
     def ending_text(self, which: str) -> str:
         t = self.timeline
@@ -215,16 +230,18 @@ class Game:
         c = t.state("C")
         b = t.state("B")
         place = lambda s, pid: s["places"][pid]["name"] if pid else "nowhere"  # noqa: E731
-        voice = {"player": "your own voice", "mara": "Mara's voice", "teo": "Teo's voice"}.get(d_o.actor, "a voice")
-        fill = {"pocket": self.pocket, "b_text": b_o.text, "b_on": self._on(b_o.target), "b_hand": self._hand(b_o.actor),
-                "d_text": d_o.text, "d_voice": voice}
+        fill = {"pocket": self.pocket, "b_text": b_o.text, "b_on": self._on(b_o.target),
+                "b_writing": self._writing(b_o.actor), "d_text": d_o.text, "d_on": self._on(d_o.target),
+                "d_writing": self._writing(d_o.actor)}
         here = c["chars"]["player"]["location"]
         fill["erase_mara"] = slots["erase_mara_present" if c["chars"]["mara"]["location"] == here else "erase_mara_absent"]
-        key = d["objects"]["key07"]
-        if key["holder"] in ("mara", "player", "teo"):
-            fill["open_key"] = slots[f"open_key_{key['holder']}"]
-        else:
-            fill["open_key"] = slots["open_key_place"].replace("{key_place}", place(d, key["location"]))
+        lines = []
+        for oid in ("key07", "pocket"):
+            h, th = self._where(c, oid), self._where(d, oid)
+            obj = display_name(oid, self.pocket, "subject")
+            tmpl = slots["object_same"] if h == th else slots["object_split"]
+            lines.append(tmpl.replace("{Obj}", obj).replace("{here}", h).replace("{there}", th))
+        fill["open_objects"] = " ".join(lines)
         ml = d["chars"]["mara"]["location"]
         if ml == d["chars"]["player"]["location"]:
             fill["open_mara"] = slots["open_mara_with_player"]

@@ -292,7 +292,7 @@ You open the door.
 
 The other night comes in quietly, the way Mara did. It smells like rain that never reached this building.
 
-{open_key}
+{open_objects}
 
 {open_mara}
 
@@ -304,14 +304,14 @@ Both nights are true now. You will have to live in both of them.
 """
 
 [endings.slots]
-erase_marks = "\"{b_text}\" fades from {b_on} like breath off a mirror. In the stairwell, the voice that said \"{d_text}\" stops halfway through a breath and does not start again."
+erase_marks = "\"{b_text}\" fades from {b_on}, and \"{d_text}\" from {d_on}, like breath off a mirror, and then there is nothing left to read."
 erase_mara_present = "When you look up, Mara is gone. Where she stood, the floor is dry."
 erase_mara_absent = "Far below, a metal door closes, gently, and does not open again."
 
-open_key_mara = "Mara still has the key. In the other night she never let go of it, and she doesn't now."
-open_key_player = "Your hand closes on something cold. In the other night, you were the one holding the brass key. Now you are holding it here too."
-open_key_teo = "Across the hall, a chain comes off a door. In the other night Teo ended up with the key, and you hear it turning in his hand."
-open_key_place = "In the other night the key was left in {key_place}. When you go to look, much later, it is there too."
+# Object lines are built from each object's committed final holder in both nights:
+# same in both -> "in both nights"; different -> the paradox is stated outright.
+object_same = "{Obj} is {here}, in both nights."
+object_split = "{Obj} is {here}. In the other night, it is {there}. Both are true now."
 
 open_mara_unit07 = "Mara is in 07 now. In the other night she went in, and in this one she is already inside, sitting with her back to the cage door, finally not alone."
 open_mara_with_player = "Mara is beside you. She was beside you in the other night too. She looks relieved, and very tired, like someone who has been holding a door shut for a long time."
@@ -321,34 +321,33 @@ open_teo_hurt = "In 6D, Teo is sitting on the floor of his own kitchen, holding 
 open_teo_dead = "In 6D, there is no sound at all. There won't be, again."
 open_teo_fine = "In 6D, Teo turns off his radio, and you hear him say, to no one, \"Finally.\""
 
-open_marks = "\"{b_text}\" on {b_on}, in {b_hand}. And in the stairwell, {d_voice}, still saying \"{d_text}\" to no one. Both from a night you never lived."
+open_marks = "\"{b_text}\" on {b_on}, in {b_writing}. \"{d_text}\" on {d_on}, in {d_writing}. Both written in a night you never lived."
 
 # ---------------------------------------------------------------- crossings
 # Hand-written lines around each crossing. The engine slots in the committed facts:
-# the inscription (or the words heard), the object, whose hand or voice.
+# the inscription, the object, whose handwriting. Key: mark_<object>[_<situation>],
+# situation = yours | held (someone beside you holds it) | arrived (it turned up at your feet).
 [crossings.mark_pocket]
 before = "You take out the {pocket}."
 after = "That wasn't there when you put it in your pocket."
 
-[crossings.mark_key07]
-before = "Mara turns the key over in the dark. The paper tag catches the storm light."
-after = "That wasn't on the tag when she showed it to you."
+[crossings.mark_pocket_arrived]
+before = "Something light drops at your feet. Your {pocket}. You didn't feel it leave your pocket."
+after = "That wasn't there when you put it in your pocket."
+
+[crossings.mark_key07_held]
+before = "{holder} turns the key over in the dark. The paper tag catches the storm light."
+after = "That wasn't on the tag a minute ago."
+
+[crossings.mark_key07_arrived]
+before = "Something small and heavy clicks against the floor by your feet. The brass key, tagged BASEMENT 07. Nobody threw it."
+after = "That wasn't on the tag the last time you saw it, in Mara's hand."
 
 [crossings.mark_other]
 before = "You look down."
 after = "That wasn't there a minute ago."
 
-[crossings.voice]
-before = "Then, from the stairwell, close and clear, a voice."
-after = ""
-
 [crossings.writer]
 mara = "The handwriting isn't yours."
 teo = "The handwriting isn't yours, and it isn't hers."
 player = "It's your handwriting. You don't remember writing it."
-
-[crossings.speaker]
-player = "It's your voice. You haven't said a word."
-mara = "It's Mara's voice. She is nowhere near the stairwell."
-mara_here = "It's Mara's voice. Mara is standing right beside you, and her mouth didn't move."
-teo = "It's Teo's voice. Teo hasn't left 6D in six years."
