@@ -149,9 +149,15 @@ class Handler(SimpleHTTPRequestHandler):
         try:
             if u.path == "/api/status":
                 info = _model.info() if _model is not None else {}
-                return self._json({"live": live_ok(), "model": getattr(_model, "name", None),
-                                   "hosted": bool(info.get("hosted")), "provider": info.get("provider"),
-                                   "replays": len(_replay_list())})
+                live = live_ok()
+                out = {"live": live, "model": getattr(_model, "name", None),
+                       "hosted": bool(info.get("hosted")), "provider": info.get("provider"),
+                       "replays": len(_replay_list())}
+                if info.get("hosted") and not live:
+                    # Why the live model is off: the provider's status and message, never the key.
+                    out["live_error"] = getattr(_model, "last_error", None)
+                    out["key_length"] = len(getattr(_model, "_key", "") or "")   # length only, to spot paste errors
+                return self._json(out)
             if u.path == "/api/replays":
                 return self._json(_replay_list())
             if u.path == "/api/replay":

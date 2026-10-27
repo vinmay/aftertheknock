@@ -235,6 +235,7 @@ class OpenAICompatModel:
         self.temperature, self.timeout = temperature, timeout
         self.run_id = run_id
         self.schema_supported: bool | None = None
+        self.last_error: str | None = None
 
     @classmethod
     def from_env(cls) -> "OpenAICompatModel":
@@ -243,7 +244,8 @@ class OpenAICompatModel:
                              float(e.get("KNOCK_SPEND_CAP_USD", "10")),
                              float(e["KNOCK_PRICE_IN_PER_M"]), float(e["KNOCK_PRICE_OUT_PER_M"]),
                              float(e.get("KNOCK_SPEND_HOURLY_USD", "1")))
-        key = e.get("KNOCK_OPENAI_API_KEY") or e.get("DIGITALOCEAN_INFERENCE_KEY")
+        clean = lambda v: (v or "").strip().strip('"').strip("'").strip()  # noqa: E731  pasted values
+        key = clean(e.get("KNOCK_OPENAI_API_KEY")) or clean(e.get("DIGITALOCEAN_INFERENCE_KEY"))
         if not key:
             raise SystemExit("set KNOCK_OPENAI_API_KEY (or DIGITALOCEAN_INFERENCE_KEY) for the hosted provider")
         return cls(e["KNOCK_OPENAI_BASE_URL"], e["KNOCK_OPENAI_MODEL"], key, ledger)
@@ -267,13 +269,20 @@ class OpenAICompatModel:
     def ping(self) -> bool:
         """Can this key actually run inference? Listing models is not enough: a key without
         inference access can still list them. Costs one tiny completion."""
+        import urllib.error
         try:
             self.ledger.check()
             d = self._post({"model": self.name, "messages": [{"role": "user", "content": "ok"}], "max_tokens": 1})
             usage = d.get("usage") or {}
             self.ledger.add("health-check", usage.get("prompt_tokens", 0), usage.get("completion_tokens", 0))
+            self.last_error = None if d.get("choices") else "no choices in reply"
             return bool(d.get("choices"))
-        except Exception:
+        except urllib.error.HTTPError as exc:
+            body = exc.read().decode("utf-8", "replace")[:200]
+            self.last_error = f"HTTP {exc.code}: {body}".replace(self._key, "<key>")
+            return False
+        except Exception as exc:
+            self.last_error = repr(exc)[:200].replace(self._key, "<key>")
             return False
 
     def generate(self, messages: list[dict], schema: dict | None = None, seed: int = 0,
