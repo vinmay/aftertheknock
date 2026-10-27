@@ -63,18 +63,42 @@ def test_narrator_never_sees_shadow_before_release():
             assert e.text not in first_prompt
 
 
-def test_narration_falls_back_when_model_contradicts():
-    # The B shadow gets no usable proposals; the narrator invents a different number.
-    bad = "You look at the ticket. It says 0000 in red."
+def test_crossing_text_is_template_and_color_is_checked():
+    """The inscription comes from the committed event via a hand-written template; a color
+    sentence that breaks the rules (here: an invented number) is dropped, never shown."""
+    bad = "It says 0000 in red."
     g = Game("bus ticket", 2, ScriptedModel([]), narrator_model=ScriptedModel([bad, bad]), background=False)
     g.choose(1)            # lock
     while g.scene != "crossing1":
         g.choose(0)
     cr = g.crossings["B"]
-    assert cr["narration_source"] == "fallback"
-    assert any(p.startswith("C_TEXT") for p in cr["raw"]["problems"])
+    assert cr["narration_source"] == "template"
+    assert any(p.startswith("C_NUMBERS") for p in cr["raw"]["problems"])
     digits = g.timeline.event(cr["intrusion"]["origin_event_id"]).text
-    assert digits in cr["narration"]
+    assert digits in cr["narration"] and "0000" not in cr["narration"]
+    assert "That wasn't there when you put it in your pocket." in cr["narration"]
+
+
+def test_good_color_sentence_is_kept():
+    good = "The radiator ticks twice, then goes silent."
+    g = Game("bus ticket", 2, ScriptedModel([]), narrator_model=ScriptedModel([good]), background=False)
+    g.choose(1)
+    while g.scene != "crossing1":
+        g.choose(0)
+    assert g.crossings["B"]["narration_source"] == "template+model"
+    assert g.crossings["B"]["narration"].endswith(good)
+
+
+@pytest.mark.parametrize("text,ok", [
+    ("The rain finds a gap in the window frame.", True),
+    ("Help me, someone whispers.", False),
+    ("You hear Mara breathing.", False),
+    ("Cold. Then colder.", False),
+    ("It reads 4815.", False),
+])
+def test_color_rules(text, ok):
+    from knock.narrator import check
+    assert (check(text) == []) is ok
 
 
 def test_runs_vary_by_seed():

@@ -1,9 +1,10 @@
 """The blind narrator.
 
-It sees only the canonical timeline's state plus facts released by committed
-intrusions (`canonical_view`). It never receives shadow events or shadow state.
-Its prose is checked against those facts; on failure it regenerates once and
-then falls back to hand-written text.
+A crossing is told with hand-written templates (data/story/story.toml, [crossings])
+that slot in the committed facts: the inscription, the object, whose hand. The model
+may add one short sentence of atmosphere. It sees only the canonical timeline (where
+you are, who is with you) and never the shadow log or the inscription. The sentence
+is rule-checked; on failure it is regenerated once, then left out.
 """
 
 from __future__ import annotations
@@ -13,14 +14,25 @@ import re
 from .engine import Intrusion, Timeline
 from .models import prompt_hash
 
-SYSTEM = ("You narrate one moment of a quiet, literary horror story in second person, present tense. "
-          "Write two or three short sentences with one concrete physical detail (the ink, your hands, "
-          "the light, a sound). Use only the facts given. Never explain what is happening, and "
-          "never mention timelines.")
+SYSTEM = ("You add one sentence of atmosphere to a quiet, literary horror story, in second person, "
+          "present tense. Concrete senses only: sound, cold, light, smell, touch. No dialogue.")
 
 CHAR_NAMES = {"mara": "Mara", "teo": "Teo"}
 FORBIDDEN_WORDS = ("timeline", "shadow", "branch", "json", "simulation")
-MAX_LEN = 600
+# Cliches the story never uses, in shadow text or narration.
+BANNED_PHRASES = ("help me", "get out", "you're next", "youre next", "it's not over", "its not over",
+                  "don't look back", "dont look back", "i'm watching you", "im watching you",
+                  "watch out", "too late", "behind you", "run while you can")
+MAX_COLOR = 160
+
+
+def normalize(text: str) -> str:
+    return re.sub(r"\s+", " ", text.lower().replace("’", "'").replace("‘", "'")).strip()
+
+
+def banned_in(text: str) -> list[str]:
+    t = normalize(text)
+    return [p for p in BANNED_PHRASES if re.search(rf"(?<![a-z']){re.escape(p)}(?![a-z'])", t)]
 
 
 def canonical_view(timeline: Timeline, bid: str) -> dict:
@@ -30,11 +42,14 @@ def canonical_view(timeline: Timeline, bid: str) -> dict:
     return {"branch": bid, "state": timeline.state(bid), "released": timeline.released_facts(bid)}
 
 
-def _mark_fact(released: list) -> tuple[str, str] | None:
+def _crossing_fact(released: list) -> tuple[str, str, str] | None:
+    """(sense, entity, value) of the fact that crossed: a mark on an object, or words spoken."""
     for op, path, value in released:
         parts = path.split(".")
         if len(parts) == 3 and parts[0] == "objects" and parts[2] == "marks":
-            return parts[1], value
+            return "mark", parts[1], value
+        if len(parts) == 3 and parts[0] == "chars" and parts[2] == "said":
+            return "voice", parts[1], value
     return None
 
 
@@ -49,109 +64,105 @@ def moment(view: dict, x: Intrusion) -> dict:
     """The facts of one crossing, as the canonical side is allowed to see them."""
     s = view["state"]
     released = [f for f in view["released"] if f in x.released]
-    oid, text = _mark_fact(released)
+    sense, entity, text = _crossing_fact(released)
     writer = _writer(released)
-    obj = s["objects"][oid]
     here = s["chars"]["player"]["location"]
     with_you = [c for c, v in s["chars"].items()
                 if c != "player" and v["location"] == here and v["status"] not in ("dead", "departed")]
-    if obj["holder"] == "player":
-        where = "in your hand"
-    elif obj["holder"]:
-        where = f"in {s['chars'][obj['holder']]['name']}'s hand"
+    m = {"sense": sense, "object": entity if sense == "mark" else None, "text": text, "writer": writer,
+         "here": here, "place": s["places"][here]["name"], "with_you": with_you}
+    if sense == "mark":
+        m["holder"] = s["objects"][entity]["holder"]
+    return m
+
+
+def _fill(t: str, slots: dict) -> str:
+    for k, v in slots.items():
+        t = t.replace("{" + k + "}", v)
+    return t
+
+
+def template_parts(m: dict, templates: dict, pocket: str) -> dict:
+    """Hand-written lines for this crossing, with the committed facts slotted in."""
+    slots = {"pocket": pocket, "place": m["place"]}
+    if m["sense"] == "mark":
+        t = templates.get(f"mark_{m['object']}") or templates["mark_other"]
+        who = templates["writer"].get(m["writer"], templates["writer"]["mara"])
     else:
-        where = f"lying in {s['places'][obj['location']]['name']}"
-    return {"object": oid, "object_name": obj["name"], "text": text, "writer": writer, "where": where,
-            "place": s["places"][here]["name"], "with_you": with_you,
-            "allowed_names": sorted({CHAR_NAMES[c] for c in with_you if c in CHAR_NAMES}
-                                    | ({CHAR_NAMES[writer]} if writer in CHAR_NAMES else set()))}
+        t = templates["voice"]
+        speaker = m["writer"]
+        key = f"{speaker}_here" if speaker in m["with_you"] else speaker
+        who = templates["speaker"].get(key) or templates["speaker"]["mara"]
+    return {"sense": m["sense"], "object": m["object"], "before": _fill(t["before"], slots),
+            "inscription": m["text"], "after": _fill(t["after"], slots), "who": _fill(who, slots)}
 
 
-def writer_phrase(writer: str | None) -> str:
-    if writer == "player":
-        return "the handwriting is your own, but you never wrote it"
-    return f"the handwriting is {CHAR_NAMES.get(writer, 'someone')}'s"
-
-
-def build_messages(m: dict, pocket: str) -> list[dict]:
-    noun = "the key's paper tag" if m["object"] == "key07" else f"the {pocket}"
+def build_messages(m: dict) -> list[dict]:
     with_you = ", ".join(CHAR_NAMES[c] for c in m["with_you"] if c in CHAR_NAMES) or "no one"
-    user = "\n".join([
-        f"Where you are: {m['place']}. With you: {with_you}. The power is out; the only light is the storm's.",
-        f"What changed: {noun} ({m['where']}) now has \"{m['text']}\" written on it. It was not there a moment ago.",
-        f"Let the reader sense, without saying it outright, that {writer_phrase(m['writer'])}.",
-        f"Write the moment you notice it, in normal sentences. Name {noun} in your first sentence. "
-        f"Quote the writing exactly as \"{m['text']}\". "
-        "Apart from the writing itself, use no numbers and no words in ALL CAPS.",
-    ])
+    user = (f"Where you are: {m['place']}. With you: {with_you}. The power is out; the only light is the "
+            f"storm's. Something impossible has just happened, and you have gone very still.\n"
+            f"Write ONE short sentence (under 20 words) about what you sense in the room. "
+            f"No names, no numbers, no quotes, no words in ALL CAPS, and don't explain anything.")
     return [{"role": "system", "content": SYSTEM}, {"role": "user", "content": user}]
 
 
-def restore(text: str, m: dict) -> str:
-    """If the inscription appears with different letter case, put back its exact form."""
-    if m["text"] in text:
-        return text
-    return re.sub(re.escape(m["text"]), m["text"], text, count=1, flags=re.IGNORECASE)
-
-
-def check(text: str, m: dict, pocket: str) -> list[str]:
-    """Rule checks on the critical claims. Returns the problems found."""
+def check(text: str) -> list[str]:
+    """Rule checks on the color sentence. Returns the problems found."""
     problems = []
-    rest = re.sub(re.escape(m["text"]), " ", text, flags=re.IGNORECASE) if m["text"] else text
-    if not text or len(text) > MAX_LEN or len(text) < 40:
+    t = text.strip()
+    if not 10 <= len(t) <= MAX_COLOR:
         problems.append("C_LENGTH")
-    if m["text"] not in text:
-        problems.append("C_TEXT: the written value is missing or altered")
-    numbers = set(re.findall(r"\d+", text)) - set(re.findall(r"\d+", m["text"])) - {"07"}
-    if numbers:
-        problems.append(f"C_NUMBERS: invented numbers {sorted(numbers)}")
+    if len(re.findall(r"[.!?](?:\s|$)", t)) > 1:
+        problems.append("C_SENTENCES: more than one sentence")
+    if re.search(r"\d", t):
+        problems.append("C_NUMBERS: contains a number")
+    if re.search(r"[\"“”]", t):
+        problems.append("C_QUOTES: quotes something")
     for name in CHAR_NAMES.values():
-        if re.search(rf"\b{name}\b", text) and name not in m["allowed_names"]:
-            problems.append(f"C_NAMES: {name} is not here and did not write it")
-    words = [w for w in re.findall(r"[a-z]{3,}", pocket.lower())]
-    obj_words = ("key", "tag") if m["object"] == "key07" else tuple(words) or ("pocket",)
-    if not any(w in text.lower() for w in obj_words):
-        problems.append("C_OBJECT: the object is not mentioned")
-    if any(w in rest.lower() for w in FORBIDDEN_WORDS):
+        if re.search(rf"\b{name}\b", t):
+            problems.append(f"C_NAMES: names {name}")
+    if re.search(r"\b[A-Z]{3,}\b", t):
+        problems.append("C_CAPS: capitalized words")
+    if any(w in t.lower() for w in FORBIDDEN_WORDS):
         problems.append("C_META: mentions the machinery")
-    caps = set(re.findall(r"\b[A-Z]{3,}\b", rest)) - {"BASEMENT"}
-    if caps:
-        problems.append(f"C_CAPS: invented capitalized words {sorted(caps)}")
+    if banned_in(t):
+        problems.append(f"C_BANNED: {banned_in(t)}")
     return problems
 
 
-def fallback(m: dict, pocket: str) -> str:
-    who = {"player": "It's your handwriting. You don't remember writing it.",
-           "mara": "It isn't your handwriting.",
-           "teo": "It isn't your handwriting. It isn't hers either."}.get(m["writer"], "It isn't your handwriting.")
-    if m["object"] == "key07":
-        return (f"The paper tag on the brass key, {m['where']}, has \"{m['text']}\" scratched into it, "
-                f"the letters still raw. {who}")
-    return f"You turn the {pocket} over. \"{m['text']}\" is written across it, the ink still wet. {who}"
+def compose(parts: dict, color: str | None) -> str:
+    lines = [parts["before"], f"“{parts['inscription']}”", f"{parts['after']} {parts['who']}".strip()]
+    if color:
+        lines.append(color)
+    return "\n\n".join(lines)
 
 
-def narrate_crossing(timeline: Timeline, x: Intrusion, model, pocket: str, seed: int, log=None) -> dict:
+def narrate_crossing(timeline: Timeline, x: Intrusion, model, pocket: str, seed: int, log=None,
+                     templates: dict | None = None) -> dict:
     view = canonical_view(timeline, x.target_branch)
     m = moment(view, x)
-    raw = None
+    parts = template_parts(m, templates, pocket)
+    msgs = build_messages(m)
+    raw, color = None, None
     for attempt in range(2):
-        msgs = build_messages(m, pocket)
         try:
-            reply = model.generate(msgs, None, seed=seed * 1000 + 900 + attempt, max_tokens=160)
+            reply = model.generate(msgs, None, seed=seed * 1000 + 900 + attempt, max_tokens=60)
             model_text, meta = reply.text.strip(), reply.to_dict()
         except Exception as exc:
             model_text, meta = "", {"error": repr(exc)}
-        text = restore(model_text, m)
-        problems = check(text, m, pocket)
+        problems = check(model_text)
         if raw is None:
-            raw = {"text": model_text, "problems": check(model_text, m, pocket)}
+            raw = {"text": model_text, "problems": problems}
         if log is not None:
             log.add(kind="narration", branch=x.target_branch, intrusion=x.intrusion_id, attempt=attempt,
-                    prompt_hash=prompt_hash(msgs, None), raw=model_text, text=text, problems=problems,
-                    meta=meta)
+                    prompt_hash=prompt_hash(msgs, None), raw=model_text, text=model_text,
+                    problems=problems, meta=meta)
         if not problems:
-            return {"text": text, "source": "model", "raw": raw, "moment": m, "messages": msgs}
-    text = fallback(m, pocket)
-    if log is not None:
-        log.add(kind="narration_fallback", branch=x.target_branch, intrusion=x.intrusion_id, text=text)
-    return {"text": text, "source": "fallback", "raw": raw, "moment": m, "messages": msgs}
+            color = model_text
+            break
+    if color is None and log is not None:
+        log.add(kind="narration_fallback", branch=x.target_branch, intrusion=x.intrusion_id,
+                text="(no color sentence; hand-written lines only)")
+    parts["color"] = color
+    return {"text": compose(parts, color), "parts": parts, "color": color,
+            "source": "template+model" if color else "template", "raw": raw, "moment": m, "messages": msgs}

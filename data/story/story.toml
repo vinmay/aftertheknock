@@ -256,3 +256,33 @@ open_teo_dead = "In 6D, there is no sound at all. There won't be, again."
 open_teo_fine = "In 6D, Teo turns off his radio, and you hear him say, to no one, \"Finally.\""
 
 open_marks = "{mark_lines} Written in a night you never lived."
+
+# ---------------------------------------------------------------- crossings
+# Hand-written lines around each crossing. The engine slots in the committed facts:
+# the inscription (or the words heard), the object, whose hand or voice.
+[crossings.mark_pocket]
+before = "You take out the {pocket}."
+after = "That wasn't there when you put it in your pocket."
+
+[crossings.mark_key07]
+before = "Mara turns the key over in the dark. The paper tag catches the storm light."
+after = "That wasn't on the tag when she showed it to you."
+
+[crossings.mark_other]
+before = "You look down."
+after = "That wasn't there a minute ago."
+
+[crossings.voice]
+before = "Then, from the stairwell, close and clear, a voice."
+after = ""
+
+[crossings.writer]
+mara = "The handwriting isn't yours."
+teo = "The handwriting isn't yours, and it isn't hers."
+player = "It's your handwriting. You don't remember writing it."
+
+[crossings.speaker]
+player = "It's your voice. You haven't said a word."
+mara = "It's Mara's voice. She is nowhere near the stairwell."
+mara_here = "It's Mara's voice. Mara is standing right beside you, and her mouth didn't move."
+teo = "It's Teo's voice. Teo hasn't left 6D in six years."

@@ -80,6 +80,18 @@ const Sound = {
     o.frequency.value = 1800; g.gain.setValueAtTime(0.02, t); g.gain.exponentialRampToValueAtTime(0.0001, t + 0.05);
     o.connect(g).connect(c.destination); o.start(t); o.stop(t + 0.06);
   },
+  pen(n) {
+    if (!this.ctx || !this.on) return;
+    const c = this.ctx, t0 = c.currentTime + 0.5;
+    for (let i = 0; i < n * 3; i++) {
+      const t = t0 + i * 0.09 + Math.random() * 0.03;
+      const src = c.createBufferSource(); src.buffer = this.noise;
+      const hp = c.createBiquadFilter(); hp.type = "bandpass"; hp.frequency.value = 2500 + Math.random() * 2500; hp.Q.value = 3;
+      const g = c.createGain(); g.gain.setValueAtTime(0.0001, t); g.gain.exponentialRampToValueAtTime(0.09, t + 0.01); g.gain.exponentialRampToValueAtTime(0.0001, t + 0.07);
+      src.connect(hp).connect(g).connect(c.destination); src.start(t, Math.random()); src.stop(t + 0.08);
+    }
+    this.setRain(0.01); setTimeout(() => this.setRain(0.035), 3500);
+  },
   toggle() { this.on = !this.on; this.setRain(0.035); $("#sound-toggle").setAttribute("aria-pressed", String(this.on)); },
 };
 
@@ -117,7 +129,7 @@ $("#start").addEventListener("submit", async (ev) => {
   S.busy = true; $("#begin").disabled = true; $("#begin").textContent = "…";
   try {
     const d = await api("/api/new", { pocket: $("#pocket").value });
-    S.game = d.game; S.replay = null;
+    S.game = d.game; S.replay = null; S.pocket = d.pocket;
     setMode(`<span class="tag live">live</span> ${esc(d.model || "")} seed ${esc(d.seed)}`);
     show(d.view);
     Sound.knock();
@@ -132,7 +144,7 @@ $("#start").addEventListener("submit", async (ev) => {
 async function startReplay(id) {
   Sound.init();
   const d = await api("/api/replay/start", { id });
-  S.game = d.game; S.replay = d.replay; S.step = 0;
+  S.game = d.game; S.replay = d.replay; S.step = 0; S.pocket = d.pocket;
   setMode(`<span class="tag replay">replay</span> ${esc(REPLAY_LABEL)} · ${esc(d.replay.model.model)} · seed ${esc(d.seed)}`);
   show(d.view);
   Sound.knock();
@@ -160,12 +172,13 @@ function show(v) {
   const text = $("#text");
   let html = "";
   if (v.kind === "crossing") {
-    const mark = v.trace.origin.text;
-    const p = esc(v.text).replace(esc(mark), `<button class="ink" id="ink" title="Where did this come from?">${esc(mark)}</button>`);
-    html = `<p>${p}</p><p><button class="trace-hint" id="trace-hint">where did this come from? ↗</button></p>`;
-    document.body.classList.add("flicker");
-    setTimeout(() => document.body.classList.remove("flicker"), 1000);
-    Sound.crossing();
+    const c = v.crossing;
+    const mark = c.inscription;
+    html = paragraphs(v.text).map((p) => {
+      const t = esc(p).replace(esc(mark), `<button class="ink" id="ink" title="Where did this come from?">${esc(mark)}</button>`);
+      return `<p>${t}</p>`;
+    }).join("") + `<p><button class="trace-hint" id="trace-hint">where did this come from? ↗</button></p>`;
+    stageCrossing(c);
   } else {
     html = paragraphs(v.text).map((p, i) => `<p style="animation-delay:${i * 0.35}s">${esc(p)}</p>`).join("");
   }
@@ -219,6 +232,40 @@ async function choose(i) {
     clearTimeout(wait);
     S.busy = false;
   }
+}
+
+/* ---------------------------------------------------------------- the crossing */
+const REDUCED = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+function stageCrossing(c) {
+  const el = $("#crossing-stage");
+  const voice = c.sense === "voice";
+  const kind = voice ? "voice" : c.object === "key07" ? "tag" : "paper";
+  const label = voice ? "" : c.object === "key07" ? "BASEMENT 07" : esc(S.pocket || "");
+  el.innerHTML = `
+    <div class="stage-inner">
+      <p class="stage-before">${esc(c.before)}</p>
+      <div class="card ${kind}">
+        ${label ? `<span class="card-label">${label}</span>` : ""}
+        <svg class="hand" viewBox="0 0 400 90" role="img" aria-label="${esc(c.inscription)}">
+          <text x="200" y="60" text-anchor="middle">${esc(c.inscription)}</text>
+        </svg>
+      </div>
+      <p class="stage-after">${esc(`${c.after} ${c.who}`.trim())}</p>
+      ${c.color ? `<p class="stage-color">${esc(c.color)}</p>` : ""}
+      <button class="primary stage-go" id="stage-go">Go on</button>
+    </div>`;
+  el.hidden = false;
+  el.classList.toggle("instant", REDUCED);
+  document.body.classList.add("staged");
+  if (!REDUCED) {
+    document.body.classList.add("flicker");
+    setTimeout(() => document.body.classList.remove("flicker"), 1000);
+  }
+  voice ? Sound.crossing() : Sound.pen(c.inscription.length);
+  const close = () => { el.hidden = true; document.body.classList.remove("staged"); $("#ink")?.focus(); };
+  $("#stage-go").addEventListener("click", close);
+  setTimeout(() => $("#stage-go")?.focus(), REDUCED ? 0 : 3200);
 }
 
 /* ---------------------------------------------------------------- trace */

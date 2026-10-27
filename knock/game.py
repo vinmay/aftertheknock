@@ -144,8 +144,10 @@ class Game:
         origin = pick_origin(self.timeline, shadow)
         x = self.timeline.cross(shadow, origin.event_id)
         t0 = time.perf_counter()
-        narration = narrate_crossing(self.timeline, x, self.narrator_model, self.pocket, self.seed, self.log)
+        narration = narrate_crossing(self.timeline, x, self.narrator_model, self.pocket, self.seed, self.log,
+                                     self.story["crossings"])
         self.crossings[shadow] = {"intrusion": x.to_dict(), "narration": narration["text"],
+                                  "parts": narration["parts"],
                                   "narration_source": narration["source"], "raw": narration["raw"],
                                   "prompt": narration["messages"],
                                   "released_at": self.timeline.released_facts(x.target_branch),
@@ -251,6 +253,7 @@ class Game:
         if v["kind"] == "crossing":
             cr = self.crossings[sc["shadow"]]
             v["text"] = cr["narration"]
+            v["crossing"] = cr["parts"]
             v["trace"] = self.trace(cr["intrusion"]["intrusion_id"])
         return v
 

@@ -165,7 +165,7 @@ def compute() -> dict:
         for c in rec["crossings"].values():
             narr_total += 1
             narr_raw_fail += bool(c["raw"]["problems"])
-            narr_final_model += c["narration_source"] == "model"
+            narr_final_model += c["narration_source"] in ("model", "template+model")
             for p in c["raw"]["problems"]:
                 narr_raw_problem_kinds[p.split(":")[0]] += 1
         key = f"{rec['fork1']}/{rec['fork2']}"
@@ -192,6 +192,7 @@ def compute() -> dict:
                                 "rejected": pct(sum(not p["decision"]["accepted"] for p in imp), len(imp)),
                                 "rules": dict(Counter(v["rule"] for p in imp for v in p["decision"]["violations"]))}
     m["narration"] = {"crossings": narr_total,
+                      "note": "crossing text is hand-written templates with committed facts; the model adds at most one checked sentence of atmosphere",
                       "raw_first_attempt_failed_rule_checks": pct(narr_raw_fail, narr_total),
                       "raw_failure_kinds": dict(narr_raw_problem_kinds),
                       "final_text_from_model": pct(narr_final_model, narr_total),
@@ -313,8 +314,8 @@ def markdown(m: dict) -> str:
         ig = m["impossible_give"]
         lines.append(f"| Deliberate impossible give rejected | {ig['rejected']} |")
     nar = m["narration"]
-    lines += [f"| Raw narration failing rule checks (first attempt) | {nar['raw_first_attempt_failed_rule_checks']} |",
-              f"| Final narration from the model (rest is fallback) | {nar['final_text_from_model']} |",
+    lines += [f"| Model's atmosphere sentence failing rule checks (first attempt) | {nar['raw_first_attempt_failed_rule_checks']} |",
+              f"| Crossings that kept a model sentence (rest: hand-written lines only) | {nar['final_text_from_model']} |",
               f"| Narration contradictions, hand-labeled | {nar['hand_labeled'] if isinstance(nar['hand_labeled'], str) else nar['hand_labeled']} |",
               f"| Intrusion accuracy, hand-labeled | {m['intrusion_accuracy_hand_labeled']} |"]
     p = m["performance"]

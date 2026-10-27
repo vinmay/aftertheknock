@@ -173,3 +173,38 @@ pre { white-space: pre-wrap; overflow-wrap: anywhere; margin: 0.3rem 0 0; color:
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { animation-duration: 0.01ms !important; animation-delay: 0ms !important; }
 }
+
+/* The staged crossing */
+.crossing-stage {
+  position: fixed; inset: 0; z-index: 30; display: grid; place-items: center; padding: 1.5rem 1rem;
+  background: rgba(8, 7, 6, 0.94); animation: in 0.8s ease both; overflow-y: auto;
+}
+body.staged main { filter: blur(2px) brightness(0.5); }
+.stage-inner { max-width: 30rem; width: 100%; text-align: center; }
+.stage-before { color: var(--muted); font-style: italic; margin: 0 0 1.4rem; }
+.card {
+  position: relative; margin: 0 auto 1.6rem; width: min(22rem, 100%); padding: 2.2rem 1rem 1rem;
+  border-radius: 3px; box-shadow: 0 18px 50px rgba(0, 0, 0, 0.7); transform: rotate(-1.5deg);
+}
+.card.paper { background: #e9e1cf; color: #2a2620; border-left: 6px dotted #0e0d0c; }
+.card.tag { background: #c9a96e; color: #2a2014; border-radius: 4px 4px 4px 40px; }
+.card.tag::before { content: ""; position: absolute; top: 0.8rem; left: 1rem; width: 0.9rem; height: 0.9rem; border-radius: 50%; background: #0e0d0c; }
+.card.voice { background: #121417; color: var(--ink); border: 1px solid var(--faint); transform: none; }
+.card-label { position: absolute; top: 0.7rem; right: 1rem; font-family: var(--mono); font-size: 0.68rem; letter-spacing: 0.12em; text-transform: uppercase; opacity: 0.6; }
+.hand { width: 100%; height: auto; display: block; overflow: visible; }
+.hand text {
+  font-family: "Caveat", "Segoe Script", "Bradley Hand", cursive; font-size: 76px;
+  fill: transparent; stroke: #7a1e17; stroke-width: 1.2;
+  stroke-dasharray: 900; stroke-dashoffset: 900;
+  animation: write 2.6s cubic-bezier(.5,.1,.4,1) 0.5s forwards, ink-in 0.8s ease 2.6s forwards;
+}
+.card.voice .hand text { stroke: var(--ink); font-family: var(--serif); font-style: italic; font-size: 30px; }
+@keyframes write { to { stroke-dashoffset: 0; } }
+@keyframes ink-in { to { fill: currentColor; stroke-width: 0.4; } }
+.card.paper .hand text, .card.tag .hand text { color: #7a1e17; }
+.card.voice .hand text { color: var(--ink); }
+.stage-after { margin: 0 0 1rem; opacity: 0; animation: in 1s ease 3s forwards; }
+.stage-color { color: var(--muted); margin: 0 0 1.4rem; opacity: 0; animation: in 1s ease 3.6s forwards; }
+.stage-go { opacity: 0; animation: in 0.6s ease 3.8s forwards; justify-self: center; }
+.crossing-stage.instant *, .crossing-stage.instant .hand text { animation: none !important; opacity: 1 !important; }
+.crossing-stage.instant .hand text { fill: currentColor; stroke-dashoffset: 0; }
