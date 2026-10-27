@@ -14,7 +14,7 @@ It is 11:47 PM. A storm. A woman you have never met knocks on your door and says
 
 ## Play it
 
-- **Play live in your browser:** https://knock-live.onrender.com/ (Gemma 4 31B on DigitalOcean serverless inference; if the model is unavailable, the page says so and offers the recorded nights instead).
+- **Play live in your browser:** https://knock-live.onrender.com/ is live: the other nights are generated as you play by Gemma 4 31B on DigitalOcean serverless inference. If the model ever becomes unavailable or the spend cap is reached, the page says so and offers the recorded nights instead; `https://knock-live.onrender.com/api/status` shows which mode it is in.
 - **Recorded nights:** https://knock-replay.onrender.com/ shows replays of real local runs (the model is not running live).
 
 ## Run it
@@ -50,6 +50,8 @@ No closed-model API is called anywhere. The hosted mode is selected only by envi
 
 **Hosted spend limits.** The real cap is the DigitalOcean prepaid balance: serverless inference stops when it runs out. The app adds three guards. A ledger cap (default $10) is checked before every call, but its file lives on Render's temporary disk and resets whenever the service restarts. A per-process hourly ceiling (default $1) is held in memory, so it doesn't depend on that file. And new live games are limited to 20 per client and 60 per hour overall.
 
+**What you type.** Empty or abstract answers ("nothing", "regret", "a promise") become an old ticket stub, and the opening says so; long answers are shortened; markup is dropped; everything is shown as text.
+
 **Your pocket text.** Live runs store what you type as your pocket object on the server's temporary disk (in the run log), and nowhere else; it is wiped when the server restarts. In hosted mode it is also part of the prompts sent to the inference provider (DigitalOcean) to generate the other night. In local mode it never leaves your machine.
 
 ## How it works
@@ -73,7 +75,7 @@ flowchart LR
 
 **The model proposes; the engine commits.** For each shadow event, Gemma gets the shadow's current state and a one-line story beat, and must answer in a JSON schema: actor, action (one of move, speak, give, take, mark, open, hide, discover, harm), target, recipient, text, summary. It never writes state. A deterministic validator checks the proposal against the shadow's state: people and things exist in that branch, you can only give, mark or hide what you hold, you must be in the same place, moves go one step to an adjacent place, locked places need their key, the dead and departed don't act. If the proposal passes, the engine derives the state change from the action's rules and commits it. If it fails, the model gets the reason and tries again, up to three times. After that a hand-written fallback event is committed. Every rule has a unit test.
 
-**Intrusions cite their origin.** An intrusion links one committed shadow event to a change in your timeline. The engine refuses an intrusion unless the origin is a committed, simulated event of that shadow and it reveals at least one fact that did not exist at the fork, such as the digits that were written on your object. Echoing your own input back does not count. Only marks manifest: a crossing is always something written on an object. The two crossings must land on different objects, and the engine refuses a later crossing that marks an object an earlier one already used. The first lands on your pocket object if you locked the door, or on the brass key's paper tag if you opened it; the second uses the other one. Click a crossing, during play or on the map, and you first get a short memory of where it came from, written by the engine from committed events only ("In the night where you opened the door, Mara took the folded receipt and wrote “4102” on it. This is where the numbers came from."), with *written there → appeared here*. A **View proof** disclosure underneath holds the event IDs, every rejected attempt, the validator's decisions and the raw proposals. At the end of the night, the map reveals every branch and draws a thread from each crossing to its origin event. The **evidence** switch shows the full audit at any time.
+**Intrusions cite their origin.** An intrusion links one committed shadow event to a change in your timeline. The engine refuses an intrusion unless the origin is a committed, simulated event of that shadow and it reveals at least one fact that did not exist at the fork, such as the digits that were written on your object. Echoing your own input back does not count. Only marks manifest: a crossing is always something written on an object. The two crossings must land on different objects, and the engine refuses a later crossing that marks an object an earlier one already used. The first lands on your pocket object if you locked the door, or on the brass key's paper tag if you opened it; the second uses the other one. Click a crossing, during play or on the map, and you first get a flashback of the other night: a few lines rendered from hand-written templates over the events actually committed in that shadow, ending on the mark itself ("Mara takes the folded receipt from the other you. / Mara writes “4102” on the folded receipt. / This is where the numbers came from."), then *written there → appeared here*. A test checks that every action in a flashback is a committed event of that shadow. A **View proof** disclosure underneath holds the event IDs, every rejected attempt, the validator's decisions and the raw proposals. At the end of the night, the map reveals every branch at its actual choice, draws a thread from each crossing to its origin event, and walks you to the first crossing. The **evidence** switch shows the full audit at any time.
 
 **Crossings are told with hand-written lines; the model adds at most one sentence.** The words around each crossing are hand-written templates with the committed facts slotted in: the inscription, the object, whose handwriting. The model may add one sentence of atmosphere. The prompt for that sentence is built only from your timeline (where you are, who is with you). It never sees the shadow log or the inscription, so it cannot contradict or leak either. The sentence is rule-checked (one sentence, no numbers, names, quotes, ALL-CAPS words or banned phrases), retried once, and dropped if it still fails.
 
@@ -171,6 +173,12 @@ Spend: $0.00861 over 8 playthroughs (mean $0.00108 each) at $0.18/$0.5 per 1M in
 The ledger in `spend.json` also covers health checks, probes and earlier runs. Two seeds per path is too few to compare models; this run shows only that hosted mode works end to end and holds the same invariants.
 
 Every number above comes from `uv run python eval/run_all.py` (or `--from-results` to recompute from the committed raw logs). Charts: `eval/results/chart_*.svg`. Model choice and the day-one benchmark: [MODELS.md](MODELS.md).
+
+## Accessibility and reading
+
+- A full night can be played with the keyboard only: number keys or Enter for choices, Enter on the inscription for its memory, Escape to close drawers (focus returns to what opened them) and to skip the map reveal. Map nodes are focusable, with names that say which crossing they belong to, and there is an equivalent chronological event list for screen readers.
+- **Show text immediately** (top right, remembered on this device) turns off fades, the crossing animation and the map reveal. The page does the same automatically when your system asks for reduced motion. That path was checked through the toggle; the reduced-motion media query itself was not tested in a browser.
+- Body, secondary and red text meet WCAG AA contrast on the dark background; controls are at least 44 px tall.
 
 ## Why open models
 
