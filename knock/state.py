@@ -106,3 +106,19 @@ def location_of(state: dict, eid: str) -> str | None:
             return state["chars"][obj["holder"]]["location"]
         return obj["location"]
     return None
+
+
+NUMBER_WORDS = {"two", "three", "four", "five", "six", "seven", "eight", "nine", "ten", "few", "several", "some"}
+
+
+def is_plural(name: str) -> bool:
+    """Rough number agreement for the player's object ("two pennies", "keys", but "a pair of gloves")."""
+    words = name.split()
+    if not words:
+        return False
+    if words[0] in NUMBER_WORDS:
+        return True
+    if "pair" in words or "of" in words[:-1]:
+        return False
+    last = words[-1]
+    return last.endswith("s") and not last.endswith(("ss", "us", "is", "ous"))

@@ -107,18 +107,41 @@ def test_runs_vary_by_seed():
     assert len(chains) > 1
 
 
-@pytest.mark.parametrize("raw,expected", [
-    ("My lucky bus ticket", "lucky bus ticket"),
-    ("", "ticket stub"),
-    (None, "ticket stub"),
-    ("nothing", "ticket stub"),
-    ("1234", "ticket stub"),
-    ("a receipt from 2019", "receipt from"),
-    ("<script>alert(1)</script>", "script alert script"),
-    ("an   old   brass   button   from   my   coat", "old brass button from my"),
+@pytest.mark.parametrize("raw,name,kind", [
+    ("My lucky bus ticket", "lucky bus ticket", "object"),
+    ("", "ticket stub", "empty"),
+    (None, "ticket stub", "empty"),
+    ("nothing", "ticket stub", "empty"),
+    ("1234", "ticket stub", "empty"),
+    ("regret", "ticket stub", "abstract"),
+    ("a promise", "ticket stub", "abstract"),
+    ("a receipt from 2019", "receipt", "object"),
+    ("<script>alert(1)</script>", "ticket stub", "empty"),
+    ("<b>receipt</b>", "receipt", "object"),
+    ("a very long folded note from someone I used to know well", "very long folded note", "object"),
 ])
-def test_pocket_sanitized(raw, expected):
-    assert sanitize_pocket(raw) == expected
+def test_pocket_inputs(raw, name, kind):
+    from knock.game import pocket_info
+    assert pocket_info(raw) == (name, kind)
+
+
+@pytest.mark.parametrize("raw,line", [
+    ("nothing", "Your pockets are empty, except for an old ticket stub you forgot about."),
+    ("regret", "You brought regret out with you tonight, but your hand finds only an old ticket stub"),
+    ("two pennies", "In your pocket, your thumb finds the two pennies."),
+])
+def test_pocket_line_in_opening(raw, line):
+    g = Game(raw, 1, RandomModel(), background=False)
+    assert line in g.view()["text"]
+
+
+def test_plural_object_agreement():
+    from knock.state import is_plural
+    assert is_plural("two pennies") and is_plural("keys") and not is_plural("pair of gloves")
+    assert not is_plural("glass") and not is_plural("bus ticket")
+    g = play("lock", "roof", "open", RandomModel(), seed=6, pocket="two pennies")
+    assert "when you put them in your pocket" in g.crossings["B"]["narration"]
+    assert "Your two pennies are" in g.ending["text"]
 
 
 @pytest.mark.parametrize("f1,f2,end", PATHS[::3])

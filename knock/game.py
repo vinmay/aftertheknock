@@ -12,7 +12,7 @@ from .describe import describe, display_name
 from .engine import Timeline
 from .narrator import CHAR_NAMES, narrate_crossing
 from .sim import RunLog, load_shadows, pick_origin, simulate_shadow
-from .state import STORY_DIR, apply_delta, initial_state, state_hash
+from .state import STORY_DIR, apply_delta, initial_state, is_plural, state_hash
 
 DEFAULT_POCKET = "ticket stub"
 NOT_AN_OBJECT = {"nothing", "none", "no", "idk", "dunno", "empty", "nada", "na", "n a", "nothing at all"}
@@ -25,18 +25,46 @@ FORK1_EFFECT = {
 OTHER = {"lock": "open", "open": "lock", "basement": "roof", "roof": "basement"}
 
 
-def sanitize_pocket(raw: str | None) -> str:
-    """Free text -> a short noun phrase without article. Digits are dropped so they
-    can never be confused with what a shadow writes."""
-    s = re.sub(r"[^A-Za-z' \-]", " ", raw or "")
+# Things people type that aren't objects you can hold. They become the same fallback object
+# as an empty pocket, and the opening says so.
+ABSTRACT = {"regret", "regrets", "promise", "promises", "hope", "love", "fear", "grief", "guilt", "memory",
+            "memories", "time", "dreams", "dream", "secret", "secrets", "sadness", "anger", "courage", "luck",
+            "silence", "loneliness", "nostalgia", "doubt", "nothing but regret", "my heart", "heart", "soul"}
+
+
+DANGLING = {"from", "of", "to", "with", "for", "and", "or", "the", "a", "an", "my", "i", "that", "in", "on", "at", "by"}
+
+
+def _clean(raw: str | None) -> str:
+    s = re.sub(r"(?is)<(script|style)[^>]*>.*?</\1\s*>", " ", raw or "")
+    s = re.sub(r"<[^>]*>", " ", s)                       # markup is dropped, not read
+    s = re.sub(r"[^A-Za-z' \-]", " ", s)
     s = re.sub(r"\s+", " ", s).strip().lower()
     words = s.split()
     while words and words[0] in LEADING:
         words.pop(0)
-    s = " ".join(words[:5])[:40].strip(" -'")
+    words = words[:5]
+    while len(" ".join(words)) > 40:
+        words.pop()
+    while len(words) > 1 and words[-1] in DANGLING:      # don't end a phrase on "from" or "of"
+        words.pop()
+    return " ".join(words).strip(" -'")
+
+
+def pocket_info(raw: str | None) -> tuple[str, str]:
+    """Free text -> (object name without article, kind). kind: "object" | "empty" | "abstract".
+    Digits are dropped so they can never be confused with what a shadow writes; everything
+    is plain text and is escaped wherever it is shown."""
+    s = _clean(raw)
     if len(s) < 2 or not re.search(r"[a-z]{2}", s) or s in NOT_AN_OBJECT:
-        return DEFAULT_POCKET
-    return s
+        return DEFAULT_POCKET, "empty"
+    if s in ABSTRACT or s.split()[-1] in ABSTRACT:
+        return DEFAULT_POCKET, "abstract"
+    return s, "object"
+
+
+def sanitize_pocket(raw: str | None) -> str:
+    return pocket_info(raw)[0]
 
 
 def load_story() -> dict:
@@ -67,7 +95,9 @@ class Game:
         self.narrator_model = narrator_model or model
         self.background = background
         self.pocket_raw = pocket_raw
-        self.pocket = sanitize_pocket(pocket_raw)
+        self.pocket, self.pocket_kind = pocket_info(pocket_raw)
+        self.pocket_said = _clean(pocket_raw)
+        self.plural = is_plural(self.pocket)
         self.story = load_story()
         self.specs = load_shadows()
         self.timeline = Timeline(f"the {self.pocket}")
@@ -86,7 +116,14 @@ class Game:
         self._enter(self.scene)
 
     # ---- text -----------------------------------------------------------
+    def pocket_line(self) -> str:
+        lines = self.story["pocket_lines"]
+        line = lines[self.pocket_kind] if self.pocket_kind in lines else lines["object"]
+        return line.replace("{said}", self.pocket_said)
+
     def fmt(self, text: str) -> str:
+        text = text.replace("{pocket_line}", self.pocket_line())
+        text = text.replace("{it}", "them" if self.plural else "it")
         text = text.replace("{pocket}", self.pocket)
         if "B" in self.crossings:
             # The number that crossed over is canonical knowledge once it has been released.
@@ -221,6 +258,10 @@ class Game:
             return "at your feet"
         return f"in {s['places'][o['location']]['name']}" if o["location"] else "nowhere you can find"
 
+    def _char_where(self, s: dict, cid: str) -> str:
+        loc = s["chars"][cid]["location"]
+        return "beside you" if loc == s["chars"]["player"]["location"] else f"in {s['places'][loc]['name']}"
+
     def ending_text(self, which: str) -> str:
         t = self.timeline
         slots = self.story["endings"]["slots"]
@@ -238,17 +279,17 @@ class Game:
         lines = []
         for oid in ("key07", "pocket"):
             h, th = self._where(c, oid), self._where(d, oid)
-            obj = display_name(oid, self.pocket, "subject")
-            tmpl = slots["object_same"] if h == th else slots["object_split"]
-            lines.append(tmpl.replace("{Obj}", obj).replace("{here}", h).replace("{there}", th))
+            plural = oid == "pocket" and self.plural
+            words = {"{Obj}": display_name(oid, self.pocket, "subject"), "{obj}": display_name(oid, self.pocket),
+                     "{here}": h, "{there}": th, "{is}": "are" if plural else "is", "{it}": "they" if plural else "it"}
+            line = slots["object_same"] if h == th else slots["object_split"]
+            for k, v in words.items():
+                line = line.replace(k, v)
+            lines.append(line)
         fill["open_objects"] = " ".join(lines)
-        ml = d["chars"]["mara"]["location"]
-        if ml == d["chars"]["player"]["location"]:
-            fill["open_mara"] = slots["open_mara_with_player"]
-        elif ml == "unit07":
-            fill["open_mara"] = slots["open_mara_unit07"]
-        else:
-            fill["open_mara"] = slots["open_mara_elsewhere"].replace("{mara_place}", place(d, ml))
+        mh, mt = self._char_where(c, "mara"), self._char_where(d, "mara")
+        fill["open_mara"] = (slots["mara_same"] if mh == mt else slots["mara_split"]).replace(
+            "{here}", mh).replace("{there}", mt)
         rank = {"present": 0, "hurt": 1, "dead": 2, "departed": 0}
         teo = max((b["chars"]["teo"]["status"], d["chars"]["teo"]["status"]), key=lambda s: rank.get(s, 0))
         fill["open_teo"] = slots["open_teo_" + {"hurt": "hurt", "dead": "dead"}.get(teo, "fine")]
@@ -317,10 +358,48 @@ class Game:
         here_state = self._state_before(man)
         here = here_state["places"][here_state["chars"]["player"]["location"]]["name"]
         what = what[0].lower() + what[1:] if what.startswith("The other") else what
+        scene = self.flashback(o)
         return {"memory": f"In {night}, {what} This is where the {kind} came from.",
+                "night": night, "scene": scene,
+                "closing": self.story["flashback"][f"closing_{kind}"],
                 "source": f"Written there: {night}, {there}",
                 "dest": f"Appeared here: your night, {here}",
                 "inscription": o.text, "object": display_name(o.target, self.pocket)}
+
+    def flashback(self, origin, max_lines: int = 5) -> list[dict] | None:
+        """The other night, up to the mark, as short lines rendered from committed events only.
+
+        Returns None (use the plain sentence) if any event has no template."""
+        tmpl = self.story["flashback"]
+        events = self.timeline.branch(origin.branch).events
+        events = events[: events.index(origin) + 1]
+        name = lambda c: "the other you" if c == "player" else CHAR_NAMES.get(c, c)  # noqa: E731
+        cap = lambda w: w[0].upper() + w[1:]  # noqa: E731
+        lines = []
+        for e in events:
+            if e.source == "story":
+                lines.append({"line": e.summary, "event_id": e.event_id, "action": "story"})
+                continue
+            before = self._state_before(e)
+            places = before["places"]
+            key = e.action
+            if e.action == "speak":
+                key = "speak_aloud" if e.target in places else "speak_to"
+            if key not in tmpl:
+                return None
+            prev = before["objects"].get(e.target, {}).get("holder") if e.action == "take" else None
+            slots = {"A": cap(name(e.actor)), "T": name(e.to or e.target),
+                     "obj": display_name(e.target, self.pocket) if e.target in before["objects"] else "",
+                     "on": display_name(e.target, self.pocket, "on") if e.target in before["objects"] else "",
+                     "place": places[e.target]["name"] if e.target in places else "",
+                     "text": e.text, "from": f" from {name(prev)}" if prev else ""}
+            line = tmpl[key]
+            for k, v in slots.items():
+                line = line.replace("{" + k + "}", v)
+            lines.append({"line": line, "event_id": e.event_id, "action": e.action})
+        if len(lines) > max_lines:          # keep the start of the night and the lines leading to the mark
+            lines = lines[:1] + lines[-(max_lines - 1):]
+        return lines
 
     def trace(self, intrusion_id: str) -> dict:
         """Everything about one intrusion: its origin event, the validator decision, released facts."""

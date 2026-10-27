@@ -13,6 +13,7 @@ import re
 
 from .engine import Intrusion, Timeline
 from .models import prompt_hash
+from .state import is_plural
 
 SYSTEM = ("You add one sentence of atmosphere to a quiet, literary horror story, in second person, "
           "present tense. Concrete senses only: sound, cold, light, smell, touch. No dialogue.")
@@ -88,7 +89,7 @@ def _fill(t: str, slots: dict) -> str:
 def template_parts(m: dict, templates: dict, pocket: str) -> dict:
     """Hand-written lines for this crossing, with the committed facts slotted in."""
     holder = CHAR_NAMES.get(m["holder"] or "", "")
-    slots = {"pocket": pocket, "place": m["place"], "holder": holder}
+    slots = {"pocket": pocket, "place": m["place"], "holder": holder, "it": "them" if is_plural(pocket) else "it"}
     t = (templates.get(f"mark_{m['object']}_{m['situation']}") or templates.get(f"mark_{m['object']}")
          or templates["mark_other"])
     who = templates["writer"].get(m["writer"], templates["writer"]["mara"])

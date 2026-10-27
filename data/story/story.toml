@@ -6,6 +6,13 @@
 
 start = "opening"
 
+# The one tactile mention of the pocket object before the knock. "abstract" covers inputs
+# you can't hold ("regret", "a promise"): they become the same fallback object as an empty pocket.
+[pocket_lines]
+object = "In your pocket, your thumb finds the {pocket}."
+empty = "Your pockets are empty, except for an old ticket stub you forgot about. Your thumb finds it anyway."
+abstract = "You brought {said} out with you tonight, but your hand finds only an old ticket stub, soft at the edges."
+
 [scenes.opening]
 clock = "11:47"
 text = """
@@ -17,7 +24,7 @@ Through the peephole: a woman in a dark coat, soaked through, hair flat against 
 
 "Please," she says. "You already let me in."
 
-You have never seen her before. Your hand is on the deadbolt. In your pocket, your thumb finds the {pocket}.
+You have never seen her before. Your hand is on the deadbolt. {pocket_line}
 """
 kind = "fork1"
 choices = [
@@ -282,7 +289,9 @@ You choose this night. Only this one.
 
 At 12:30 the power comes back all at once, every light in the building, and the fridge begins to hum as if nothing happened. Nothing did.
 
-You will never know what happened in the night you didn't choose. You will think about it on stairs for the rest of your life.
+You will never know what happened in the night you didn't choose.
+
+You will think about it on every stair.
 """
 
 [endings.open]
@@ -300,7 +309,7 @@ The other night comes in quietly, the way Mara did. It smells like rain that nev
 
 You look at what the night left you. {open_marks}
 
-Both nights are true now. You will have to live in both of them.
+Both nights are true now.
 """
 
 [endings.slots]
@@ -310,12 +319,13 @@ erase_mara_absent = "Far below, a metal door closes, gently, and does not open a
 
 # Object lines are built from each object's committed final holder in both nights:
 # same in both -> "in both nights"; different -> the paradox is stated outright.
-object_same = "{Obj} is {here}, in both nights."
-object_split = "{Obj} is {here}. In the other night, it is {there}. Both are true now."
+object_same = "{Obj} {is} {here}, in both nights."
+object_split = "The two nights no longer agree about {obj}. Here, {it} {is} {here}. In the other night, {it} {is} {there}."
 
-open_mara_unit07 = "Mara is in 07 now. In the other night she went in, and in this one she is already inside, sitting with her back to the cage door, finally not alone."
-open_mara_with_player = "Mara is beside you. She was beside you in the other night too. She looks relieved, and very tired, like someone who has been holding a door shut for a long time."
-open_mara_elsewhere = "Mara is in {mara_place}. In the other night that is where she ended up, and that is where she is now. You don't go to her. She doesn't need you to anymore."
+# Mara, from her committed position in each night; the paradox comes before the positions.
+mara_same = "Mara is {here}, in both nights. She looks relieved, and very tired, like someone who has been holding a door shut for a long time."
+mara_split = "The worlds no longer agree on where Mara is. Here, she is {here}. In the other night, she is {there}."
+
 
 open_teo_hurt = "In 6D, Teo is sitting on the floor of his own kitchen, holding his arm, not sure how he hurt it."
 open_teo_dead = "In 6D, there is no sound at all. There won't be, again."
@@ -329,11 +339,11 @@ open_marks = "\"{b_text}\" on {b_on}, in {b_writing}. \"{d_text}\" on {d_on}, in
 # situation = yours | held (someone beside you holds it) | arrived (it turned up at your feet).
 [crossings.mark_pocket]
 before = "You take out the {pocket}."
-after = "That wasn't there when you put it in your pocket."
+after = "That wasn't there when you put {it} in your pocket."
 
 [crossings.mark_pocket_arrived]
-before = "Something light drops at your feet. Your {pocket}. You didn't feel it leave your pocket."
-after = "That wasn't there when you put it in your pocket."
+before = "Something light drops at your feet. Your {pocket}. You didn't feel {it} leave your pocket."
+after = "That wasn't there when you put {it} in your pocket."
 
 [crossings.mark_key07_held]
 before = "{holder} turns the key over in the dark. The paper tag catches the storm light."
@@ -351,3 +361,21 @@ after = "That wasn't there a minute ago."
 mara = "The handwriting isn't yours."
 teo = "The handwriting isn't yours, and it isn't hers."
 player = "It's your handwriting. You don't remember writing it."
+
+# ---------------------------------------------------------------- flashbacks
+# A crossing's memory: one line per event committed in that shadow, up to the mark.
+# Only these templates are used; an event without one falls back to the plain sentence.
+# {A} actor, {T} person acted on, {obj} object, {on} what was written on, {place}, {text}, {from}.
+[flashback]
+move = "{A} goes to {place}."
+speak_to = "{A} says to {T}: “{text}”"
+speak_aloud = "{A} says, to no one: “{text}”"
+give = "{A} hands {obj} to {T}."
+take = "{A} takes {obj}{from}."
+mark = "{A} writes “{text}” on {on}."
+open = "{A} unlocks {place}."
+hide = "{A} hides {obj}."
+discover = "{A} finds {obj}."
+harm = "{A} hurts {T}."
+closing_numbers = "This is where the numbers came from."
+closing_words = "This is where the words came from."

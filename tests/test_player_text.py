@@ -96,19 +96,53 @@ def test_ending_matches_committed_state(name, g, views):
     opened = g.ending_text("open")
     for oid in ("key07", "pocket"):
         here, there = g._where(c, oid), g._where(d, oid)
-        obj = display_name(oid, g.pocket, "subject")
         if here == there:
-            assert f"{obj} is {here}, in both nights." in opened, name
+            assert f"{here}, in both nights." in opened, (name, oid)
         else:
-            # Two different places: the paradox is stated outright, never implied.
-            assert f"{obj} is {here}. In the other night, it is {there}. Both are true now." in opened, name
+            # The paradox is stated before the positions, never implied.
+            i = opened.index(f"The two nights no longer agree about {display_name(oid, g.pocket)}.")
+            assert opened.index(here, i) < opened.index(there, opened.index("In the other night", i)), (name, oid)
+    mh, mt = g._char_where(c, "mara"), g._char_where(d, "mara")
+    if mh == mt:
+        assert f"Mara is {mh}, in both nights." in opened, name
+    else:
+        assert f"The worlds no longer agree on where Mara is. Here, she is {mh}. In the other night, she is {mt}." in opened, name
+    # Only the marks that actually crossed are mentioned, each with its real writer.
+    crossed = {}
     for shadow in ("B", "D"):
         o = t.event(g.crossings[shadow]["intrusion"]["origin_event_id"])
-        assert f"“{o.text}”" not in opened or True
+        crossed[o.text] = o
         assert f'"{o.text}" on {display_name(o.target, g.pocket, "on")}, in {g._writing(o.actor)}' in opened, name
-    # Nothing in the ending claims a holder the committed state doesn't have.
-    for who in ("Mara", "Teo"):
-        for oid in ("key07", "pocket"):
-            claim = f"{display_name(oid, g.pocket, 'subject')} is in {who}'s hand"
-            if claim in opened:
-                assert c["objects"][oid]["holder"] == who.lower(), (name, claim)
+    for ending in (opened, g.ending_text("erase")):
+        quoted = set(re.findall(r'"([^"]+)"', ending)) - {"Finally."}
+        assert quoted == set(crossed), (name, quoted)
+        # It ends on one short line.
+        last = ending.strip().split("\n")[-1]
+        assert len(last) <= 45 and last.count(".") == 1, (name, last)
+
+
+@pytest.mark.parametrize("name,g,views", list(all_runs()), ids=lambda v: v if isinstance(v, str) else "")
+def test_flashback_lines_come_from_committed_events(name, g, views):
+    """Every action in a flashback is an event committed in that shadow, in order, ending on the mark."""
+    verbs = {"goes": "move", "says": "speak", "hands": "give", "takes": "take", "writes": "mark",
+             "unlocks": "open", "hides": "hide", "finds": "discover", "hurts": "harm"}
+    t = g.timeline
+    for x in t.intrusions:
+        mem = g.memory(x.intrusion_id)
+        assert mem["scene"], name
+        shadow = {e.event_id: e for e in t.branch(x.origin_branch).events}
+        for line in mem["scene"]:
+            e = shadow[line["event_id"]]                       # every line cites a committed event
+            assert e.action == line["action"], name
+            if e.source == "story":
+                assert line["line"] == e.summary
+                continue
+            found = [a for v, a in verbs.items() if re.search(rf"\b{v}\b", line["line"])]
+            assert found == [e.action], (name, line["line"], e.action)
+            if e.action in ("speak", "mark"):
+                assert e.text in line["line"], name           # words and marks verbatim
+        last = mem["scene"][-1]
+        assert last["event_id"] == x.origin_event_id and f"\u201c{t.event(x.origin_event_id).text}\u201d" in last["line"]
+        # "took" only when a take happened.
+        if not any(e.action == "take" for e in shadow.values()):
+            assert "takes" not in " ".join(l["line"] for l in mem["scene"])
