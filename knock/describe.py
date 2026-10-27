@@ -36,12 +36,18 @@ def describe(e: dict, state: dict, pocket: str) -> str:
     if act == "story":
         return e["summary"]
     if act == "manifest":
-        return f"Crossing from {e['origin']}: " + "; ".join(
-            f'"{v}" appears on {what(state, p.split(".")[1], pocket)}' for op, p, v in e["released"]
-            if p.endswith(".marks"))
+        bits = []
+        for op, p, v in e["released"]:
+            if p.endswith(".marks"):
+                bits.append(f'"{v}" appears on {what(state, p.split(".")[1], pocket)}')
+            elif p.endswith(".said"):
+                bits.append(f'You hear {who(p.split(".")[1], False) if p.split(".")[1] != "player" else "your own voice"} say "{v}"')
+        return "; ".join(bits) + "."
     if act == "move":
         return f"{a} went to {t}."
     if act == "speak":
+        if e["target"] in state["places"]:
+            return f'{a} said aloud: "{e["text"]}"'
         return f'{a} said to {t}: "{e["text"]}"'
     if act == "give":
         return f"{a} gave {t} to {who(e['to'], shadow)}."

@@ -54,10 +54,15 @@
 <section id="map" class="map" hidden aria-label="Map of the night">
   <div class="map-head">
     <h2>The map</h2>
-    <p class="small muted">Solid: what you lived. Hollow: what you didn't. Red threads: what crossed over. Tap any point.</p>
+    <ul class="legend">
+      <li><span class="key lived"></span>what you lived</li>
+      <li><span class="key unlived"></span>what you didn't</li>
+      <li><span class="key crossed"></span>what crossed over</li>
+    </ul>
     <button class="close" id="map-close" aria-label="Close map">×</button>
   </div>
   <div class="map-scroll"><svg id="map-svg" role="img" aria-label="Timelines and crossings"></svg></div>
+  <div id="map-tip" class="map-tip" hidden></div>
 </section>
 
 <aside id="evidence" class="evidence" hidden aria-label="Evidence view">

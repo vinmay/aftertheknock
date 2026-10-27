@@ -338,58 +338,101 @@ $("#map-close").addEventListener("click", () => ($("#map").hidden = true));
 
 function drawMap(d) {
   const svg = $("#map-svg");
-  const lanes = { B: 80, S: 190, A: 190, C: 190, D: 300 };
-  const X = (seq) => 40 + seq * 72;
-  const maxSeq = Math.max(...d.events.map((e) => e.seq));
-  const W = X(maxSeq) + 200, H = 360;
+  const box = $("#map .map-scroll").clientWidth || window.innerWidth;
+  const vertical = box < 640;
+  const evidence = !$("#evidence").hidden;
+  const br = Object.fromEntries(d.branches.map((b) => [b.id, b]));
+  // Causal x order: shadows start right after their fork; a crossing lands after its origin.
+  const col = {}, lastCol = {};
+  const byBranch = (id) => d.events.filter((e) => e.branch === id).sort((a, b) => a.seq - b.seq);
+  for (const id of ["S", "B", "A", "D", "C"]) {
+    const b = br[id];
+    if (!b) continue;
+    let c = b.parent ? lastColAt(b.parent, b.fork_seq) : -1;
+    for (const e of byBranch(id)) {
+      c += 1;
+      if (e.origin && col[e.origin] !== undefined) c = Math.max(c, col[e.origin] + 1);
+      col[e.event_id] = c;
+    }
+    lastCol[id] = c;
+  }
+  function lastColAt(parent, forkSeq) {
+    const evs = d.events.filter((e) => [parent, br[parent].parent].includes(e.branch) && e.seq < forkSeq);
+    return Math.max(-1, ...evs.map((e) => col[e.event_id] ?? -1));
+  }
+  const maxSeq = Math.max(...Object.values(col));
+  const lane = vertical ? { B: 0.22, S: 0.55, A: 0.55, C: 0.55, D: 0.86 } : { B: 0.2, S: 0.5, A: 0.5, C: 0.5, D: 0.8 };
+  let W, H, P;
+  if (vertical) {
+    const step = 64;
+    W = Math.max(320, box); H = 90 + maxSeq * step + 220;
+    P = (seq, b) => [W * lane[b], 70 + seq * step];
+  } else {
+    const step = Math.max(76, (box - 160) / Math.max(maxSeq, 1));
+    W = 80 + maxSeq * step + 80; H = 420;
+    P = (seq, b) => [80 + seq * step, H * lane[b]];
+  }
   svg.setAttribute("viewBox", `0 0 ${W} ${H}`);
   svg.setAttribute("width", W); svg.setAttribute("height", H);
   const pos = {};
-  d.events.forEach((e) => (pos[e.event_id] = [X(e.seq), lanes[e.branch]]));
+  d.events.forEach((e) => (pos[e.event_id] = P(col[e.event_id], e.branch)));
   const origins = new Set(d.intrusions.map((x) => x.origin_event_id));
+  const curve = ([x1, y1], [x2, y2]) => vertical
+    ? `M${x1},${y1} C${x1},${(y1 + y2) / 2} ${x2},${(y1 + y2) / 2} ${x2},${y2}`
+    : `M${x1},${y1} C${(x1 + x2) / 2},${y1} ${(x1 + x2) / 2},${y2} ${x2},${y2}`;
   let out = "";
-  const br = Object.fromEntries(d.branches.map((b) => [b.id, b]));
-  // lanes and fork connectors
   for (const b of d.branches) {
     const evs = d.events.filter((e) => e.branch === b.id);
     if (!evs.length) continue;
-    const y = lanes[b.id], x0 = X(evs[0].seq), x1 = X(evs[evs.length - 1].seq);
-    const cls = b.kind === "shadow" ? "lane shadow" : "lane";
-    if (b.parent) {
-      const px = X(b.fork_seq - 1), py = lanes[b.parent];
-      out += `<path class="${cls}" d="M${px},${py} C${px + 30},${py} ${x0 - 30},${y} ${x0},${y}"/>`;
-    }
-    out += `<path class="${cls}" d="M${x0},${y} L${x1},${y}"/>`;
-    const ly = b.kind === "shadow" ? (b.id === "B" ? y - 24 : y + 34) : y + (b.id === "A" ? 52 : 36);
-    out += `<text class="lane-label" x="${x0 - 6}" y="${ly}">${esc(d.labels[b.id] || b.id)}</text>`;
+    const cls = br[b.id].kind === "shadow" ? "lane shadow" : "lane";
+    const first = pos[evs[0].event_id], last = pos[evs[evs.length - 1].event_id];
+    if (b.parent) out += `<path class="${cls}" d="${curve(P(lastColAt(b.parent, b.fork_seq), b.parent), first)}"/>`;
+    out += `<path class="${cls}" d="M${first[0]},${first[1]} L${last[0]},${last[1]}"/>`;
+    const label = esc(d.labels[b.id] || b.id);
+    if (vertical && b.id === "S") continue;
+    out += vertical
+      ? `<text class="lane-label" transform="translate(${first[0] - 16},${first[1] + 14}) rotate(90)">${label}</text>`
+      : `<text class="lane-label" x="${first[0] - 8}" y="${first[1] + (b.id === "B" ? -26 : b.id === "D" ? 38 : b.id === "A" ? 58 : 38)}">${label}</text>`;
   }
-  // intrusion threads
-  for (const x of d.intrusions) {
-    const [ox, oy] = pos[x.origin_event_id], [mx, my] = pos[x.manifestation_event_id];
-    out += `<path class="thread" d="M${ox},${oy} C${ox + 20},${(oy + my) / 2} ${mx - 20},${(oy + my) / 2} ${mx},${my}"/>`;
-  }
-  // nodes
+  d.intrusions.forEach((x, i) => {
+    out += `<path class="thread" style="--i:${i}" pathLength="1" d="${curve(pos[x.origin_event_id], pos[x.manifestation_event_id])}"/>`;
+  });
   for (const e of d.events) {
     const [x, y] = pos[e.event_id];
     const kind = br[e.branch].kind === "shadow" ? "shadow" : "canonical";
-    const cls = ["node", kind, e.source === "fallback" ? "fallback" : "", e.source === "intrusion" ? "intrusion" : "", origins.has(e.event_id) ? "origin" : ""].join(" ");
-    const r = e.source === "story" ? 4 : 6.5;
-    out += `<g class="${cls}" tabindex="0" data-id="${esc(e.event_id)}"><circle cx="${x}" cy="${y}" r="${r}"/>` +
-      `<text x="${x}" y="${y + (kind === "shadow" && e.branch === "B" ? -12 : 20)}" text-anchor="middle">${esc(e.event_id)}</text>` +
-      `<title>${esc(e.desc)}</title></g>`;
+    const cls = ["node", kind, e.source, origins.has(e.event_id) ? "origin" : ""].join(" ");
+    const r = e.source === "story" ? 5 : 9;
+    out += `<g class="${cls}" tabindex="0" role="button" aria-label="${esc(e.desc)}" data-id="${esc(e.event_id)}">` +
+      `<circle cx="${x}" cy="${y}" r="14" class="hit"/><circle cx="${x}" cy="${y}" r="${r}" class="dot"/>` +
+      (evidence ? `<text x="${x}" y="${y + (vertical ? 4 : 26)}" dx="${vertical ? 16 : 0}" text-anchor="${vertical ? "start" : "middle"}" class="eid">${esc(e.event_id)}</text>` : "") +
+      `</g>`;
   }
   svg.innerHTML = out;
+  svg.classList.toggle("draw", !REDUCED);
+  const tip = $("#map-tip");
   svg.querySelectorAll(".node").forEach((n) => {
-    const fn = () => openEvent(n.dataset.id);
-    n.addEventListener("click", fn);
-    n.addEventListener("keydown", (ev) => { if (ev.key === "Enter" || ev.key === " ") { ev.preventDefault(); fn(); } });
+    const e = d.events.find((x) => x.event_id === n.dataset.id);
+    const show = () => {
+      const r = n.getBoundingClientRect(), host = $("#map").getBoundingClientRect();
+      tip.textContent = e.desc;
+      tip.hidden = false;
+      tip.style.left = `${Math.min(r.left - host.left, host.width - 260)}px`;
+      tip.style.top = `${r.bottom - host.top + 8}px`;
+    };
+    n.addEventListener("mouseenter", show);
+    n.addEventListener("focus", show);
+    n.addEventListener("mouseleave", () => (tip.hidden = true));
+    n.addEventListener("blur", () => (tip.hidden = true));
+    n.addEventListener("click", () => { tip.hidden = true; openEvent(n.dataset.id); });
+    n.addEventListener("keydown", (ev) => { if (ev.key === "Enter" || ev.key === " ") { ev.preventDefault(); openEvent(n.dataset.id); } });
   });
 }
 
 function openEvent(id) {
   const d = S.mapData, e = d.events.find((x) => x.event_id === id);
   const x = d.intrusions.find((i) => i.manifestation_event_id === id || i.origin_event_id === id);
-  let html = `<p class="kicker">${esc(e.event_id)} · ${esc(d.labels[e.branch] || e.branch)}</p>
+  const ids = !$("#evidence").hidden;
+  let html = `<p class="kicker">${ids ? esc(e.event_id) + " · " : ""}${esc(d.labels[e.branch] || e.branch)}</p>
     <div class="quote ${e.branch === "B" || e.branch === "D" ? "shadowq" : ""}">${esc(e.desc)}</div>
     <ul class="facts">
       <li>source: ${esc({ model: "proposed by the model, validated, committed", fallback: "hand-written fallback (model proposals were rejected)", story: "hand-written story event", intrusion: "intrusion from another timeline" }[e.source])}</li>
@@ -431,6 +474,7 @@ async function loadEvidence() {
 function toggleEvidence() {
   const el = $("#evidence");
   el.hidden = !el.hidden;
+  if (!$("#map").hidden && S.mapData) drawMap(S.mapData);
   $("#evidence-toggle").setAttribute("aria-pressed", String(!el.hidden));
   if (!el.hidden) loadEvidence();
 }
@@ -446,6 +490,8 @@ document.addEventListener("keydown", (ev) => {
     else $("#map").hidden = true;
   }
 });
+
+window.addEventListener("resize", () => { if (!$("#map").hidden && S.mapData) drawMap(S.mapData); });
 
 boot().then(() => {
   const rid = new URLSearchParams(location.search).get("replay");

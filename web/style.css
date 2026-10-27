@@ -134,24 +134,36 @@ pre { white-space: pre-wrap; overflow-wrap: anywhere; margin: 0.3rem 0 0; color:
   position: fixed; inset: 0; z-index: 15; background: var(--bg);
   display: grid; grid-template-rows: auto 1fr; padding: 3rem 1rem 1rem;
 }
-.map-head { position: relative; max-width: 60rem; width: 100%; margin: 0 auto 0.6rem; padding-right: 2rem; }
+.map-head { position: relative; width: 100%; max-width: 72rem; margin: 0 auto 1rem; padding-right: 2.5rem; display: flex; flex-wrap: wrap; align-items: baseline; gap: 0.6rem 2rem; }
 .map-head .close { top: -0.3rem; right: 0; }
-.map-scroll { overflow: auto; max-width: 100%; }
-#map-svg { display: block; margin: 0 auto; font-family: var(--mono); }
-#map-svg .lane-label { fill: var(--muted); font-size: 12px; letter-spacing: 0.04em; }
-#map-svg .lane { stroke: var(--faint); stroke-width: 1; fill: none; }
-#map-svg .lane.shadow { stroke-dasharray: 2 4; stroke: var(--shadow); opacity: 0.6; }
-#map-svg .node { cursor: pointer; }
-#map-svg .node circle { stroke-width: 1.5; transition: r 0.15s; }
-#map-svg .node:hover circle, #map-svg .node:focus circle { r: 9; }
-#map-svg .node.canonical circle { fill: var(--ink); stroke: var(--ink); }
-#map-svg .node.shadow circle { fill: var(--bg); stroke: var(--shadow); }
-#map-svg .node.fallback circle { stroke-dasharray: 2 2; }
-#map-svg .node.intrusion circle, #map-svg .node.origin circle { stroke: var(--blood); }
-#map-svg .node.intrusion circle { fill: var(--blood); }
-#map-svg .node text { fill: var(--muted); font-size: 10px; }
-#map-svg .thread { stroke: var(--blood); stroke-width: 1.5; fill: none; stroke-dasharray: 5 4; animation: dash 1.2s linear infinite; }
-@keyframes dash { to { stroke-dashoffset: -18; } }
+.legend { list-style: none; display: flex; flex-wrap: wrap; gap: 0.4rem 1.4rem; margin: 0; padding: 0; font-size: 0.9rem; color: var(--muted); }
+.legend .key { display: inline-block; width: 12px; height: 12px; border-radius: 50%; margin-right: 0.45rem; vertical-align: -1px; }
+.legend .lived { background: var(--ink); }
+.legend .unlived { border: 1.5px solid var(--shadow); }
+.legend .crossed { width: 22px; height: 0; border-radius: 0; border-top: 2px dashed var(--blood); vertical-align: 3px; }
+.map-scroll { overflow: auto; width: 100%; max-width: 100%; display: flex; justify-content: center; align-items: flex-start; }
+#map-svg { display: block; flex: none; font-family: var(--mono); }
+#map-svg .lane-label { fill: var(--muted); font-size: 13px; letter-spacing: 0.02em; font-family: var(--serif); font-style: italic; }
+#map-svg .lane { stroke: var(--faint); stroke-width: 1.5; fill: none; }
+#map-svg .lane.shadow { stroke-dasharray: 2 5; stroke: var(--shadow); opacity: 0.7; }
+#map-svg .node { cursor: pointer; outline: none; }
+#map-svg .node .hit { fill: transparent; }
+#map-svg .node .dot { stroke-width: 2; transition: r 0.15s; }
+#map-svg .node:hover .dot, #map-svg .node:focus .dot { r: 12; }
+#map-svg .node:focus-visible .hit { stroke: var(--ink); stroke-width: 1; }
+#map-svg .node.canonical .dot { fill: var(--ink); stroke: var(--ink); }
+#map-svg .node.shadow .dot { fill: var(--bg); stroke: var(--shadow); }
+#map-svg .node.fallback .dot { stroke-dasharray: 3 2; }
+#map-svg .node.intrusion .dot, #map-svg .node.origin .dot { stroke: var(--blood); }
+#map-svg .node.intrusion .dot { fill: var(--blood); }
+#map-svg .eid { fill: var(--muted); font-size: 10px; }
+#map-svg .thread { stroke: var(--blood); stroke-width: 2; fill: none; stroke-dasharray: 1; stroke-dashoffset: 0; }
+#map-svg.draw .thread { stroke-dashoffset: 1; animation: thread-draw 1.4s ease-in-out forwards; animation-delay: calc(0.8s + var(--i) * 1.6s); }
+@keyframes thread-draw { to { stroke-dashoffset: 0; } }
+.map-tip {
+  position: absolute; z-index: 2; max-width: 250px; padding: 0.45rem 0.6rem; font-size: 0.9rem; line-height: 1.4;
+  background: var(--bg-raised); border: 1px solid var(--faint); border-radius: 3px; pointer-events: none;
+}
 
 /* Evidence */
 .evidence {
