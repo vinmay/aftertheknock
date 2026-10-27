@@ -79,9 +79,17 @@ def build_messages(m: dict, pocket: str) -> list[dict]:
         f"Where you are: {m['place']}. With you: {with_you}.",
         f"What changed: {noun} ({m['where']}) now has \"{m['text']}\" written on it. It was not there a moment ago.",
         f"What you feel but cannot prove: {writer_phrase(m['writer'])}.",
-        f"Write the moment you notice it. Include \"{m['text']}\" exactly. Do not add any other numbers or capitalized words.",
+        f"Write the moment you notice it, in normal sentences. Quote the writing exactly as \"{m['text']}\". "
+        "Apart from the writing itself, use no numbers and no words in ALL CAPS.",
     ])
     return [{"role": "system", "content": SYSTEM}, {"role": "user", "content": user}]
+
+
+def restore(text: str, m: dict) -> str:
+    """If the inscription appears with different letter case, put back its exact form."""
+    if m["text"] in text:
+        return text
+    return re.sub(re.escape(m["text"]), m["text"], text, count=1, flags=re.IGNORECASE)
 
 
 def check(text: str, m: dict, pocket: str) -> list[str]:
@@ -127,15 +135,17 @@ def narrate_crossing(timeline: Timeline, x: Intrusion, model, pocket: str, seed:
         msgs = build_messages(m, pocket)
         try:
             reply = model.generate(msgs, None, seed=seed * 1000 + 900 + attempt, max_tokens=160)
-            text, meta = reply.text.strip(), reply.to_dict()
+            model_text, meta = reply.text.strip(), reply.to_dict()
         except Exception as exc:
-            text, meta = "", {"error": repr(exc)}
+            model_text, meta = "", {"error": repr(exc)}
+        text = restore(model_text, m)
         problems = check(text, m, pocket)
         if raw is None:
-            raw = {"text": text, "problems": problems}
+            raw = {"text": model_text, "problems": check(model_text, m, pocket)}
         if log is not None:
             log.add(kind="narration", branch=x.target_branch, intrusion=x.intrusion_id, attempt=attempt,
-                    prompt_hash=prompt_hash(msgs, None), text=text, problems=problems, meta=meta)
+                    prompt_hash=prompt_hash(msgs, None), raw=model_text, text=text, problems=problems,
+                    meta=meta)
         if not problems:
             return {"text": text, "source": "model", "raw": raw, "moment": m, "messages": msgs}
     text = fallback(m, pocket)

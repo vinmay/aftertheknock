@@ -95,3 +95,26 @@ def test_runs_vary_by_seed():
 ])
 def test_pocket_sanitized(raw, expected):
     assert sanitize_pocket(raw) == expected
+
+
+@pytest.mark.parametrize("f1,f2,end", PATHS[::3])
+def test_replay_reproduces_recorded_run(f1, f2, end):
+    import json
+    from knock.game import replay, verify_replay
+    g = play(f1, f2, end, RandomModel(), seed=21)
+    rec = json.loads(json.dumps(g.record()))
+    g2 = replay(rec)
+    assert verify_replay(g2, rec)
+    assert g2.ending == g.ending
+    assert [c["narration"] for c in g2.crossings.values()] == [c["narration"] for c in g.crossings.values()]
+
+
+def test_replay_detects_tampering():
+    import json
+    from knock.game import replay, verify_replay
+    g = play("lock", "roof", "erase", RandomModel(), seed=22)
+    rec = json.loads(json.dumps(g.record()))
+    for r in rec["log"]:
+        if r["kind"] == "proposal" and r["decision"]["accepted"] and '"mark"' in r["raw"]:
+            r["raw"] = r["raw"].replace(json.loads(r["raw"])["text"], "9999" if r["branch"] == "B" else "OTHER WORDS")
+    assert not verify_replay(replay(rec), rec)

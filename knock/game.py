@@ -8,6 +8,7 @@ import time
 import tomllib
 import uuid
 
+from .describe import describe
 from .engine import Timeline
 from .narrator import CHAR_NAMES, narrate_crossing
 from .sim import RunLog, load_shadows, pick_origin, simulate_shadow
@@ -41,6 +42,20 @@ def sanitize_pocket(raw: str | None) -> str:
 def load_story() -> dict:
     with open(STORY_DIR / "story.toml", "rb") as f:
         return tomllib.load(f)
+
+
+def replay(record: dict) -> "Game":
+    """Re-run a recorded game through the engine with the recorded model outputs."""
+    from .models import ReplayModel
+    model = ReplayModel(record)
+    g = Game(record["pocket_raw"], record["seed"], model, background=False, run_id=record["run_id"])
+    for ch in record["choices"]:
+        g.choose(ch["index"])
+    return g
+
+
+def verify_replay(g: "Game", record: dict) -> bool:
+    return g.record()["state_hashes"] == record["state_hashes"] and g.model.misses == 0
 
 
 class Game:
@@ -110,9 +125,19 @@ class Game:
         self.scene = sid
         sc = self.story["scenes"][sid]
         for i, op in enumerate(sc.get("effects", [])):
-            self.timeline.author(self.canon(), [op], f"scene {sid}", request_id=f"{self.canon()}:{sid}:{i}")
+            self.timeline.author(self.canon(), [op], self._effect_summary(op),
+                                 request_id=f"{self.canon()}:{sid}:{i}")
         if sc.get("kind") == "crossing":
             self._cross(sc["shadow"])
+
+    def _effect_summary(self, op: list) -> str:
+        _, path, value = op
+        kind, eid, fld = path.split(".")
+        s = self.timeline.state(self.canon())
+        if kind == "chars" and fld == "location":
+            who = "You go" if eid == "player" else f"{CHAR_NAMES.get(eid, eid)} goes"
+            return f"{who} to {s['places'][value]['name']}."
+        return f"{eid} {fld} = {value}"
 
     def _cross(self, shadow: str) -> None:
         waited = self._wait_shadow(shadow)
@@ -234,6 +259,44 @@ class Game:
         return {"intrusion": x.to_dict(), "origin": origin.to_dict(),
                 "manifestation": self.timeline.event(x.manifestation_event_id).to_dict(),
                 "decision": decision}
+
+    def branch_labels(self) -> dict:
+        f1, f2 = self.f1, self.f2
+        door = {"lock": "you locked the door", "open": "you opened the door"}
+        labels = {"S": "11:47, before the choice"}
+        if f1:
+            labels["A"] = f"Your night: {door[f1]}"
+            labels["B"] = f"The other night: {door[OTHER[f1]]}"
+        if f2:
+            labels["C"] = f"Your night: you went to the {f2}"
+            labels["D"] = f"The other night: you went to the {OTHER[f2]}"
+        return labels
+
+    def attempts(self, request_id: str) -> list[dict]:
+        return [{"attempt": r.get("attempt"), "proposal": r.get("proposal"), "kind": r["kind"],
+                 "decision": r.get("decision"), "raw": r.get("raw"),
+                 "latency_s": (r.get("meta") or {}).get("latency_s")}
+                for r in self.log.records
+                if r.get("request_id") == request_id and r["kind"] in ("proposal", "fallback", "skipped")]
+
+    def map_data(self) -> dict:
+        t = self.timeline
+        events = []
+        for bid, b in t.branches.items():
+            state = t.state(bid)
+            for e in b.events:
+                d = e.to_dict()
+                d["desc"] = describe(d, state, self.pocket)
+                if e.source in ("model", "fallback"):
+                    d["attempts"] = self.attempts(e.request_id)
+                events.append(d)
+        return {"labels": self.branch_labels(),
+                "branches": [{"id": bid, "kind": b.kind, "parent": b.parent, "fork_seq": b.fork_seq,
+                              "frozen": b.frozen} for bid, b in t.branches.items()],
+                "events": events,
+                "intrusions": [x.to_dict() for x in t.intrusions],
+                "narration": {k: {"text": c["narration"], "source": c["narration_source"], "raw": c["raw"]}
+                              for k, c in self.crossings.items()}}
 
     def record(self) -> dict:
         return {"run_id": self.run_id, "seed": self.seed, "model": self.log.model,

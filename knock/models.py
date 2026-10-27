@@ -116,3 +116,32 @@ class RandomModel:
             else:
                 out[k] = rng.choice(["", "Don't.", "You already let me in.", "It's cold down there."])
         return Reply(json.dumps(out), 0.0, model=self.name)
+
+
+class ReplayModel:
+    """Serves the outputs recorded in a run log, matched by prompt hash.
+
+    Re-running a game against this model re-derives every state through the engine,
+    so a replay is checked, not just shown: its state hashes must match the record.
+    """
+    live = False
+
+    def __init__(self, record: dict):
+        self.name = f"replay of {record['model'].get('model')}"
+        self.recorded_model = record["model"]
+        self.queues: dict[str, list[str]] = {}
+        for r in record["log"]:
+            if r["kind"] in ("proposal", "narration"):
+                text = r.get("raw", r.get("text", ""))
+                self.queues.setdefault(r["prompt_hash"], []).append(text)
+        self.misses = 0
+
+    def info(self) -> dict:
+        return dict(self.recorded_model)
+
+    def generate(self, messages, schema=None, seed=0, max_tokens=200) -> Reply:
+        q = self.queues.get(prompt_hash(messages, schema))
+        if not q:
+            self.misses += 1
+            return Reply("", 0.0, model=self.name)
+        return Reply(q.pop(0), 0.0, model=self.name)
