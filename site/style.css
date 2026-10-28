@@ -589,3 +589,20 @@ body.instant-text .stage-color, body.instant-text .trace-hint { opacity: 1 !impo
 #title .start-fail { margin: 0.2rem 0 0; font-size: 0.9rem; }
 #title .start-fail .linkish { color: var(--ink); }
 #title .start-fail[hidden], #title .start-status[hidden], #title .pocket-note[hidden] { display: none; }
+/* Phones: every tap target at least 44x44 CSS px. Invisible hit areas where the visible control is
+   smaller (the Close pills, Go on, the inscription in the text), so nothing looks different. */
+@media (max-width: 40rem) {
+  .close-btn::after { content: ""; position: absolute; inset: -3px -2px; }
+  .stage-go { position: relative; }
+  .stage-go::after { content: ""; position: absolute; inset: -3px -2px; }
+  .ink { position: relative; }
+  .ink::after { content: ""; position: absolute; inset: -8px -4px; }
+}
+/* The header bar is 44px controls plus padding (about 4rem). Panels that sit under it start below it,
+   and the bar's transparent fade never catches a tap meant for what lies beneath. */
+:root { --bar-h: 4rem; }
+.bar { pointer-events: none; }
+.bar .mode, .bar .tools > * { pointer-events: auto; }
+.evidence { top: var(--bar-h); }
+.map { padding-top: calc(var(--bar-h) + 0.6rem); }
+.ev-head .close-btn { top: 0.25rem; }       /* inside the panel, so none of it is clipped above the panel's edge */
