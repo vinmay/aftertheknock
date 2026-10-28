@@ -567,3 +567,22 @@ body.instant-text .stage-color, body.instant-text .trace-hint { opacity: 1 !impo
   100% { color: var(--ink); }
 }
 @media (prefers-reduced-motion: reduce) { #title .knock-word { animation: none; } }
+
+/* Mobile: a compact landing while the pocket form is in use (body.typing, set in app.js). The door
+   recedes into the dark, keeping its peephole glow; the title shrinks; the rest steps aside so the
+   field stays above the keyboard. Nothing is pinned: on short phones the field matters more.
+   Short screens too, so a phone turned sideways gets it. */
+@media (max-width: 40rem), (max-height: 30rem) {
+  #title .door { transition: width 0.35s ease, margin 0.35s ease; }
+  #title h1 { transition: font-size 0.35s ease, margin 0.35s ease; }
+  body.typing main { padding-top: 3.5rem; }
+  body.typing #title .door { width: 4.25rem; margin-bottom: -0.25rem; }
+  body.typing #title h1 { font-size: 1rem; margin: 0.5rem 0 0.3rem; }
+  body.typing #title .tagline,
+  body.typing #title .hook,
+  body.typing #title .replays { display: none; }
+  body.typing #title form { margin-top: 0.75rem; }
+}
+@media (prefers-reduced-motion: reduce) {
+  #title .door, #title h1 { transition: none; }
+}

@@ -126,6 +126,13 @@ uv run knock-server    # http://localhost:8047</pre>
     <p class="small">Code, tests and evaluation: <a href="${LINKS.repo}">${LINKS.repo.replace("https://", "")}</a>${st.static ? "" : ` · Replays: <a href="${LINKS.replay}">${LINKS.replay.replace("https://", "")}</a>`}</p>`, null, "how");
 }
 $("#how").addEventListener("click", howItWorks);
+/* Phones: a compact landing while typing (the door recedes, the rest steps aside) so the field stays
+   above the keyboard. A class rather than :focus-within, held a moment after blur: on iOS a tapped
+   button takes no focus, and the layout must not move under the finger before Begin's click lands. */
+$("#start").addEventListener("focusin", () => document.body.classList.add("typing"));
+$("#start").addEventListener("focusout", () => setTimeout(() => {
+  if (!$("#start").contains(document.activeElement)) document.body.classList.remove("typing");
+}, 300));
 /* The peephole warms while there is something in the pocket field, and cools when it's cleared. */
 $("#pocket").addEventListener("input", (ev) => $(".door")?.classList.toggle("warm", ev.target.value.trim() !== ""));
 ["mouseenter", "focus"].forEach((ev) => $("#begin").addEventListener(ev, () => $(".door")?.classList.add("lit")));
@@ -242,6 +249,7 @@ async function show(v) {
   Sound.scene(v.kind || "scene");                   // a scene change never carries the pen with it
   S.view = v;
   $("#title").hidden = true;
+  document.body.classList.remove("typing");
   $("#scene").hidden = false;
   $("#scene").className = "screen kind-" + (v.kind || "scene");
   stampFor(v);
