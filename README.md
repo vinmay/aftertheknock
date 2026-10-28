@@ -99,30 +99,30 @@ Model: gemma4:e2b Q4_K_M, 24 live playthroughs (every fork path), raw logs in `e
 | Intrusions revealing a post-fork fact | 48/48 (100%) |
 | Intrusions with valid origin event | 48/48 (100%) |
 | Replays reproducing every state hash | 24/24 (100%) |
-| Shadow events accepted on the model's first proposal | 135/162 (83%) |
-| Shadow events committed from the model | 150/162 (93%) |
-| Shadow events from hand-written fallback | 12/162 (7%) |
-| Proposals rejected by the validator | 52/202 (26%) |
+| Shadow events accepted on the model's first proposal | 140/162 (86%) |
+| Shadow events committed from the model | 157/162 (97%) |
+| Shadow events from hand-written fallback | 5/162 (3%) |
+| Proposals rejected by the validator | 33/190 (17%) |
 | Deliberate impossible give rejected | 30/30 (100%) |
-| Model's atmosphere sentence failing rule checks (first attempt) | 1/48 (2%) |
+| Model's atmosphere sentence failing rule checks (first attempt) | 3/48 (6%) |
 | Crossings that kept a model sentence (rest: hand-written lines only) | 48/48 (100%) |
 | Narration contradictions, hand-labeled | not labeled |
 | Intrusion accuracy, hand-labeled | not labeled |
-| Model call latency p50 / p95 | 1.63 s / 2.66 s |
-| Whole shadow timeline p50 / p95 | 6.77 s / 9.02 s |
-| Model calls per playthrough (mean) | 10.5 |
-| Tokens per playthrough (mean) | 6387 |
+| Model call latency p50 / p95 | 1.62 s / 2.44 s |
+| Whole shadow timeline p50 / p95 | 6.32 s / 8.64 s |
+| Model calls per playthrough (mean) | 10.0 |
+| Tokens per playthrough (mean) | 6042 |
 
 Variation (same choices, different seeds):
 
 | Path | Runs | Distinct event chains | Mean pairwise overlap (Jaccard) |
 |---|---|---|---|
-| lock/basement | 6 | 6 | 0.35 |
-| lock/roof | 6 | 6 | 0.24 |
-| open/basement | 6 | 6 | 0.37 |
-| open/roof | 6 | 6 | 0.51 |
+| lock/basement | 6 | 6 | 0.28 |
+| lock/roof | 6 | 6 | 0.27 |
+| open/basement | 6 | 6 | 0.47 |
+| open/roof | 6 | 6 | 0.43 |
 
-Rejections by rule: R_ADJACENT 18, R_REACH 11, R_TYPE 9, R_NOOP 9, R_BEAT 5.
+Rejections by rule: R_NOOP 15, R_TYPE 9, R_REACH 5, R_BEAT 4.
 
 Freedom vs. guarantees, per shadow step (committed by the model or by a hand-written fallback; distinct action types and distinct texts across runs). Crossing 2 written by the player: 24/24 (100%).
 
@@ -130,37 +130,37 @@ Freedom vs. guarantees, per shadow step (committed by the model or by a hand-wri
 |---|---|---|---|---|---|---|
 | B.lock | 1 | 12 | 0 | 0 | open | 0 |
 | B.lock | 2 | 12 | 0 | 0 | move | 0 |
-| B.lock | 3 | 6 | 6 | 0 | give, speak | 6 |
-| B.lock | 4 | 12 | 0 | 0 | mark | 11 |
-| B.open | 1 | 12 | 0 | 0 | speak | 12 |
+| B.lock | 3 | 7 | 5 | 0 | give, speak | 7 |
+| B.lock | 4 | 12 | 0 | 0 | mark | 9 |
+| B.open | 1 | 12 | 0 | 0 | speak | 10 |
 | B.open | 2 | 12 | 0 | 0 | take | 0 |
-| B.open | 3 | 12 | 0 | 0 | mark | 11 |
+| B.open | 3 | 12 | 0 | 0 | mark | 10 |
 | D.lock.basement | 1 | 6 | 0 | 0 | speak | 3 |
-| D.lock.basement | 2 | 6 | 0 | 0 | give, take | 0 |
+| D.lock.basement | 2 | 6 | 0 | 0 | take | 0 |
 | D.lock.basement | 3 | 6 | 0 | 0 | mark | 4 |
 | D.lock.roof | 1 | 6 | 0 | 0 | move | 0 |
 | D.lock.roof | 2 | 6 | 0 | 0 | speak | 4 |
-| D.lock.roof | 3 | 6 | 0 | 0 | take | 0 |
+| D.lock.roof | 3 | 6 | 0 | 0 | give, take | 0 |
 | D.lock.roof | 4 | 6 | 0 | 0 | mark | 3 |
 | D.open.basement | 1 | 6 | 0 | 0 | open | 0 |
-| D.open.basement | 2 | 0 | 6 | 0 | move | 0 |
-| D.open.basement | 3 | 6 | 0 | 0 | mark | 3 |
+| D.open.basement | 2 | 6 | 0 | 0 | move | 0 |
+| D.open.basement | 3 | 6 | 0 | 0 | mark | 4 |
 | D.open.roof | 1 | 6 | 0 | 0 | speak | 4 |
 | D.open.roof | 2 | 6 | 0 | 0 | give | 0 |
-| D.open.roof | 3 | 6 | 0 | 0 | mark | 3 |
+| D.open.roof | 3 | 6 | 0 | 0 | mark | 1 |
 
 Notes on these numbers:
 
 - A *shadow step* is one shadow event: up to three model proposals, then a hand-written fallback. 0 of 162 steps were skipped (the model failed and no fallback fitted the state). Every shadow still ended with its committed crossing.
 - "Rejected" counts proposals stopped by the validator or by a story-beat check (`R_BEAT`, which includes banned phrases). A rejected proposal never changes state.
 - The crossing text is hand-written around the committed facts. The atmosphere-sentence rows measure only the model's optional extra sentence, which is rule-checked. That doesn't prove the sentence never contradicts anything; hand labels go in `eval/labels/` and show as "not labeled" until a person fills them in.
-- Time from the click to the crossing, with no reading pause at all: p50 7.42 s, p95 9.69 s. In real play the shadow runs while you read the scenes before it.
+- Time from the click to the crossing, with no reading pause at all: p50 6.86 s, p95 9.22 s. In real play the shadow runs while you read the scenes before it.
 
 ### Freedom vs. guarantees
 
 Each other night has fixed beats (who must end up holding what, and that a message gets written); the model decides how it happens and every word that's said or written.
 
-Measured over these runs: 150 of 162 shadow steps were committed from the model's own proposal; counted step by step, it produced 64 distinct spoken or written texts; crossing 2 was written in the player's own hand in 24/24 (100%) runs. The per-step table above (Freedom vs. guarantees) gives model/fallback counts, the action types the model chose, and how many different texts it produced for each step.
+Measured over these runs: 157 of 162 shadow steps were committed from the model's own proposal; counted step by step, it produced 59 distinct spoken or written texts; crossing 2 was written in the player's own hand in 24/24 (100%) runs. The per-step table above (Freedom vs. guarantees) gives model/fallback counts, the action types the model chose, and how many different texts it produced for each step.
 <!-- RESULTS:END -->
 
 ### Hosted model, reported separately
@@ -176,34 +176,61 @@ Model: gemma-4-31B-it provider-managed, 8 live playthroughs (every fork path), r
 | Intrusions revealing a post-fork fact | 16/16 (100%) |
 | Intrusions with valid origin event | 16/16 (100%) |
 | Replays reproducing every state hash | 8/8 (100%) |
-| Shadow events accepted on the model's first proposal | 47/52 (90%) |
-| Shadow events committed from the model | 48/52 (92%) |
-| Shadow events from hand-written fallback | 4/52 (8%) |
-| Proposals rejected by the validator | 13/61 (21%) |
+| Shadow events accepted on the model's first proposal | 47/54 (87%) |
+| Shadow events committed from the model | 50/54 (93%) |
+| Shadow events from hand-written fallback | 4/54 (7%) |
+| Proposals rejected by the validator | 15/65 (23%) |
 | Deliberate impossible give rejected | 30/30 (100%) |
 | Model's atmosphere sentence failing rule checks (first attempt) | 0/16 (0%) |
 | Crossings that kept a model sentence (rest: hand-written lines only) | 16/16 (100%) |
 | Narration contradictions, hand-labeled | not labeled |
 | Intrusion accuracy, hand-labeled | not labeled |
-| Model call latency p50 / p95 | 1.46 s / 1.99 s |
-| Whole shadow timeline p50 / p95 | 5.1 s / 9.33 s |
-| Model calls per playthrough (mean) | 9.6 |
-| Tokens per playthrough (mean) | 5300 |
+| Model call latency p50 / p95 | 1.41 s / 2.22 s |
+| Whole shadow timeline p50 / p95 | 5.63 s / 8.84 s |
+| Model calls per playthrough (mean) | 10.1 |
+| Tokens per playthrough (mean) | 6128 |
 
 Variation (same choices, different seeds):
 
 | Path | Runs | Distinct event chains | Mean pairwise overlap (Jaccard) |
 |---|---|---|---|
-| lock/basement | 2 | 2 | 0.2 |
+| lock/basement | 2 | 2 | 0.17 |
 | lock/roof | 2 | 2 | 0.2 |
 | open/basement | 2 | 2 | 0.27 |
 | open/roof | 2 | 2 | 0.27 |
 
-Rejections by rule: R_NOOP 12, R_REACH 1.
+Rejections by rule: R_NOOP 12, R_BEAT 3.
 
-Spend: $0.00861 over 8 playthroughs (mean $0.00108 each) at $0.18/$0.5 per 1M input/output tokens.
+Freedom vs. guarantees, per shadow step (committed by the model or by a hand-written fallback; distinct action types and distinct texts across runs). Crossing 2 written by the player: 8/8 (100%).
+
+| Shadow | Step | Model | Fallback | Skipped | Actions | Distinct texts |
+|---|---|---|---|---|---|---|
+| B.lock | 1 | 0 | 4 | 0 | open | 0 |
+| B.lock | 2 | 4 | 0 | 0 | move | 0 |
+| B.lock | 3 | 4 | 0 | 0 | speak | 3 |
+| B.lock | 4 | 4 | 0 | 0 | mark | 3 |
+| B.open | 1 | 4 | 0 | 0 | speak | 4 |
+| B.open | 2 | 4 | 0 | 0 | take | 3 |
+| B.open | 3 | 4 | 0 | 0 | mark | 3 |
+| D.lock.basement | 1 | 2 | 0 | 0 | speak | 2 |
+| D.lock.basement | 2 | 2 | 0 | 0 | give | 2 |
+| D.lock.basement | 3 | 2 | 0 | 0 | mark | 1 |
+| D.lock.roof | 1 | 2 | 0 | 0 | move | 0 |
+| D.lock.roof | 2 | 2 | 0 | 0 | speak | 2 |
+| D.lock.roof | 3 | 2 | 0 | 0 | give | 2 |
+| D.lock.roof | 4 | 2 | 0 | 0 | mark | 2 |
+| D.open.basement | 1 | 2 | 0 | 0 | open | 2 |
+| D.open.basement | 2 | 2 | 0 | 0 | move | 0 |
+| D.open.basement | 3 | 2 | 0 | 0 | mark | 2 |
+| D.open.roof | 1 | 2 | 0 | 0 | speak | 2 |
+| D.open.roof | 2 | 2 | 0 | 0 | give | 2 |
+| D.open.roof | 3 | 2 | 0 | 0 | mark | 1 |
+
+Spend: $0.00989 over 8 playthroughs (mean $0.00124 each) at $0.18/$0.5 per 1M input/output tokens.
 
 The ledger in `spend.json` also covers health checks, probes and earlier runs. Two seeds per path is too few to compare models; this run shows only that hosted mode works end to end and holds the same invariants.
+
+Steps the hosted model never committed itself in this run: B.lock step 1 (0/4). Each still happened, through its hand-written fallback; the per-step table shows the counts, and the raw proposals and rejection reasons are in the run logs.
 
 Every number above comes from `uv run python eval/run_all.py` (or `--from-results` to recompute from the committed raw logs). Charts: `eval/results/chart_*.svg`. Model choice and the day-one benchmark: [MODELS.md](MODELS.md).
 

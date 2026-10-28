@@ -1,10 +1,10 @@
 <svg xmlns="http://www.w3.org/2000/svg" width="640" height="118" font-family="ui-monospace, monospace" font-size="12">
 <rect width="100%" height="100%" fill="#0e0d0c"/>
-<text x="16" y="24" fill="#e6dfd2" font-size="14">Validator rejections by rule (61 proposals)</text>
+<text x="16" y="24" fill="#e6dfd2" font-size="14">Validator rejections by rule (65 proposals)</text>
 <text x="16" y="59" fill="#8d867b">R_NOOP</text>
 <rect x="230" y="44" width="360.0" height="20" fill="#b23a2f"/>
 <text x="596.0" y="59" fill="#e6dfd2">12</text>
-<text x="16" y="93" fill="#8d867b">R_REACH</text>
-<rect x="230" y="78" width="30.0" height="20" fill="#b23a2f"/>
-<text x="266.0" y="93" fill="#e6dfd2">1</text>
+<text x="16" y="93" fill="#8d867b">R_BEAT</text>
+<rect x="230" y="78" width="90.0" height="20" fill="#b23a2f"/>
+<text x="326.0" y="93" fill="#e6dfd2">3</text>
 </svg>

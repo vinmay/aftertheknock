@@ -50,6 +50,13 @@ These numbers come from a small separate run of the same engine, with `gemma-4-3
 """ + body(hosted_md).replace("# Evaluation summary", "").strip() + """
 
 The ledger in `spend.json` also covers health checks, probes and earlier runs. Two seeds per path is too few to compare models; this run shows only that hosted mode works end to end and holds the same invariants."""
+        hm = json.loads((R / "hosted" / "summary.json").read_text())
+        never = [f"{x['shadow']} step {x['step']} (0/{x['model'] + x['fallback'] + x['skipped']})"
+                 for x in hm.get("freedom", {}).get("steps", []) if x["model"] == 0]
+        if never:
+            hosted += ("\n\nSteps the hosted model never committed itself in this run: " + ", ".join(never)
+                       + ". Each still happened, through its hand-written fallback; the per-step table shows the counts, "
+                       "and the raw proposals and rejection reasons are in the run logs.")
     readme = (ROOT / "README.md").read_text()
     readme = re.sub(r"<!-- RESULTS:BEGIN -->.*<!-- RESULTS:END -->",
                     "<!-- RESULTS:BEGIN -->\n" + local + "\n<!-- RESULTS:END -->", readme, flags=re.S)

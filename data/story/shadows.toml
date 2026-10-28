@@ -44,7 +44,7 @@ setup_summary = "You turn the deadbolt. Mara does not knock again."
 setup = [["set", "places.apt.locked", true]]
 
   [[B.lock.steps]]
-  hint = "Teo, in 6D, opens his door for Mara. He never opens it for anyone."
+  hint = "Teo opens his apartment, 6D, for Mara. He never opens it for anyone."
   actions = ["open"]
   goal = "unlocked teo_apt"
   fallback = [{ actor = "teo", action = "open", target = "teo_apt" }]
@@ -168,7 +168,7 @@ setup = [["set", "chars.player.location", "stairwell"], ["set", "chars.mara.loca
   fallback = [{ actor = "mara", action = "open", target = "unit07" }]
 
   [[D.open.basement.steps]]
-  hint = "Someone steps into unit 07, or something is left there."
+  hint = "Mara, or you, step into unit 07, or leave something there."
   actions = ["move", "hide", "give", "speak", "harm"]
   fallback = [{ actor = "mara", action = "move", target = "unit07" }]
 
