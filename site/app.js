@@ -114,7 +114,7 @@ function howItWorks() {
   openDrawer(`<p class="kicker">about</p>
     <h3>The night you didn't choose keeps going</h3>
     <p>Every choice splits the night in two. You live one side. The other side keeps happening without you: a small open model proposes what the people there do next, one event at a time, and a strict rule engine decides whether each event is possible before it becomes fact.</p>
-    <p>Twice, something from that other night crosses into yours. Each crossing points to the exact event that made it. Follow the thread at the end, or switch on <b>evidence</b> at the top to see every proposal, rejection and commit as it happens.</p>
+    <p>Twice, something from that other night crosses into yours. Each crossing points to the exact event that made it: click the inscription to see where it came from. After the night ends, <b>evidence</b> shows every proposal, rejection and commit.</p>
     <h3>What's running</h3>
     ${mode}
     <h3>Run it yourself</h3>
@@ -250,6 +250,9 @@ async function show(v) {
     }
   }
   if (v.kind === "ending") Sound.ending(v.ending);
+  // The full log would give the other night away early, so it opens only once the night is over.
+  // During play, each crossing's own proof is one click away on its inscription.
+  $("#evidence-toggle").hidden = v.kind !== "ending" && $("#evidence-toggle").hidden;
   const cur = $("#current");
   cur.classList.remove("fade-in"); void cur.offsetWidth; cur.classList.add("fade-in");
   const text = $("#text");
@@ -1053,7 +1056,7 @@ $("#sound-toggle").setAttribute("aria-pressed", String(Sound.on));
 applyInstant();
 document.addEventListener("keydown", (ev) => {
   if (ev.target.tagName === "INPUT") return;
-  if (ev.key === "e" || ev.key === "E") toggleEvidence();
+  if ((ev.key === "e" || ev.key === "E") && !$("#evidence-toggle").hidden) toggleEvidence();
   if (ev.key === "Escape") {
     if (!$("#drawer").hidden) closeDrawer();
     else if (!$("#evidence").hidden) toggleEvidence();
