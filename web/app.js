@@ -374,6 +374,26 @@ function markFit(text, width, max, min = 12) {
   const over = 0.55 * fs * text.length > width;
   return { fs, fit: over ? ` textLength="${width}" lengthAdjust="spacingAndGlyphs"` : "" };
 }
+/* Engraving on something round: the text follows the lower front of an ellipse (the band's own
+   centre line), its letters centred across the band and no taller than the band allows, and it
+   never runs past the visible arc (from `from` to `to` degrees; 90 is the bottom). */
+function arcEngraving(id, text, cx, cy, rx, ry, band, from = 155, to = 25) {
+  const fs0 = Math.min(Math.floor(band * 0.5), 22);
+  const pts = (fs) => {
+    const lift = 0.33 * fs;                     // baseline sits below the centre line by a third of a letter
+    const out = [];
+    for (let a = from; a >= to; a -= 2.5) {
+      const r = (a * Math.PI) / 180;
+      out.push([cx + (rx + lift) * Math.cos(r), cy + (ry + lift) * Math.sin(r)]);
+    }
+    return out;
+  };
+  const length = (p) => p.slice(1).reduce((n, q, i) => n + Math.hypot(q[0] - p[i][0], q[1] - p[i][1]), 0);
+  const { fs, fit } = markFit(text, length(pts(fs0)) * 0.92, fs0, 9);
+  const p = pts(fs);
+  return `<path id="${id}" d="M${p.map((q) => q.map((v) => v.toFixed(1)).join(",")).join(" L")}" fill="none"/>
+    <text class="engrave" filter="url(#aged)" style="font-size:${fs}px"><textPath href="#${id}" startOffset="50%" text-anchor="middle"${fit}>${esc(text)}</textPath></text>`;
+}
 /* Age: strokes that wander a little and ink that has faded unevenly, as if written years ago. */
 const AGED = `<filter id="aged" x="-10%" y="-30%" width="120%" height="160%">
     <feTurbulence type="fractalNoise" baseFrequency="0.8" numOctaves="2" seed="7" result="grain"/>
@@ -397,8 +417,7 @@ function metalSvg(c) {
       <ellipse cx="210" cy="118" rx="150" ry="72" fill="none" stroke="url(#mg)" stroke-width="42"/>
       <ellipse cx="210" cy="118" rx="150" ry="72" fill="none" stroke="#1d150b" stroke-opacity="0.35" stroke-width="2"/>
       <path d="M95,82 Q140,52 190,48" stroke="url(#glint)" stroke-width="5" fill="none" stroke-linecap="round"/>
-      <path id="arc" d="M66,128 C92,218 328,218 354,128" fill="none"/>
-      <text class="engrave" filter="url(#aged)" style="font-size:${fitSize(c.inscription, 420, 26, 12)}px"><textPath href="#arc" startOffset="50%" text-anchor="middle">${mark}</textPath></text>
+      ${arcEngraving("arc", c.inscription, 210, 118, 150, 72, 42)}
     </svg>`;
   }
   if (/^(key|keys)$/.test(n)) {
@@ -414,10 +433,9 @@ function metalSvg(c) {
     <circle cx="210" cy="110" r="96" fill="url(#mg)"/>
     <circle cx="210" cy="110" r="84" fill="none" stroke="#3b2d15" stroke-opacity="0.45" stroke-width="2"/>
     <path d="M150,48 Q190,26 238,30" stroke="url(#glint)" stroke-width="5" fill="none" stroke-linecap="round"/>
-    <path id="rim" d="M140,118 A72,72 0 0 0 280,118" fill="none"/>
     ${c.inscription.length <= 5
       ? `<text x="210" y="126" text-anchor="middle" class="engrave" filter="url(#aged)" style="font-size:${fitSize(c.inscription, 170, 38, 18)}px">${mark}</text>`
-      : `<text class="engrave" filter="url(#aged)" style="font-size:${fitSize(c.inscription, 300, 24, 11)}px"><textPath href="#rim" startOffset="50%" text-anchor="middle">${mark}</textPath></text>`}
+      : arcEngraving("rim", c.inscription, 210, 110, 70, 70, 24, 165, 15)}
   </svg>`;
 }
 
