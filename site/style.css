@@ -507,7 +507,6 @@ body.instant-text .stage-color, body.instant-text .trace-hint { opacity: 1 !impo
 .prop .printed.own { fill: #8f887c; font-size: 11px; letter-spacing: 0.14em; }
 .crossing-stage.instant .prop .engrave, .crossing-stage.instant .prop .scratch { animation: none !important; stroke-dashoffset: 0; }
 
-.pocket-note { margin: -0.3rem 0 0; font-size: 0.85rem; color: #a39c90; }
 
 .choices .map-open { width: auto; justify-self: start; margin-bottom: 0.4rem; }
 .choices button.map-open { width: auto; padding: 0.6rem 1.4rem; color: var(--ink); display: inline-flex; justify-content: center; }
@@ -560,3 +559,14 @@ body.instant-text .stage-color, body.instant-text .trace-hint { opacity: 1 !impo
   #title h1 { font-size: 1.2rem; letter-spacing: 0.22em; padding-left: 0.22em; margin-top: 1.6rem; }
   #title .tagline { font-size: 0.95rem; margin-bottom: 2rem; }
 }
+
+/* The sound card after Begin: dark, quiet, gone in two seconds. */
+.sound-card {
+  position: fixed; inset: 0; z-index: 60; display: flex; flex-direction: column; align-items: center; justify-content: center;
+  gap: 0.9rem; background: var(--bg); color: var(--muted); animation: card-in 0.5s ease both;
+}
+.sound-card[hidden] { display: none; }
+.sound-card svg { width: 2.6rem; height: 2.6rem; opacity: 0.8; }
+.sound-card p { margin: 0; font-style: italic; letter-spacing: 0.02em; }
+.sound-card.out { opacity: 0; transition: opacity 0.35s ease; }
+@keyframes card-in { from { opacity: 0; } to { opacity: 1; } }

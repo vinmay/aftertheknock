@@ -57,7 +57,6 @@
     <form id="start">
       <label for="pocket">Your hand finds something in your pocket. What is it?</label>
       <input id="pocket" name="pocket" maxlength="60" autocomplete="off" placeholder="a ticket stub, an old key, nothing…">
-      <p class="pocket-note" id="pocket-note">Best with sound.</p>
       <button type="submit" class="cta" id="begin">Begin your night</button>
     </form>
     <p id="play-live" class="play-live" hidden><a class="cta" href="https://knock-live.onrender.com/">Play live</a></p>
@@ -84,6 +83,10 @@
 
 <section id="crossing-stage" class="crossing-stage" hidden aria-live="assertive"></section>
 
+<div id="sound-card" class="sound-card" hidden role="status">
+  <svg viewBox="0 0 48 48" aria-hidden="true" focusable="false"><path d="M10 28v-4a14 14 0 0 1 28 0v4" fill="none" stroke="currentColor" stroke-width="2"/><rect x="7" y="27" width="8" height="13" rx="3" fill="none" stroke="currentColor" stroke-width="2"/><rect x="33" y="27" width="8" height="13" rx="3" fill="none" stroke="currentColor" stroke-width="2"/></svg>
+  <p id="sound-card-text">Best with headphones.</p>
+</div>
 <aside id="drawer" class="drawer" hidden aria-label="Where this came from">
   <div class="drawer-bar"><button class="close-btn" id="drawer-close" aria-label="Close this panel">Close <span aria-hidden="true">✕</span></button></div>
   <div id="drawer-body"></div>

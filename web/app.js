@@ -135,7 +135,9 @@ $("#start").addEventListener("submit", async (ev) => {
   Sound.reset(); Sound.init();
   S.busy = true; $("#begin").disabled = true; $("#begin").textContent = "…";
   try {
+    const card = soundCard();                         // shown while the night is set up, not after
     const d = await api("/api/new", { pocket: $("#pocket").value });
+    await card;
     S.game = d.game; S.replay = null; S.pocket = d.pocket;
     setMode(`<span class="tag live">live</span>`, d.seed, `${esc(d.model || "")} generating the other night now`);
     show(d.view);
@@ -148,9 +150,31 @@ $("#start").addEventListener("submit", async (ev) => {
   }
 });
 
+/* Right after Begin, the way games do it: a short dark card while the rain fades in, then the
+   knock. Once per visit; any click or key skips it; none with instant text or reduced motion. */
+function soundCard() {
+  let seen = false;
+  try { seen = sessionStorage.getItem("knock.soundcard") === "1"; sessionStorage.setItem("knock.soundcard", "1"); } catch { /* per page only */ }
+  if (seen || instantText()) return Promise.resolve();
+  const card = $("#sound-card");
+  $("#sound-card-text").textContent = Sound.on ? "Best with headphones." : "Sound is off. You can turn it on in settings.";
+  card.hidden = false;
+  return new Promise((done) => {
+    const end = () => {
+      clearTimeout(t); document.removeEventListener("pointerdown", end); document.removeEventListener("keydown", end);
+      card.classList.add("out");
+      setTimeout(() => { card.hidden = true; card.classList.remove("out"); done(); }, 350);
+    };
+    const t = setTimeout(end, 2200);
+    document.addEventListener("pointerdown", end); document.addEventListener("keydown", end);
+  });
+}
+
 async function startReplay(id) {
   Sound.reset(); Sound.init();
+  const card = soundCard();
   const d = await api("/api/replay/start", { id });
+  await card;
   S.game = d.game; S.replay = d.replay; S.step = 0; S.pocket = d.pocket;
   const liveHref = STATIC ? LINKS.live : location.pathname;
   setMode(`<span class="tag replay">recorded night</span>`, d.seed,
