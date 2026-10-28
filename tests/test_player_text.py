@@ -10,7 +10,7 @@ from pathlib import Path
 
 import pytest
 
-from knock.describe import display_name
+from knock.describe import display_name, owned
 from knock.game import Game
 from knock.models import RandomModel, ReplayModel
 
@@ -99,17 +99,18 @@ def test_ending_matches_committed_state(name, g, views):
     opened = g.ending_text("open")
     for oid in ("key07", "pocket"):
         here, there = g._where(c, oid), g._where(d, oid)
+        plural = oid == "pocket" and g.plural
+        subj, is_, it = owned(display_name(oid, g.pocket, "subject"), g.pocket), "are" if plural else "is", "they" if plural else "it"
         if here == there:
-            assert f"{here}, in both nights." in opened, (name, oid)
+            assert f"{subj} {is_} {here}. {it.capitalize()} always {'were' if plural else 'was'}." in opened, (name, oid)
         else:
-            # The paradox is stated before the positions, never implied.
-            i = opened.index(f"The two nights no longer agree about {display_name(oid, g.pocket)}.")
-            assert opened.index(here, i) < opened.index(there, opened.index("In the other night", i)), (name, oid)
+            # Both positions are stated, this night's first.
+            assert f"{subj} {is_} {here}. And {it} {is_} {there}." in opened, (name, oid)
     mh, mt = g._char_where(c, "mara"), g._char_where(d, "mara")
     if mh == mt:
-        assert f"Mara is {mh}, in both nights." in opened, name
+        assert f"Mara is {mh}. She looks relieved" in opened, name
     else:
-        assert f"The worlds no longer agree on where Mara is. Here, she is {mh}. In the other night, she is {mt}." in opened, name
+        assert f"Mara is {mh}. She is also {mt};" in opened, name
     # Only the marks that actually crossed are mentioned, each with its real writer.
     crossed = {}
     for shadow in ("B", "D"):
@@ -117,7 +118,7 @@ def test_ending_matches_committed_state(name, g, views):
         crossed[o.text] = o
         assert g._mark_line(o.text, o.target, o.actor) in opened, name
     for ending in (opened, g.ending_text("erase")):
-        quoted = set(re.findall(r'"([^"]+)"', ending)) - {"Finally."}
+        quoted = set(re.findall(r'"([^"]+)"', ending)) - {"Finally,"}
         assert quoted == set(crossed), (name, quoted)
         # It ends on one short line.
         last = ending.strip().split("\n")[-1]
@@ -235,7 +236,7 @@ def test_unit07_duplicate_matches_the_material(pocket, material, f1):
         w = want.get(sc.get("kind"))
         v = g.choose(next((k for k, c in enumerate(sc["choices"]) if w in (c.get("fork"), c.get("ending"))), 0))
     text = seen["unit07_open"]
-    assert "{" not in text and "old, and dry" in text and "waiting here for years" in text
+    assert "{" not in text and "old, and dry" in text and "waiting here a long time" in text
     marker = {"paper": "worn corner", "metal": "nick along one edge", "small": "chipped edge", "unknown": "small flaw"}[material]
     assert marker in text
     if material != "paper":

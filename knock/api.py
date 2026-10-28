@@ -199,7 +199,8 @@ class Handler(SimpleHTTPRequestHandler):
                 g = _get(q["game"])
                 return self._json({"log": g.log.records, "ops": g.timeline.ops,
                                    "model": g.log.model, "seed": g.seed,
-                                   "crossings": [g.memory(x.intrusion_id) for x in g.timeline.intrusions]})
+                                   "crossings": [g.memory(x.intrusion_id) for x in g.timeline.intrusions],
+                                   "authored": g.authored_seen()})
         except (KeyError, FileNotFoundError, StopIteration) as exc:
             return self._json({"error": str(exc)}, HTTPStatus.NOT_FOUND)
         return super().do_GET()

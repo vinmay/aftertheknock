@@ -126,9 +126,10 @@ def test_pocket_inputs(raw, name, kind):
 
 
 @pytest.mark.parametrize("raw,line", [
-    ("nothing", "You thought your pockets were empty. But your thumb catches a folded ticket stub. You don't remember putting it there."),
-    ("regret", "You brought regret out with you tonight. But your thumb catches a folded ticket stub."),
-    ("two pennies", "In your pocket, your thumb finds the two pennies."),
+    ("nothing", "You thought your pockets were empty. But your thumb catches a folded ticket stub. You don't remember keeping it."),
+    ("regret", "You carry regret everywhere. Tonight your thumb also finds a folded ticket stub."),
+    ("two pennies", "In your pocket, your thumb finds the two pennies. You've never been able to get rid of them."),
+    ("my father's watch", "In your pocket, your thumb finds your father's watch. You've never been able to get rid of it."),
 ])
 def test_pocket_line_in_opening(raw, line):
     g = Game(raw, 1, RandomModel(), background=False)

@@ -108,7 +108,7 @@ const cases = {
     fresh();
     Sound.power(false); Sound.focusShadow("B"); Sound.ending("erase"); Sound.scene("ending");
     Sound.reset();
-    assert.deepStrictEqual(Sound.want, { power: true, focused: null, ending: null, scene: null });
+    assert.deepStrictEqual(Sound.want, { power: true, focused: null, ending: null, scene: null, hush: false });
     assert.deepStrictEqual(Object.keys(Sound.layers), []);
     assert.strictEqual(Sound.mix.power, null);
     assert.strictEqual(timers.length, 0, "no timer survives a reset");
@@ -160,6 +160,26 @@ const cases = {
     Sound.toggle();                               // unmute after closing: nothing left to hear
     assert.strictEqual(Sound.mapVoices, null);
     assert.strictEqual(Sound.mapTimer, null);
+  },
+  "behind the other door: the room is held low, through mute, and released after"() {
+    fresh();
+    Sound.hush(true);
+    assert.ok(Math.abs(room() - Sound.ROOM * 0.3) < 1e-9, "held low");
+    Sound.toggle(); Sound.toggle();               // mute and unmute keep it
+    assert.ok(Math.abs(room() - Sound.ROOM * 0.3) < 1e-9);
+    Sound.toggle(); Sound.hush(false); Sound.toggle();
+    assert.strictEqual(room(), Sound.ROOM, "released while muted, restored on unmute");
+    Sound.hush(true); Sound.reset();
+    assert.strictEqual(Sound.want.hush, false, "reset clears it");
+  },
+  "erase ending: one late, quiet knock; none if reset first"() {
+    fresh();
+    let knocks = 0; const k = Sound.knock; Sound.knock = function (...a) { knocks++; return k.apply(this, a); };
+    Sound.ending("erase"); advance(11000);
+    assert.strictEqual(knocks, 1);
+    Sound.ending("erase"); Sound.reset(); advance(11000);
+    assert.strictEqual(knocks, 1, "a new night never hears the old one's knock");
+    Sound.knock = k;
   },
 };
 let failed = 0;

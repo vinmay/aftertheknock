@@ -36,8 +36,10 @@ async function staticApi(path, body) {
   if (route === "/api/map") return d.map;
   if (route === "/api/evidence") {
     const seen = d.steps.slice(0, Static.step + 1).filter((st) => st.view.kind === "crossing").length;
+    const authored = d.steps.slice(0, Static.step + 1).map((st) => st.view).filter((v) => v.authored)
+      .map((v) => ({ scene: v.scene, label: v.authored })).slice(0, 1);
     return { log: d.log.slice(0, d.steps[Static.step].log_len), ops: d.ops, model: d.model, seed: d.seed,
-             crossings: d.map.intrusions.slice(0, seen).map((x) => x.memory) };
+             crossings: d.map.intrusions.slice(0, seen).map((x) => x.memory), authored };
   }
   throw new Error("not available in the static replay");
 }
@@ -301,7 +303,9 @@ function sceneHtml(v) {
 }
 
 async function show(v) {
-  Sound.scene(v.kind || "scene");                   // a scene change never carries the pen with it
+  Sound.scene(v.scene || v.kind || "scene");        // a scene change never carries the pen with it
+  Sound.hush(Boolean(v.hush));                      // the room held low behind the other door (desired state)
+  if (v.sound === "knock") Sound.knock();
   S.view = v;
   $("#title").hidden = true;
   document.body.classList.remove("typing");
@@ -337,7 +341,15 @@ async function show(v) {
   if (S.view !== v) return;
 
   const recorded = S.replay ? S.replay.choices[S.step] : null;
-  if (S.replay && recorded != null && v.choices.length) {
+  if (v.choices.length === 1) {
+    // Only one way on: a quiet Continue, not a choice (no number, no "Recorded choice" in replays).
+    const b = document.createElement("button");
+    b.className = "continue";
+    b.textContent = "Continue";
+    b.dataset.index = 0;
+    b.addEventListener("click", () => choose(0));
+    ch.appendChild(b);
+  } else if (S.replay && recorded != null && v.choices.length) {
     // A replay follows its recording: show the decision that was made, and name the one that wasn't.
     const b = document.createElement("button");
     b.className = "recorded";
@@ -395,8 +407,6 @@ function archive(chosen) {
   if (v.choices.length > 1) {
     entry.insertAdjacentHTML("beforeend", `<ul class="past-choices">${v.choices.map((c, i) =>
       `<li class="${i === chosen ? "taken" : "not-taken"}">${esc(c)}</li>`).join("")}</ul>`);
-  } else if (v.choices.length === 1) {
-    entry.insertAdjacentHTML("beforeend", `<ul class="past-choices"><li class="taken">${esc(v.choices[0])}</li></ul>`);
   }
   $("#history").appendChild(entry);
   (S.history ||= []).push(v.scene);
@@ -441,7 +451,7 @@ document.addEventListener("keydown", (ev) => {
   if (n >= 1) {
     const b = $("#choices").querySelector(`button[data-index="${n - 1}"]`);
     if (b && !b.disabled) { ev.preventDefault(); b.focus({ preventScroll: true }); b.click(); }
-  } else if (ev.key === "Enter" && buttons.length === 1 && document.activeElement === document.body) {
+  } else if ((ev.key === "Enter" || ev.key === " ") && buttons.length === 1 && document.activeElement === document.body) {
     ev.preventDefault(); buttons[0].focus({ preventScroll: true }); buttons[0].click();
   }
 });
@@ -666,6 +676,7 @@ function stageCrossing(c, second = false) {
       <p class="stage-before">${esc(c.before)}</p>
       <div class="prop-wrap${c.object === "key07" ? " keytag" : ""}">${propSvg(c)}</div>
       <p class="stage-after">${esc(`${c.after} ${c.who}`.trim())}</p>
+      ${c.echo ? `<p class="stage-after stage-echo">${esc(c.echo)}</p>` : ""}
       ${c.color ? `<p class="stage-color">${esc(c.color)}</p>` : ""}
       <button class="primary stage-go" id="stage-go">Go on</button>
     </div>`;
@@ -1107,7 +1118,9 @@ async function loadEvidence() {
     ? `<p class="small muted ev-verify">This recorded night was re-run through the engine when this site was built, and the final state of every timeline matched the recording.</p>`
     : `<div class="ev-verify"><button class="linkish" id="ev-verify">Re-run this night through the engine</button>
        <p class="small muted">Feeds every recorded model output back through the validator and compares the final state of every timeline.</p></div>`;
-  $("#evidence-body").innerHTML = summary + `<p class="small muted">model ${esc(d.model.model)} ${esc(d.model.quantization || "")} · seed ${esc(d.seed)} · ${d.log.length} records</p>` + body + verify;
+  const authored = (d.authored || []).length
+    ? `<p class="small ev-authored">Behind the door: ${esc(d.authored[0].label)}</p>` : "";
+  $("#evidence-body").innerHTML = summary + authored + `<p class="small muted">model ${esc(d.model.model)} ${esc(d.model.quantization || "")} · seed ${esc(d.seed)} · ${d.log.length} records</p>` + body + verify;
   $("#ev-verify")?.addEventListener("click", () => openVerify());
   $("#evidence-body").querySelectorAll(".ev-group").forEach((g) => g.addEventListener("toggle", () => {
     if (g.open) S.evOpen.add(g.dataset.key); else S.evOpen.delete(g.dataset.key);

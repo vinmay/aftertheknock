@@ -606,3 +606,8 @@ body.instant-text .stage-color, body.instant-text .trace-hint { opacity: 1 !impo
 .evidence { top: var(--bar-h); }
 .map { padding-top: calc(var(--bar-h) + 0.6rem); }
 .ev-head .close-btn { top: 0.25rem; }       /* inside the panel, so none of it is clipped above the panel's edge */
+
+/* One way on: a quiet Continue, unnumbered, so it never reads as a choice. */
+.choices .continue { color: var(--muted); font-style: italic; letter-spacing: 0.02em; width: auto; justify-self: start; }
+.choices .continue:hover, .choices .continue:focus-visible { color: var(--ink); }
+.ev-authored { color: var(--muted); font-style: italic; }

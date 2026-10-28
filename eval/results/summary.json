@@ -17,37 +17,36 @@
  "replay_reproduces": "24/24 (100%)",
  "shadow_steps": {
   "total": 156,
-  "first_try": "128/156 (82%)",
-  "model_committed": "146/156 (94%)",
-  "fallback": "10/156 (6%)",
+  "first_try": "130/156 (83%)",
+  "model_committed": "143/156 (92%)",
+  "fallback": "13/156 (8%)",
   "skipped": "0/156 (0%)"
  },
  "validator": {
-  "proposals": 195,
+  "proposals": 196,
   "rejections_by_rule": {
    "R_ADJACENT": 18,
-   "R_BEAT": 9,
+   "R_REACH": 15,
    "R_NOOP": 9,
-   "R_REACH": 7,
-   "R_TYPE": 6
+   "R_BEAT": 6,
+   "R_TYPE": 5
   },
-  "rejected": "49/195 (25%)"
+  "rejected": "53/196 (27%)"
  },
  "impossible_give": {
   "probe_calls": 30,
   "impossible_proposed": 30,
   "rejected": "30/30 (100%)",
   "rules": {
-   "R_HOLDS": 29,
-   "R_REACH": 1
+   "R_HOLDS": 30
   }
  },
  "narration": {
   "crossings": 48,
   "note": "crossing text is hand-written templates with committed facts; the model adds at most one checked sentence of atmosphere",
-  "raw_first_attempt_failed_rule_checks": "1/48 (2%)",
+  "raw_first_attempt_failed_rule_checks": "3/48 (6%)",
   "raw_failure_kinds": {
-   "C_META": 1
+   "C_META": 3
   },
   "final_text_from_model": "48/48 (100%)",
   "final_text_fallback": "0/48 (0%)",
@@ -58,33 +57,33 @@
   "lock/basement": {
    "runs": 6,
    "distinct_chains": 6,
-   "mean_pairwise_event_overlap_jaccard": 0.26
+   "mean_pairwise_event_overlap_jaccard": 0.31
   },
   "lock/roof": {
    "runs": 6,
    "distinct_chains": 6,
-   "mean_pairwise_event_overlap_jaccard": 0.32
+   "mean_pairwise_event_overlap_jaccard": 0.31
   },
   "open/basement": {
    "runs": 6,
    "distinct_chains": 6,
-   "mean_pairwise_event_overlap_jaccard": 0.27
+   "mean_pairwise_event_overlap_jaccard": 0.32
   },
   "open/roof": {
    "runs": 6,
    "distinct_chains": 6,
-   "mean_pairwise_event_overlap_jaccard": 0.44
+   "mean_pairwise_event_overlap_jaccard": 0.45
   }
  },
  "performance": {
-  "model_call_latency_p50_s": 1.83,
-  "model_call_latency_p95_s": 2.96,
-  "shadow_sim_p50_s": 7.43,
-  "shadow_sim_p95_s": 12.58,
-  "crossing_scene_p50_s": 8.13,
-  "crossing_scene_p95_s": 13.19,
+  "model_call_latency_p50_s": 1.67,
+  "model_call_latency_p95_s": 2.38,
+  "shadow_sim_p50_s": 6.53,
+  "shadow_sim_p95_s": 9.23,
+  "crossing_scene_p50_s": 7.13,
+  "crossing_scene_p95_s": 9.74,
   "crossing_note": "time from click to crossing text with no reading pause; includes waiting for the shadow",
-  "model_calls_per_playthrough_mean": 10.2,
-  "tokens_per_playthrough_mean": 6143
+  "model_calls_per_playthrough_mean": 10.3,
+  "tokens_per_playthrough_mean": 6161
  }
 }

@@ -168,6 +168,8 @@ def check(text: str) -> list[str]:
 
 def compose(parts: dict, color: str | None) -> str:
     lines = [parts["before"], f"“{parts['inscription']}”", f"{parts['after']} {parts['who']}".strip()]
+    if parts.get("echo"):                   # a line about the player's own choice, never a shadow fact
+        lines.append(parts["echo"])
     if color:
         lines.append(color)
     return "\n\n".join(lines)

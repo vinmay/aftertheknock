@@ -8,22 +8,24 @@ start = "opening"
 
 # Unit 07 holds an older copy of the player's object. What gives it away depends on what it is made of.
 [unit07_flaw]
-paper = "Yours: the same crease, the same worn corner. But old, and dry, as if {it_has} been waiting here for years. The ink on {it} has faded almost to nothing."
-metal = "Yours: the same nick along one edge. But old, and dry, the finish gone dull, as if {it_has} been waiting here for years. The engraving has worn almost smooth."
-small = "Yours: the same chipped edge, the same pale scuff. But old, and dry, as if {it_has} been waiting here for years. The scratches have worn nearly away."
-unknown = "Yours: the same small flaw you would know anywhere. But old, and dry, as if {it_has} been waiting here for years. Whatever marked {it} has worn nearly away."
+paper = "Yours: the same crease, the same worn corner. But old, and dry, as if {it_has} been waiting here a long time. The ink on {it} has faded almost to nothing."
+metal = "Yours: the same nick along one edge. But old, and dry, the finish gone dull, as if {it_has} been waiting here a long time. The engraving has worn almost smooth."
+small = "Yours: the same chipped edge, the same pale scuff. But old, and dry, as if {it_has} been waiting here a long time. The scratches have worn nearly away."
+unknown = "Yours: the same small flaw you would know anywhere. But old, and dry, as if {it_has} been waiting here a long time. Whatever marked {it} has worn nearly away."
 
 # The one tactile mention of the pocket object before the knock. "abstract" covers inputs
 # you can't hold ("regret", "a promise"): they become the same fallback object as an empty pocket.
 [pocket_lines]
-object = "In your pocket, your thumb finds the {pocket}."
-empty = "You thought your pockets were empty. But your thumb catches a folded ticket stub. You don't remember putting it there."
-abstract = "You brought {said} out with you tonight. But your thumb catches a folded ticket stub. You don't remember putting it there."
+object = "In your pocket, your thumb finds the {pocket}. You've never been able to get rid of {it}."
+empty = "You thought your pockets were empty. But your thumb catches a folded ticket stub. You don't remember keeping it."
+abstract = "You carry {said} everywhere. Tonight your thumb also finds a folded ticket stub. You don't remember keeping it."
 
 [scenes.opening]
 clock = "11:47"
 text = """
 11:47 PM. The storm has been working at the windows for an hour.
+
+Across the hall, 6D is dark. It has been dark most nights since March. Since the night Teo knocked on your door at two in the morning, and you stood on this side of it and didn't answer. The police came later. You never asked him why.
 
 Someone knocks. Three times, evenly, the way people knock when they already know you're home.
 
@@ -50,15 +52,19 @@ On the other side of the door, nothing. No knock. No footsteps. Then, softly, al
 "That's all right. You did, though."
 
 Water runs out from under the door in a thin, straight line, as if it has somewhere to be.
+
+Your hand stays on the lock. You know this feeling. You had it in March.
 """
 choices = [{ label = "Keep watching", next = "lock_2" }]
 
 [scenes.lock_2]
 clock = "11:52"
 text = """
-She crosses the hall to 6D and knocks. Teo's door. Teo, who has lived across from you for six years and has never once opened his door to anyone. Not the super, not the police that night in March, not you.
+She crosses the hall to 6D and knocks. Teo's door. Teo, who hasn't opened his door to anyone since March. Not the super. Not you.
 
-She waits. He doesn't open. She says something to the wood that you can't hear.
+For a moment the chain lifts. Then it drops again. You know how long a person can stand behind a door without answering.
+
+She says something to the wood that you can't hear.
 
 Then she walks to the stairwell, and the fire door sighs shut behind her. Down. Not up. You can hear her going down for a long time.
 """
@@ -89,14 +95,16 @@ At 12:06 there is a sound at Teo's door: the chain, the bolt, the chain again. I
 
 You start to tell him that's impossible, that your door has been locked all night.
 
-"I know," he says. "I heard you lock it. I heard both." He looks toward the stairwell. "She went down. If you go after her, don't go down. Go up. Up is just weather."
+"I heard you lock it," he says. "I heard you open it, too. I always hear you." A pause. "I heard you in March. On the other side of the door."
+
+He looks toward the stairwell. "She went down. If you trust me, don't. Go up. Up is just weather."
 
 The door closes. The chain.
 """
 kind = "fork2"
 choices = [
-  { label = "Go down to the basement", fork = "basement" },
-  { label = "Go up to the roof", fork = "roof" },
+  { label = "Follow Mara — go down to the basement", fork = "basement" },
+  { label = "Trust Teo — go up to the roof", fork = "roof" },
 ]
 
 [scenes.lock_basement]
@@ -123,6 +131,8 @@ She stands and steps aside. The cage door is held by a padlock you have never se
 She looks at your pocket.
 
 "You do."
+
+"I need someone else to see it," she says. "Someone who'll tell Teo he wasn't imagining things."
 """
 choices = [{ label = "Dial {digits}", next = "unit07_open" }]
 
@@ -132,6 +142,14 @@ text = """
 The roof door sticks, then gives, and the storm takes the breath out of you. The city is dark to the river. The whole grid, not just your building. Water stands on the tar in sheets.
 
 You are alone up here. You are sure of that for almost a minute.
+
+Below the parapet, one window on the sixth floor is open to the storm. 6D. Teo is leaning out of it, looking up at you, rain in his face.
+
+"I wasn't asking you to save me," he calls. "In March. I just needed somebody else to hear it."
+
+He looks at your hands.
+
+"The numbers on {c1_on}. That's the lock on 07. She never had them." The window closes.
 
 Then the stairwell door bangs shut behind you, though nobody came through it.
 """
@@ -146,6 +164,8 @@ You open the door. She steps past you before you have decided to step aside, and
 
 "Thank you," she says. "Again."
 
+You opened it this time. The relief lasts less than a second.
+
 Up close she is younger than you thought, and older. Water runs off her coat and pools around her shoes and doesn't spread. In her hand is a brass key on a paper tag. The tag says BASEMENT 07 in faded marker.
 """
 choices = [{ label = "Ask who she is", next = "open_2" }]
@@ -155,7 +175,7 @@ clock = "11:51"
 text = """
 "Mara," she says, as though you have asked her that many times. She sits at your table without taking off the coat.
 
-"I need to go down to 07. I can't do it alone. Nobody can; it's a rule of the building." She turns the key over and over. "I asked Teo, across the hall. He has never opened his door for me. Not once."
+"I need to go down to 07," she says. "And I need someone to see what's in it. Someone who'll tell Teo he wasn't imagining things." She turns the key over and over. "He's never opened his door for me. Not once."
 
 A pause.
 
@@ -169,7 +189,7 @@ power = "out"
 text = """
 The lights go out at 11:58. Mara doesn't react. In the dark you can hear the water leaving her coat, steady as a clock.
 
-"Every time someone decides something," she says, "the night they didn't pick keeps going. Most of them are quiet. This one isn't."
+"There are nights people try to forget," she says. "That doesn't mean nobody is still inside them."
 
 The key stops turning.
 
@@ -180,16 +200,18 @@ choices = [{ label = "Look at the key", next = "crossing1" }]
 [scenes.open_fork2]
 clock = "12:06"
 text = """
-Mara stands. "So. Down with me, or up without me."
+Mara stands. "I can show you what's in 07. After that, you decide what deserves to stay."
 
-She says it gently, like a choice that has already been made somewhere and she is only letting you catch up.
+Across the hall, Teo's chain lifts.
 
-Across the hall, Teo's door is open an inch. You can feel him listening.
+"Don't go down with her," he says through the gap. "Go up. Up is just weather."
+
+Mara looks at his door for a long moment. "He's never trusted a door in his life," she says. "Neither have you."
 """
 kind = "fork2"
 choices = [
-  { label = "Go down to the basement with Mara", fork = "basement" },
-  { label = "Go up to the roof alone", fork = "roof" },
+  { label = "Follow Mara — go down to the basement", fork = "basement" },
+  { label = "Trust Teo — go up to the roof", fork = "roof" },
 ]
 
 [scenes.open_basement]
@@ -225,6 +247,14 @@ You leave her at your table. She doesn't argue. "I'll be here," she says. "I'm v
 
 The roof door sticks, then gives. The storm, the black city, water standing on the tar. You stand in it until you are as wet as she was.
 
+Below the parapet, one window on the sixth floor is open to the storm. 6D. Teo is leaning out of it, looking up at you, rain in his face.
+
+"I wasn't asking you to save me," he calls. "In March. I just needed somebody else to hear it."
+
+He looks at your hands.
+
+"The numbers on {c1_on}. That's the lock on 07. She never had them." The window closes.
+
 Behind you, the stairwell door bangs shut, though nobody came through it.
 """
 effects = [["set", "chars.player.location", "stairwell"], ["set", "chars.player.location", "roof"]]
@@ -240,7 +270,7 @@ The shackle drops open with a sound like a held breath let go.
 
 Inside 07 there is a folding chair, facing the door. {on_the_seat} {unit07_flaw}
 
-Mara doesn't go in. "That's what's in 07," she says. "Every time."
+Mara doesn't go in. "That's from March," she says. "From the night you answered him."
 """
 effects = [["set", "places.unit07.locked", false]]
 effect_summary = "You dial {digits}. The padlock on 07 opens."
@@ -264,20 +294,73 @@ choices = [{ label = "Keep going", next = "map" }]
 clock = "12:19"
 kind = "map"
 text = """
-The night comes apart in your hands, and for a moment you can see all of it: the night you lived, and the nights you didn't.
+There were other versions of tonight. In some of them, you answered. In others, you didn't.
 
-Everything that crossed over came from somewhere. Touch a thread to see where.
+Everything that found you came from somewhere. Follow a thread.
 """
-choices = [{ label = "Go on", next = "final" }]
+choices = [{ label = "Go on", next = "the_other_you" }]
+
+# The climax. Authored scenes, after the map has shown every committed shadow event. They state only
+# the player's own choices (inverted), committed facts of shadow B (chosen by conditions on the log),
+# and the March backstory. No effects, no event ids: nothing here enters the timeline.
+[scenes.the_other_you]
+authored = true
+sound = "knock"
+hush = true
+text = """
+The map folds back into the dark.
+
+Three knocks.
+
+Not on your door. On a door in front of you that wasn't there a moment ago. The same paint. The same brass peephole. The same scratch beside the lock.
+
+Your door.
+
+You put your eye to the peephole.
+
+Someone is standing on the other side, soaked through. Your coat. Your hands. Your face.
+
+For a second you think it's a mirror.
+
+Then the person blinks.
+
+You didn't.
+"""
+choices = [{ label = "Continue", next = "confrontation" }]
+
+[scenes.confrontation]
+authored = true
+hush = true
+text = """
+"I know what you chose," they say. It's your voice, from the wrong side of the wood.
+
+"I remember standing where you stood."
+
+{other_choice}
+
+{other_detail}
+
+{other_march}
+
+{other_d}
+
+They put a palm flat against the door. You can hear them breathing. Exactly as you are.
+
+"Why do you get to be the real one?"
+"""
+choices = [{ label = "Continue", next = "final" }]
 
 [scenes.final]
 clock = "12:20"
 kind = "final"
 text = """
-Somewhere below you, or behind you, or inside the walls, a door is waiting to be opened. You know which one. It is the one you didn't choose.
+The knocking stops. They're waiting.
 
-You can close it for good. Or you can open it and let the other night through.
+Close the door, and the other you is gone. You won't have to hear them again.
+
+Open it, and give them a chance. Neither of you knows what happens when two versions of one life meet.
 """
+hush = true
 choices = [
   { label = "Erase the other night", ending = "erase" },
   { label = "Open the door and let it through", ending = "open" },
@@ -290,21 +373,25 @@ clock = "12:30"
 text = """
 You choose this night. Only this one.
 
+The person behind the door stops knocking. For the first time, their face looks completely familiar. Not because it is yours. Because you know the expression. It's the face you make when you know no one is coming.
+
 {erase_marks}
 
 {erase_mara}
 
-At 12:30 the power comes back all at once, every light in the building, and the fridge begins to hum as if nothing happened. Nothing did.
+At 12:30 every light in the building comes back at once, and the fridge begins to hum as if nothing happened.
 
-You remember enough of the other night to know you made the right choice.
+Then, three knocks. Slow. Patient.
 
-You will never be certain.
+You don't move until they stop.
+
+Somewhere, you made a different choice.
 """
 
 [endings.open]
 clock = "12:31"
 text = """
-You open the door.
+You turn the lock. On the other side, a hand settles against the wood exactly where yours is.
 
 The other night comes in quietly, the way Mara did. It smells like rain that never reached this building.
 
@@ -316,7 +403,9 @@ The other night comes in quietly, the way Mara did. It smells like rain that nev
 
 You look at what the night left you. {open_marks}
 
-Both nights are true now.
+The other you is standing in the doorway. They look relieved. Then uncertain. Neither of you knows who should step back.
+
+Somewhere, you made a different choice.
 """
 
 [endings.slots]
@@ -324,19 +413,42 @@ erase_marks = "\"{b_text}\" fades from {b_on}, and \"{d_text}\" from {d_on}, lik
 erase_mara_present = "When you look up, Mara is gone. Where she stood, the floor is dry."
 erase_mara_absent = "Far below, a metal door closes, gently, and does not open again."
 
-# Object lines are built from each object's committed final holder in both nights:
-# same in both -> "in both nights"; different -> the paradox is stated outright.
-object_same = "{Obj} {is} {here}, in both nights."
-object_split = "The two nights no longer agree about {obj}. Here, {it} {is} {here}. In the other night, {it} {is} {there}."
+# Object lines are built from each object's committed final holder in both nights (same or different),
+# told by feel rather than as a state report.
+object_same = "{Obj} {is} {here}. {It} always {was}."
+object_split = "{Obj} {is} {here}. And {it} {is} {there}. You can feel both, like holding one thing in two hands."
 
-# Mara, from her committed position in each night; the paradox comes before the positions.
-mara_same = "Mara is {here}, in both nights. She looks relieved, and very tired, like someone who has been holding a door shut for a long time."
-mara_split = "The worlds no longer agree on where Mara is. Here, she is {here}. In the other night, she is {there}."
+# Mara, from her committed position in each night.
+mara_same = "Mara is {here}. She looks relieved, and very tired, like someone who has been holding a door shut for a long time."
+mara_split = "Mara is {here}. She is also {there}; you can hear her, and she can hear herself. She doesn't look surprised."
 
+open_teo_hurt = "In 6D, Teo is sitting on his kitchen floor, holding his arm, not sure how he hurt it. This time you hear him. This time you cross the hall and knock."
+open_teo_dead = "In 6D, there is no sound at all. In March, he knocked and you didn't answer. Tonight, nobody will knock for him."
+open_teo_fine = "In 6D, Teo turns off his radio. \"Finally,\" he says. To no one. Or to you."
 
-open_teo_hurt = "In 6D, Teo is sitting on the floor of his own kitchen, holding his arm, not sure how he hurt it."
-open_teo_dead = "In 6D, there is no sound at all. There won't be, again."
-open_teo_fine = "In 6D, Teo turns off his radio, and you hear him say, to no one, \"Finally.\""
+# ---- the other you (scene "confrontation"). Each slot is filled only from the player's own choices,
+# committed events of shadow B, or the March backstory; a slot with no supported variant is left out.
+other_choice_lock = "\"I opened it. I let her in. She was telling the truth.\""
+other_choice_open = "\"I kept it locked. I sat against the door and listened to everything.\""
+# Player locked: B is the night where the door was opened. {verb_on} is the material-aware act.
+other_detail_took = "\"She took the {pocket} out of my hand and {verb_it}. I let her.\""
+other_detail_watched = "\"She {verb_the}. I watched her do it.\""
+other_detail_self = "\"I {verb_it} myself. I didn't know where {it_sub} would go.\""
+# Player opened: B is the night where the door stayed locked.
+other_detail_teo_open = "\"Teo opened his door for her. I heard the chain. He never opens it for anyone.\""
+other_detail_tag = "\"Somebody wrote {b_text} on the key's tag out there. I heard it all through the wood.\""
+other_march_lock = "\"I would have opened it for Teo, too.\""
+other_march_open = "\"You should have done what I did. You always did, before.\""
+other_d_basement = "\"And I'm not the only one. One of us went up to the roof. You left that one too.\""
+other_d_roof = "\"And I'm not the only one. One of us went down to 07. You left that one too.\""
+# The other you's account of a mark, by what it was made on (as in the flashbacks).
+other_verb_paper = "wrote {b_text} on {obj}"
+other_verb_scratched = "scratched {b_text} into {obj}"
+other_verb_unknown = "marked {obj} with {b_text}"
+
+# After crossing 1, one line from the player's own first choice (never a shadow fact).
+echo_lock = "You locked the door. Somewhere, you didn't."
+echo_open = "You opened the door. Somewhere, you didn't."
 
 open_marks = "{b_line} {d_line} Both made in a night you never lived."
 mark_line_paper = "\"{text}\" on {on}, in {writing}."

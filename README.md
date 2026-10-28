@@ -8,7 +8,7 @@ A short horror story where the choice you didn't make keeps happening in a hidde
 
 Branching horror, timelines that remember, and AI-generated branching stories all exist already (see [Prior art](#prior-art)). This project combines three things: rejected branches that keep simulating, intrusions that carry facts created after the fork, and inspectable provenance for every intrusion.
 
-It is 11:47 PM. A storm. A woman you have never met knocks on your door and says, *"Please. You already let me in."* Lock the door, and later you find four digits written on the thing in your pocket. Mara wrote them, in the night where you opened the door. Later, in the basement, those digits open the padlock on unit 07. And once more before the night ends, a second object turns up with words on it that were only ever written in the other night. Both crossings trace back to the exact events that made them.
+It is 11:47 PM. A storm. A woman you have never met knocks on your door and says, *"Please. You already let me in."* Lock the door, and later you find four digits written on the thing in your pocket. Mara wrote them, in the night where you opened the door. Follow Mara down to the basement and those digits open the padlock on unit 07; trust Teo and go up to the roof, and he tells you what they are for. Once more before the night ends, a second object turns up with words on it that were only ever written in the other night. Both crossings trace back to the exact events that made them. Then three knocks come at a door that looks exactly like yours, and the person on the other side is you: the one who made the other choice.
 
 <!-- GIF: owner records from scripts/demo (steps below, under "Recording the demo"). -->
 
@@ -75,13 +75,15 @@ flowchart LR
 
 **The model proposes; the engine commits.** For each shadow event, Gemma gets the shadow's current state and a one-line story beat, and must answer in a JSON schema: actor, action (one of move, speak, give, take, mark, open, hide, discover, harm), target, recipient, text, summary. It never writes state. A deterministic validator checks the proposal against the shadow's state: people and things exist in that branch, you can only give, mark or hide what you hold, you must be in the same place, moves go one step to an adjacent place, locked places need their key, the dead and departed don't act. If the proposal passes, the engine derives the state change from the action's rules and commits it. If it fails, the model gets the reason and tries again, up to three times. After that a hand-written fallback event is committed. Every rule has a unit test.
 
-**Intrusions cite their origin.** An intrusion links one committed shadow event to a change in your timeline. The engine refuses an intrusion unless the origin is a committed, simulated event of that shadow and it reveals at least one fact that did not exist at the fork, such as the digits that were written on your object. Echoing your own input back does not count. Only marks manifest: a crossing is always something written on an object. The two crossings must land on different objects, and the engine refuses a later crossing that marks an object an earlier one already used. The first lands on your pocket object if you locked the door, or on the brass key's paper tag if you opened it; the second uses the other one. Click a crossing, during play or on the map, and you first get a flashback of the other night: a few lines rendered from hand-written templates over the events actually committed in that shadow, ending on the mark itself ("She takes the folded receipt from the other you. / She writes “0811” across it. / This is where the numbers came from."), then *written there → appeared here*. A test checks that every action in a flashback is a committed event of that shadow. A **View proof** disclosure underneath holds the event IDs, every rejected attempt, the validator's decisions and the raw proposals. At the end of the night, the map reveals every branch at its actual choice, draws a thread from each crossing to its origin event, and walks you to the first crossing. After the ending, **See how this haunting was generated and verified** opens the evidence view: the full audit, every proposal, rejection and commit. It stays hidden during play, because the full log would give the other night away before it crosses; each crossing's own proof is available as soon as it appears.
+**Intrusions cite their origin.** An intrusion links one committed shadow event to a change in your timeline. The engine refuses an intrusion unless the origin is a committed, simulated event of that shadow and it reveals at least one fact that did not exist at the fork, such as the digits that were written on your object. Echoing your own input back does not count. Only marks manifest: a crossing is always something written on an object. The two crossings must land on different objects, and the engine refuses a later crossing that marks an object an earlier one already used. The first lands on your pocket object if you locked the door, or on the brass key's paper tag if you opened it; the second uses the other one. Click a crossing, during play or on the map, and you first get a flashback of the other night: a few lines rendered from hand-written templates over the events actually committed in that shadow, ending on the mark itself ("She takes the folded receipt from the other you. / She writes “0315” across it. / This is where the numbers came from."), then *written there → appeared here*. A test checks that every action in a flashback is a committed event of that shadow. A **View proof** disclosure underneath holds the event IDs, every rejected attempt, the validator's decisions and the raw proposals. At the end of the night, the map reveals every branch at its actual choice, draws a thread from each crossing to its origin event, and walks you to the first crossing. After the ending, **See how this haunting was generated and verified** opens the evidence view: the full audit, every proposal, rejection and commit. It stays hidden during play, because the full log would give the other night away before it crosses; each crossing's own proof is available as soon as it appears.
 
 **Crossings are told with hand-written lines; the model adds at most one sentence.** The words around each crossing are hand-written templates with the committed facts slotted in: the inscription, the object, whose handwriting. The model may add one sentence of atmosphere. The prompt for that sentence is built only from your timeline (where you are, who is with you). It never sees the shadow log or the inscription, so it cannot contradict or leak either. The sentence is rule-checked (one sentence, no numbers, names, quotes, ALL-CAPS words or banned phrases), retried once, and dropped if it still fails.
 
 **Banned phrases.** Horror clichés such as "HELP ME", "GET OUT", "YOU'RE NEXT", "RUN" and "BEHIND YOU" are rejected (`R_BEAT`) wherever the model writes text, both in shadow proposals and in the atmosphere sentence. The words on the second object are steered instead by a seeded meaning: a name, a place in the building, an instruction.
 
-**Endings agree with committed state.** Every sentence in an ending about where an object is comes from that object's committed final holder in your night and in the other night. When the two differ, the ending says so outright ("The brass key is at your feet. In the other night, it is in Mara's hand. Both are true now."). A test checks this over every recorded and evaluated run, and another checks that no internal identifier ever reaches player-facing text. In the evidence panel, "Re-run this night through the engine" feeds the night's log back through the engine and compares every timeline's state hash. The replay site has no engine in the browser, so there each recording is re-run when the site is built, and the build fails if one does not reproduce.
+**Endings agree with committed state.** Every sentence in an ending about where an object is comes from that object's committed final holder in your night and in the other night. When the two differ, the ending gives both ("The brass key is with Mara, in your apartment, 6C. And it is with Mara, in storage unit 07. You can feel both, like holding one thing in two hands."). A test checks this over every recorded and evaluated run, and another checks that no internal identifier ever reaches player-facing text. The climax is authored, and labelled as such. After the map has shown every committed event, the other you (the protagonist of the opposite first choice) speaks through the door. The scene states only your own choices, inverted; facts from committed events of that other night, chosen by conditions on the log (a test checks every stated fact against the log, and leaves a line out when no event supports it); and the story's backstory. It adds no events, and the evidence view labels it "Authored scene, built from your choices and the events shown on the map."
+
+In the evidence panel, "Re-run this night through the engine" feeds the night's log back through the engine and compares every timeline's state hash. The replay site has no engine in the browser, so there each recording is re-run when the site is built, and the build fails if one does not reproduce.
 
 **Reproducible.** Each run records the seed, model and quantization, a hash of every prompt, every proposal and validator decision, and every committed event. Replaying a log through the engine reproduces every timeline's state hash. The test suite checks this, and checks that a tampered log fails.
 
@@ -97,37 +99,37 @@ Model: gemma4:e2b Q4_K_M, 24 live playthroughs (every fork path), raw logs in `e
 | Intrusions revealing a post-fork fact | 48/48 (100%) |
 | Intrusions with valid origin event | 48/48 (100%) |
 | Replays reproducing every state hash | 24/24 (100%) |
-| Shadow events accepted on the model's first proposal | 128/156 (82%) |
-| Shadow events committed from the model | 146/156 (94%) |
-| Shadow events from hand-written fallback | 10/156 (6%) |
-| Proposals rejected by the validator | 49/195 (25%) |
+| Shadow events accepted on the model's first proposal | 130/156 (83%) |
+| Shadow events committed from the model | 143/156 (92%) |
+| Shadow events from hand-written fallback | 13/156 (8%) |
+| Proposals rejected by the validator | 53/196 (27%) |
 | Deliberate impossible give rejected | 30/30 (100%) |
-| Model's atmosphere sentence failing rule checks (first attempt) | 1/48 (2%) |
+| Model's atmosphere sentence failing rule checks (first attempt) | 3/48 (6%) |
 | Crossings that kept a model sentence (rest: hand-written lines only) | 48/48 (100%) |
 | Narration contradictions, hand-labeled | not labeled |
 | Intrusion accuracy, hand-labeled | not labeled |
-| Model call latency p50 / p95 | 1.83 s / 2.96 s |
-| Whole shadow timeline p50 / p95 | 7.43 s / 12.58 s |
-| Model calls per playthrough (mean) | 10.2 |
-| Tokens per playthrough (mean) | 6143 |
+| Model call latency p50 / p95 | 1.67 s / 2.38 s |
+| Whole shadow timeline p50 / p95 | 6.53 s / 9.23 s |
+| Model calls per playthrough (mean) | 10.3 |
+| Tokens per playthrough (mean) | 6161 |
 
 Variation (same choices, different seeds):
 
 | Path | Runs | Distinct event chains | Mean pairwise overlap (Jaccard) |
 |---|---|---|---|
-| lock/basement | 6 | 6 | 0.26 |
-| lock/roof | 6 | 6 | 0.32 |
-| open/basement | 6 | 6 | 0.27 |
-| open/roof | 6 | 6 | 0.44 |
+| lock/basement | 6 | 6 | 0.31 |
+| lock/roof | 6 | 6 | 0.31 |
+| open/basement | 6 | 6 | 0.32 |
+| open/roof | 6 | 6 | 0.45 |
 
-Rejections by rule: R_ADJACENT 18, R_BEAT 9, R_NOOP 9, R_REACH 7, R_TYPE 6.
+Rejections by rule: R_ADJACENT 18, R_REACH 15, R_NOOP 9, R_BEAT 6, R_TYPE 5.
 
 Notes on these numbers:
 
 - A *shadow step* is one shadow event: up to three model proposals, then a hand-written fallback. 0 of 156 steps were skipped (the model failed and no fallback fitted the state). Every shadow still ended with its committed crossing.
 - "Rejected" counts proposals stopped by the validator or by a story-beat check (`R_BEAT`, which includes banned phrases). A rejected proposal never changes state.
 - The crossing text is hand-written around the committed facts. The atmosphere-sentence rows measure only the model's optional extra sentence, which is rule-checked. That doesn't prove the sentence never contradicts anything; hand labels go in `eval/labels/` and show as "not labeled" until a person fills them in.
-- Time from the click to the crossing, with no reading pause at all: p50 8.13 s, p95 13.19 s. In real play the shadow runs while you read the scenes before it.
+- Time from the click to the crossing, with no reading pause at all: p50 7.13 s, p95 9.74 s. In real play the shadow runs while you read the scenes before it.
 <!-- RESULTS:END -->
 
 ### Hosted model, reported separately

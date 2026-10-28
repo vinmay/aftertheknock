@@ -5,6 +5,8 @@ The model's own summary is kept and shown, labeled, but this is what the map tre
 
 from __future__ import annotations
 
+import re
+
 from .narrator import CHAR_NAMES
 from .validator import looks_truncated
 
@@ -19,6 +21,16 @@ def who(cid: str, shadow: bool) -> str:
     if cid == "player":
         return "the other you" if shadow else "you"
     return CHAR_NAMES.get(cid, cid)
+
+
+def owned(text: str, pocket: str) -> str:
+    """A possessive object ("father's watch", from "my father's watch") reads as "your father's watch",
+    never "the father's watch". Applied to every player-facing string that can name the object."""
+    if not re.match(r"^\w+'s\b", pocket or ""):
+        return text
+    p = re.escape(pocket)
+    text = re.sub(rf"\b(?:the|a|an) (?={p})", "your ", text)
+    return re.sub(rf"\b(?:The|A|An) (?={p})", "Your ", text)
 
 
 def display_name(oid: str, pocket: str, form: str = "object") -> str:

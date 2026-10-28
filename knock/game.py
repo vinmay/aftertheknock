@@ -8,9 +8,9 @@ import time
 import tomllib
 import uuid
 
-from .describe import describe, display_name, display_speech
+from .describe import describe, display_name, display_speech, owned
 from .engine import Timeline
-from .narrator import CHAR_NAMES, narrate_crossing
+from .narrator import CHAR_NAMES, compose, narrate_crossing
 from .sim import RunLog, load_shadows, pick_origin, simulate_shadow
 from .state import STORY_DIR, apply_delta, initial_state, is_plural, material_of, state_hash
 
@@ -139,6 +139,10 @@ class Game:
         return line.replace("{said}", self.pocket_said)
 
     def fmt(self, text: str) -> str:
+        if "{other_choice}" in text:
+            for k, v in self.other_you()["slots"].items():
+                text = text.replace("{" + k + "}", v)
+            text = re.sub(r"\n{3,}", "\n\n", text)        # a slot with no supported variant leaves no gap
         text = text.replace("{pocket_line}", self.pocket_line())
         if "{unit07_flaw}" in text:
             a = "" if self.plural else ("an " if self.pocket[:1] in "aeiou" else "a ")
@@ -149,8 +153,45 @@ class Game:
         text = text.replace("{pocket}", self.pocket)
         if "B" in self.crossings:
             # The number that crossed over is canonical knowledge once it has been released.
-            text = text.replace("{digits}", self.timeline.event(self.crossings["B"]["intrusion"]["origin_event_id"]).text)
-        return text.strip()
+            origin = self.timeline.event(self.crossings["B"]["intrusion"]["origin_event_id"])
+            text = text.replace("{digits}", origin.text)
+            text = text.replace("{c1_on}", self._on(origin.target))
+        return owned(text.strip(), self.pocket)
+
+    AUTHORED = "Authored scene, built from your choices and the events shown on the map."
+
+    def other_you(self) -> dict:
+        """What the other you (the protagonist of shadow B, who made the opposite first choice) says.
+
+        Every slot comes from the player's own choices, a committed event of shadow B, or the March
+        backstory; a slot with no supported variant is empty. `claims` lists the B event ids each
+        stated fact rests on, so a test can hold the scene to the log."""
+        sl = self.story["endings"]["slots"]
+        b_events = list(self.timeline.branch("B").events)
+        b_o = self.timeline.event(self.crossings["B"]["intrusion"]["origin_event_id"])
+        slots = {"other_choice": sl[f"other_choice_{self.f1}"], "other_march": sl[f"other_march_{self.f1}"],
+                 "other_d": sl[f"other_d_{self.f2}"], "other_detail": ""}
+        claims: list[str] = []
+        if self.f1 == "lock" and b_o.action == "mark" and b_o.target == "pocket":
+            verb = sl["other_verb_" + self.style_for("pocket")].replace("{b_text}", b_o.text)
+            it = "them" if self.plural else "it"
+            verb_it, verb_the = verb.replace("{obj}", it), verb.replace("{obj}", f"the {self.pocket}")
+            took = next((e for e in b_events if e.target == "pocket" and (
+                (e.action == "take" and e.actor == "mara") or (e.action == "give" and e.to == "mara"))), None)
+            if b_o.actor == "mara" and took:
+                slots["other_detail"], claims = sl["other_detail_took"].replace("{verb_it}", verb_it), [took.event_id, b_o.event_id]
+            elif b_o.actor == "mara":
+                slots["other_detail"], claims = sl["other_detail_watched"].replace("{verb_the}", verb_the), [b_o.event_id]
+            elif b_o.actor == "player":
+                slots["other_detail"], claims = sl["other_detail_self"].replace("{verb_it}", verb_it).replace(
+                    "{it_sub}", "they" if self.plural else "it"), [b_o.event_id]
+        elif self.f1 == "open":
+            teo_open = next((e for e in b_events if e.action == "open" and e.target == "teo_apt" and e.actor == "teo"), None)
+            if teo_open:
+                slots["other_detail"], claims = sl["other_detail_teo_open"], [teo_open.event_id]
+            elif b_o.action == "mark" and b_o.target == "key07":
+                slots["other_detail"], claims = sl["other_detail_tag"].replace("{b_text}", b_o.text), [b_o.event_id]
+        return {"slots": slots, "claims": claims}
 
     def canon(self) -> str:
         return self.timeline.canonical()
@@ -216,6 +257,12 @@ class Game:
                                      self.story["crossings"], style=self.style_for(oid),
                                      avoid=next((c["parts"].get("color") for c in self.crossings.values()), None))
         narration["parts"]["material"] = self.material_for(oid)
+        if shadow == "B":                       # the player's own first choice, mirrored; no shadow fact
+            narration["parts"]["echo"] = self.story["endings"]["slots"][f"echo_{self.f1}"]
+            narration["text"] = compose(narration["parts"], narration["color"])
+        for k in ("before", "after", "who"):
+            narration["parts"][k] = owned(narration["parts"][k], self.pocket)
+        narration["text"] = owned(narration["text"], self.pocket)
         self.crossings[shadow] = {"intrusion": x.to_dict(), "narration": narration["text"],
                                   "parts": narration["parts"],
                                   "narration_source": narration["source"], "raw": narration["raw"],
@@ -322,7 +369,8 @@ class Game:
             h, th = self._where(c, oid), self._where(d, oid)
             plural = oid == "pocket" and self.plural
             words = {"{Obj}": display_name(oid, self.pocket, "subject"), "{obj}": display_name(oid, self.pocket),
-                     "{here}": h, "{there}": th, "{is}": "are" if plural else "is", "{it}": "they" if plural else "it"}
+                     "{here}": h, "{there}": th, "{is}": "are" if plural else "is", "{it}": "they" if plural else "it",
+                     "{It}": "They" if plural else "It", "{was}": "were" if plural else "was"}
             line = slots["object_same"] if h == th else slots["object_split"]
             for k, v in words.items():
                 line = line.replace(k, v)
@@ -338,7 +386,7 @@ class Game:
         for _ in range(2):              # slots may contain slots
             for k, v in list(fill.items()) + [(k, v) for k, v in slots.items() if k in ("erase_marks", "open_marks")]:
                 text = text.replace("{" + k + "}", v)
-        return re.sub(r"\n{3,}", "\n\n", text).strip()
+        return owned(re.sub(r"\n{3,}", "\n\n", text).strip(), self.pocket)
 
     # ---- views ------------------------------------------------------------
     def view(self) -> dict:
@@ -352,13 +400,23 @@ class Game:
              "choices": [self.fmt(c["label"]) for c in sc.get("choices", [])],
              # Stable ids for presentation cues (e.g. the lock/open sound), never parsed from prose.
              "choice_ids": [c.get("fork") or c.get("ending") or c.get("next") for c in sc.get("choices", [])],
-             "clock": sc.get("clock"), "power": sc.get("power")}
+             "clock": sc.get("clock"), "power": sc.get("power"),
+             # Presentation cues: a one-off sound on entering, and the room held low (desired state).
+             "sound": sc.get("sound"), "hush": bool(sc.get("hush"))}
+        if sc.get("authored"):
+            v["authored"] = self.AUTHORED
         if v["kind"] == "crossing":
             cr = self.crossings[sc["shadow"]]
             v["text"] = cr["narration"]
             v["crossing"] = cr["parts"]
             v["trace"] = self.trace(cr["intrusion"]["intrusion_id"])
         return v
+
+    def authored_seen(self) -> list[dict]:
+        """Authored scenes the player has reached, labelled for the evidence view. They add no events."""
+        seen = [c["scene"] for c in self.choices] + [self.scene]
+        return [{"scene": sid, "label": self.AUTHORED} for sid in dict.fromkeys(seen)
+                if self.story["scenes"].get(sid, {}).get("authored")]
 
     BRANCH_PHRASE = {"open": "the night where you opened the door", "lock": "the night where you kept the door locked",
                      "basement": "the night where you went down to the basement", "roof": "the night where you went up to the roof"}
@@ -408,12 +466,14 @@ class Game:
         here = here_state["places"][here_state["chars"]["player"]["location"]]["name"]
         what = what[0].lower() + what[1:] if what.startswith("The other") else what
         scene = self.flashback(o)
+        what = owned(what, self.pocket)
+        scene = [dict(line, line=owned(line["line"], self.pocket)) for line in scene] if scene else scene
         return {"memory": f"In {night}, {what} This is where the {kind} came from.",
                 "night": night, "scene": scene,
                 "closing": self.story["flashback"][f"closing_{kind}"],
                 "source": f"Written there: {night}, {there}",
                 "dest": f"Appeared here: your night, {here}",
-                "inscription": o.text, "object": display_name(o.target, self.pocket)}
+                "inscription": o.text, "object": owned(display_name(o.target, self.pocket), self.pocket)}
 
     def flashback(self, origin, max_lines: int = 5) -> list[dict] | None:
         """The other night, up to the mark, as short lines rendered from committed events only.
@@ -519,7 +579,7 @@ class Game:
             state = t.state(bid)
             for e in b.events:
                 d = e.to_dict()
-                d["desc"] = describe(d, state, self.pocket, self.style_for)
+                d["desc"] = owned(describe(d, state, self.pocket, self.style_for), self.pocket)
                 if e.source in ("model", "fallback"):
                     d["attempts"] = self.attempts(e.request_id)
                 events.append(d)

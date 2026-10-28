@@ -12,7 +12,7 @@
 const Sound = {
   ctx: null, master: null, noise: null, layers: {}, live: new Set(), mapVoices: null, mapGen: 0, pens: new Set(),
   mix: { restore: null, power: null },          // one pending room restore; a new cue cancels it
-  want: { power: true, focused: null, ending: null, scene: null },
+  want: { power: true, focused: null, ending: null, scene: null, hush: false },
   on: (() => { try { return localStorage.getItem("knock.sound") !== "0"; } catch { return true; } })(),
   ROOM: 0.035, HUM: 0.007, ROOM_LP: 6000,       // ROOM_LP: the room's filter wide open; a duck closes it
 
@@ -32,7 +32,7 @@ const Sound = {
       const c = this.ctx, room = this.layers.room, w = this.want; if (!c) return;
       if (room) {
         clearTimeout(this.mix.restore); this.mix.restore = null;
-        this.set(room.gain.gain, w.focused ? this.ROOM * 0.35 : this.ROOM, c, tau);
+        this.set(room.gain.gain, this.roomLevel(), c, w.hush ? 2.5 : tau);
         this.set(room.lp.frequency, this.ROOM_LP, c, tau);
       }
       for (const id of ["B", "D"]) {
@@ -118,7 +118,7 @@ const Sound = {
     this.set(room.lp.frequency, lp, c, attackTau);
     this.mix.restore = setTimeout(() => {
       this.mix.restore = null;
-      try { this.set(room.gain.gain, this.want.focused ? this.ROOM * 0.35 : this.ROOM, c, restoreTau); this.set(room.lp.frequency, this.ROOM_LP, c, restoreTau); } catch { /* silent */ }
+      try { this.set(room.gain.gain, this.roomLevel(), c, restoreTau); this.set(room.lp.frequency, this.ROOM_LP, c, restoreTau); } catch { /* silent */ }
     }, holdMs);
   },
 
@@ -235,6 +235,14 @@ const Sound = {
     this.want.focused = id || null;
     this.applyMix(id ? 0.5 : 0.8);
   },
+  /* The room's resting level: lower while the other night is in focus, and held low behind the
+     other door (the confrontation); both are desired state, so mute and unmute keep them. */
+  roomLevel() { return this.ROOM * (this.want.focused ? 0.35 : 1) * (this.want.hush ? 0.3 : 1); },
+  hush(on) {
+    if (Boolean(on) === this.want.hush) return;
+    this.want.hush = Boolean(on);
+    this.applyMix(on ? 2.5 : 1.5);
+  },
   scene(name) {                                 // a scene change never carries the pen with it
     this.want.scene = name || null;
     this.stopPen();
@@ -243,18 +251,18 @@ const Sound = {
   /* ---- story cues */
   /* Three knuckle knocks on a wooden door, heard from inside the hall: a low panel thump that
      drops in pitch, the wood's own resonances, a dull click, and a short hallway echo. */
-  knock() {
+  knock(gain = 1, gap = 0.31) {
     this.guard((c, now) => {
       const hall = this.hall(c);
       let t = now + 0.3;
       for (let i = 0; i < 3; i++) {
-        this.knuckle(c, t, 1 + (Math.random() - 0.5) * 0.08, hall);
-        t += 0.31 + Math.random() * 0.05;
+        this.knuckle(c, t, 1 + (Math.random() - 0.5) * 0.08, hall, gain);
+        t += gap + Math.random() * 0.05;
       }
     });
   },
-  knuckle(c, t, v, hall) {
-    const out = c.createGain(); out.connect(this.master); if (hall) out.connect(hall);
+  knuckle(c, t, v, hall, gain = 1) {             // v: a little variation in pitch and weight; gain: overall level
+    const out = c.createGain(); out.gain.value = gain; out.connect(this.master); if (hall) out.connect(hall);
     const o = c.createOscillator();
     o.frequency.setValueAtTime(140 * v, t); o.frequency.exponentialRampToValueAtTime(62 * v, t + 0.09);
     o.connect(this.env(c, t, 0.75 * v, 0.002, 0.01, 0.17)).connect(out);
@@ -390,6 +398,9 @@ const Sound = {
     if (which === "erase") {
       clearTimeout(this.mix.power);
       this.mix.power = setTimeout(() => this.power(true), 1800);
+      // "Then, three knocks. Slow. Patient." Quiet and slow, once, late; it claims nothing about who.
+      clearTimeout(this.mix.lateKnock);
+      this.mix.lateKnock = setTimeout(() => this.knock(0.35, 0.75), 10000);
     }
   },
 
@@ -412,11 +423,12 @@ const Sound = {
     this.mapStop(); this.stopPen();
     clearTimeout(this.mix.restore); this.mix.restore = null;
     clearTimeout(this.mix.power); this.mix.power = null;
+    clearTimeout(this.mix.lateKnock); this.mix.lateKnock = null;
     try { this.live.forEach((n) => { try { n.stop(); n.disconnect(); } catch { /* already stopped */ } }); } catch { /* silent */ }
     this.live.clear();
     Object.values(this.layers).forEach((L) => { clearTimeout(L.release); clearTimeout(L.bleed); clearInterval(L.timer); try { L.srcs?.forEach((x) => { x.stop(); x.disconnect(); }); } catch { /* silent */ } });
     this.layers = {};
-    this.want = { power: true, focused: null, ending: null, scene: null };
+    this.want = { power: true, focused: null, ending: null, scene: null, hush: false };
   },
 };
 if (typeof document !== "undefined") {

@@ -2,14 +2,14 @@
 <rect width="100%" height="100%" fill="#0e0d0c"/>
 <text x="16" y="24" fill="#e6dfd2" font-size="14">Shadow events: who decided (156 steps)</text>
 <text x="16" y="59" fill="#8d867b">model, first proposal</text>
-<rect x="230" y="44" width="295.4" height="20" fill="#e6dfd2"/>
-<text x="531.4" y="59" fill="#e6dfd2">128</text>
+<rect x="230" y="44" width="300.0" height="20" fill="#e6dfd2"/>
+<text x="536.0" y="59" fill="#e6dfd2">130</text>
 <text x="16" y="93" fill="#8d867b">model, after retry</text>
-<rect x="230" y="78" width="41.5" height="20" fill="#8d867b"/>
-<text x="277.5" y="93" fill="#e6dfd2">18</text>
+<rect x="230" y="78" width="30.0" height="20" fill="#8d867b"/>
+<text x="266.0" y="93" fill="#e6dfd2">13</text>
 <text x="16" y="127" fill="#8d867b">hand-written fallback</text>
-<rect x="230" y="112" width="23.1" height="20" fill="#c7a55b"/>
-<text x="259.1" y="127" fill="#e6dfd2">10</text>
+<rect x="230" y="112" width="30.0" height="20" fill="#c7a55b"/>
+<text x="266.0" y="127" fill="#e6dfd2">13</text>
 <text x="16" y="161" fill="#8d867b">skipped</text>
 <rect x="230" y="146" width="0.0" height="20" fill="#b23a2f"/>
 <text x="236.0" y="161" fill="#e6dfd2">0</text>
