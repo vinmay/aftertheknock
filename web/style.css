@@ -582,3 +582,5 @@ body.instant-text .stage-color, body.instant-text .trace-hint { opacity: 1 !impo
 }
 /* Centred landing text wraps into even lines, never a single orphaned word. */
 #title p, #title label { text-wrap: balance; }
+/* The list's heading is a label, not an item: the landing's small spaced mono, muted, like the time line. */
+#title #replays-head { font-family: var(--mono); font-size: 0.72rem; letter-spacing: 0.12em; text-transform: uppercase; color: var(--muted); margin: 1.6rem 0 0.5rem; }
