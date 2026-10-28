@@ -374,6 +374,34 @@ function markFit(text, width, max, min = 12) {
   const over = 0.55 * fs * text.length > width;
   return { fs, fit: over ? ` textLength="${width}" lengthAdjust="spacingAndGlyphs"` : "" };
 }
+/* Scratched by hand into a hard surface: each letter leans and sits a little off the line (seeded by
+   the text, so a replay always looks the same), a dark groove with a thin raised lip beside it,
+   and edges roughened by a filter. `at` is either {x, y} or {path} (a textPath id). */
+function etch(cls, text, fs, at, fit = "") {
+  let h = 2166136261;
+  for (const ch of text) h = Math.imul(h ^ ch.codePointAt(0), 16777619);
+  const rnd = () => ((h = Math.imul(h ^ (h >>> 15), 2246822507) ^ (h >>> 13)) >>> 0) / 4294967296;
+  const chars = [...text];
+  const tilt = chars.map(() => ((rnd() - 0.5) * 7).toFixed(1)).join(" ");
+  let prev = 0;
+  const dy = chars.map(() => { const o = (rnd() - 0.5) * 0.1 * fs; const d = o - prev; prev = o; return d.toFixed(2); }).join(" ");
+  const glyphs = `<tspan rotate="${tilt}" dy="${dy}">${esc(text)}</tspan>`;
+  const body = at.path
+    ? `<textPath href="#${at.path}" startOffset="50%" text-anchor="middle"${fit}>${glyphs}</textPath>`
+    : glyphs;
+  const place = at.path ? "" : ` x="${at.x}" y="${at.y}" text-anchor="middle"${fit}`;
+  const style = `style="font-size:${fs}px"`;
+  return `<defs>${ROUGH}</defs>
+    <text${place} class="etch-lip ${cls}" filter="url(#rough)" ${style} transform="translate(-0.7,-0.9)">${body}</text>
+    <text${place} class="${cls}" filter="url(#rough)" ${style}>${body}</text>`;
+}
+const ROUGH = `<filter id="rough" x="-10%" y="-40%" width="120%" height="180%">
+    <feTurbulence type="fractalNoise" baseFrequency="1.4" numOctaves="1" seed="11" result="grit"/>
+    <feDisplacementMap in="SourceGraphic" in2="grit" scale="1.8" xChannelSelector="R" yChannelSelector="G" result="rough"/>
+    <feTurbulence type="fractalNoise" baseFrequency="0.05" numOctaves="2" seed="3" result="blot"/>
+    <feColorMatrix in="blot" type="matrix" values="0 0 0 0 0  0 0 0 0 0  0 0 0 0 0  0 0 0 -1.6 1.7" result="fade"/>
+    <feComposite in="rough" in2="fade" operator="in"/>
+  </filter>`;
 /* Engraving on something round: the text follows the lower front of an ellipse (the band's own
    centre line), its letters centred across the band and no taller than the band allows, and it
    never runs past the visible arc (from `from` to `to` degrees; 90 is the bottom). */
@@ -392,7 +420,7 @@ function arcEngraving(id, text, cx, cy, rx, ry, band, from = 155, to = 25) {
   const { fs, fit } = markFit(text, length(pts(fs0)) * 0.92, fs0, 9);
   const p = pts(fs);
   return `<path id="${id}" d="M${p.map((q) => q.map((v) => v.toFixed(1)).join(",")).join(" L")}" fill="none"/>
-    <text class="engrave" filter="url(#aged)" style="font-size:${fs}px"><textPath href="#${id}" startOffset="50%" text-anchor="middle"${fit}>${esc(text)}</textPath></text>`;
+    ${etch("engrave", text, fs, { path: id }, fit)}`;
 }
 /* Age: strokes that wander a little and ink that has faded unevenly, as if written years ago. */
 const AGED = `<filter id="aged" x="-10%" y="-30%" width="120%" height="160%">
@@ -425,7 +453,7 @@ function metalSvg(c) {
       <circle cx="110" cy="110" r="62" fill="url(#mg)"/><circle cx="110" cy="110" r="16" fill="#0e0d0c"/>
       <path d="M168,96 L380,96 L380,124 L352,124 L352,144 L330,144 L330,124 L312,124 L312,140 L292,140 L292,124 L168,124 Z" fill="url(#mg)"/>
       <path d="M70,72 Q100,56 132,58" stroke="url(#glint)" stroke-width="4" fill="none" stroke-linecap="round"/>
-      <text x="268" y="118" text-anchor="middle" class="engrave" filter="url(#aged)" style="font-size:${fitSize(c.inscription, 170, 22, 10)}px">${mark}</text>
+      ${etch("engrave", c.inscription, fitSize(c.inscription, 170, 22, 10), { x: 268, y: 118 })}
     </svg>`;
   }
   // Coins, medals, lockets, watches, pins, pennies: a disc, the engraving along its rim.
@@ -434,7 +462,7 @@ function metalSvg(c) {
     <circle cx="210" cy="110" r="84" fill="none" stroke="#3b2d15" stroke-opacity="0.45" stroke-width="2"/>
     <path d="M150,48 Q190,26 238,30" stroke="url(#glint)" stroke-width="5" fill="none" stroke-linecap="round"/>
     ${c.inscription.length <= 5
-      ? `<text x="210" y="126" text-anchor="middle" class="engrave" filter="url(#aged)" style="font-size:${fitSize(c.inscription, 170, 38, 18)}px">${mark}</text>`
+      ? etch("engrave", c.inscription, fitSize(c.inscription, 170, 38, 18), { x: 210, y: 126 })
       : arcEngraving("rim", c.inscription, 210, 110, 70, 70, 24, 165, 15)}
   </svg>`;
 }
@@ -445,7 +473,7 @@ function smallSvg(c) {
   let shape, what, face = [210, 126, 180, 36];          // x, y, width, largest size
   const scratch = ([x, y, width, max]) => {
     const { fs, fit } = markFit(c.inscription, width, max, 10);
-    return `<defs>${AGED}</defs><text x="${x}" y="${y}" text-anchor="middle" class="scratch" filter="url(#aged)" style="font-size:${fs}px"${fit}>${mark}</text>`;
+    return etch("scratch", c.inscription, fs, { x, y }, fit);
   };
   if (n === "pick") { shape = `<path d="M150,40 C200,24 280,30 300,64 C312,96 250,170 214,196 C196,206 186,200 176,186 C150,140 116,96 120,70 C122,54 132,46 150,40 Z" fill="#7a2e1f"/><path d="M160,56 C200,44 252,48 272,66" stroke="#f1c9b9" stroke-opacity="0.35" stroke-width="3" fill="none"/>`; what = "a small plastic pick"; face = [212, 106, 120, 34]; }
   else if (n === "lighter") { shape = `<rect x="150" y="60" width="120" height="150" rx="10" fill="#273b52"/><rect x="150" y="30" width="120" height="38" rx="6" fill="#9aa3ab"/><circle cx="180" cy="48" r="9" fill="#5e676f"/><rect x="160" y="76" width="8" height="120" fill="#fff" fill-opacity="0.12"/>`; what = "a lighter"; face = [214, 142, 96, 30]; }
@@ -463,7 +491,7 @@ function unknownSvg(c) {
     <defs><radialGradient id="dim" cx="0.5" cy="0.45" r="0.65"><stop offset="0" stop-color="#2a2622"/><stop offset="1" stop-color="#0b0a09"/></radialGradient></defs>
     <rect x="10" y="10" width="400" height="200" rx="6" fill="url(#dim)" stroke="#3a3631"/>
     <text x="398" y="30" text-anchor="end" class="printed own">${esc((S.pocket || "").toUpperCase())}</text>
-    ${(() => { const { fs, fit } = markFit(c.inscription, 320, 40); return `<defs>${AGED}</defs><text x="210" y="126" text-anchor="middle" class="scratch chalk" filter="url(#aged)" style="font-size:${fs}px"${fit}>${mark}</text>`; })()}
+    ${(() => { const { fs, fit } = markFit(c.inscription, 320, 40); return etch("scratch chalk", c.inscription, fs, { x: 210, y: 126 }, fit); })()}
   </svg>`;
 }
 
