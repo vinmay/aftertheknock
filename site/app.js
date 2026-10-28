@@ -56,14 +56,6 @@ const LINKS = {
   repo: "https://github.com/vinmay/aftertheknock",
 };
 const article = (w) => (/^(two|three|four|five|six|seven|eight|nine|ten|some|few|several)\b/i.test(w) || (/s$/i.test(w) && !/(ss|us|is)$/i.test(w)) ? w : (/^[aeiou]/i.test(w) ? "an " : "a ") + w);
-/* "lock / roof / erase" -> plain words. Shown only after a card is opened (no spoilers in the list). */
-function pathWords(path) {
-  const [f1, f2, end] = path.split(" / ");
-  const a = { lock: "kept the door locked", open: "opened the door" }[f1] || f1;
-  const b = { basement: "went down to the basement", roof: "went up to the roof" }[f2] || f2;
-  const c = { erase: "erased the other night", open: "let the other night in" }[end] || end;
-  return `Someone ${a}, ${b}, and ${c}.`;
-}
 
 async function boot() {
   try {
@@ -80,25 +72,12 @@ async function boot() {
     if (list.length) {
       $("#replays").hidden = false;
       $("#replays-head").textContent = st.static || !st.live ? "Watch someone else's night" : "Or watch someone else's night";
-      $("#replay-list").innerHTML = list.map((r, i) => {
+      // Tap a night to watch it: no extra step. Seed and model are in the evidence view after the ending.
+      $("#replay-list").innerHTML = list.map((r) => {
         const name = article(r.pocket);
-        return `
-        <li class="card-night">
-          <button class="card-head" aria-expanded="false" aria-controls="night-${i}">
-            <span class="card-title">${esc(name[0].toUpperCase() + name.slice(1))}</span>
-          </button>
-          <div class="card-body" id="night-${i}" hidden>
-            <p>${esc(pathWords(r.path))}</p>
-            <button class="primary watch" data-id="${esc(r.id)}">Watch this night</button>
-            <details class="tech"><summary>Technical details</summary><p class="small muted">Seed ${esc(r.seed)} · recorded with ${esc(r.model)} · re-verified against its recorded state</p></details>
-          </div>
-        </li>`;
+        return `<li class="night"><button data-id="${esc(r.id)}">${esc(name[0].toUpperCase() + name.slice(1))}</button></li>`;
       }).join("");
-      $("#replay-list").querySelectorAll(".card-head").forEach((h) => h.addEventListener("click", () => {
-        const body = h.nextElementSibling, open = body.hidden;
-        body.hidden = !open; h.setAttribute("aria-expanded", String(open));
-      }));
-      $("#replay-list").querySelectorAll(".watch").forEach((b) => b.addEventListener("click", () => startReplay(b.dataset.id)));
+      $("#replay-list").querySelectorAll("button").forEach((b) => b.addEventListener("click", () => startReplay(b.dataset.id)));
     }
   } catch (e) {
     $("#status-line").textContent = "Could not reach the server.";

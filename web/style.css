@@ -275,14 +275,6 @@ body::after {
 .rec-k { display: block; font-family: var(--mono); font-size: 0.68rem; letter-spacing: 0.1em; text-transform: uppercase; color: var(--shadow); }
 .not-taken-note { margin: 0.4rem 0 0 2rem; font-size: 0.9rem; color: #8a8378; }
 .mode .detail a { color: var(--ink); }
-.card-night { border-top: 1px solid var(--faint); }
-.card-night:last-child { border-bottom: 1px solid var(--faint); }
-.card-head { width: 100%; display: flex; justify-content: space-between; align-items: center; gap: 1rem; min-height: 52px; text-align: left; color: var(--ink); }
-.card-head:hover .card-title { text-decoration: underline; text-underline-offset: 4px; }
-.card-meta { font-family: var(--mono); font-size: 0.7rem; letter-spacing: 0.06em; color: var(--muted); text-transform: uppercase; white-space: nowrap; }
-.card-body { padding: 0 0 1rem; }
-.card-body p { margin: 0.2rem 0 0.8rem; color: var(--muted); }
-.tech summary { cursor: pointer; font-size: 0.85rem; color: var(--muted); min-height: 44px; display: flex; align-items: center; }
 
 /* Primary call to action */
 .cta {
@@ -417,7 +409,6 @@ body.instant-text main { animation: none !important; }
 .flashback p:last-child { color: var(--ink); font-style: normal; }
 .flash-close { margin: 0.4rem 0 0.2rem; }
 
-.card-title { display: block; }
 #drawer-body:focus { outline: none !important; }    /* a reading container, focused only so screen readers start at the memory */
 a.cta { display: inline-flex; align-items: center; text-decoration: none; }
 
@@ -530,9 +521,12 @@ body.instant-text .stage-color, body.instant-text .trace-hint { opacity: 1 !impo
 #title input { text-align: center; }
 #title form .cta { justify-self: center; }
 #title .replays { max-width: 34rem; margin-left: auto; margin-right: auto; }
-#title .card-head { justify-content: center; text-align: center; }
-#title .tech summary { justify-content: center; }
-#title .card-body .watch { display: block; margin-left: auto; margin-right: auto; }
+/* Recorded nights: a short centred column; the dividers are quiet separators, not rules across the page. */
+#title .replays ul { max-width: 15rem; margin-left: auto; margin-right: auto; }
+.night { border-top: 1px solid var(--faint); }
+.night:last-child { border-bottom: 1px solid var(--faint); }
+#title .night button { width: 100%; justify-content: center; text-align: center; min-height: 48px; color: var(--ink); }
+#title .night button:hover { text-decoration: underline; text-underline-offset: 4px; }
 @media (max-width: 40rem) {
   #title h1 { font-size: 1.2rem; letter-spacing: 0.22em; padding-left: 0.22em; margin-top: 1.6rem; }
   #title .tagline { font-size: 0.95rem; margin-bottom: 2rem; }
@@ -586,3 +580,5 @@ body.instant-text .stage-color, body.instant-text .trace-hint { opacity: 1 !impo
 @media (prefers-reduced-motion: reduce) {
   #title .door, #title h1 { transition: none; }
 }
+/* Centred landing text wraps into even lines, never a single orphaned word. */
+#title p, #title label { text-wrap: balance; }
