@@ -8,7 +8,6 @@ Live mode needs Ollama. Replay mode serves recorded runs from data/runs/ and nee
 from __future__ import annotations
 
 import argparse
-import hashlib
 import json
 import os
 import threading
@@ -28,7 +27,6 @@ WEB = ROOT / "web"
 RUNS = ROOT / "data" / "runs"
 REPLAYS = RUNS / "replays"
 MAX_GAMES = 200
-MAP_SCENES = {"map", "final"}
 
 NEW_GAMES_PER_IP_HOUR = 20
 NEW_GAMES_PER_HOUR = int(os.environ.get("KNOCK_NEW_GAMES_PER_HOUR", "60"))   # all clients together
@@ -71,17 +69,22 @@ def live_ok() -> bool:
     return _live["ok"]
 
 
-def _rate_ok(ip: str) -> bool:
-    """Per-client and global limits on new live games per hour."""
+_buckets: dict[str, tuple[dict, list]] = {"live": (_starts, _all_starts), "replay": ({}, [])}
+
+
+def _rate_ok(ip: str, kind: str = "live") -> bool:
+    """Per-client and global limits on new games per hour. Replays have the same limits as live
+    games, counted separately, so watching recordings never uses up a visitor's live nights."""
+    starts, all_starts = _buckets[kind]
     now = time.time()
     with _lock:
-        _all_starts[:] = [t for t in _all_starts if now - t < 3600]
-        recent = [t for t in _starts.get(ip, []) if now - t < 3600]
-        _starts[ip] = recent
-        if len(recent) >= NEW_GAMES_PER_IP_HOUR or len(_all_starts) >= NEW_GAMES_PER_HOUR:
+        all_starts[:] = [t for t in all_starts if now - t < 3600]
+        recent = [t for t in starts.get(ip, []) if now - t < 3600]
+        starts[ip] = recent
+        if len(recent) >= NEW_GAMES_PER_IP_HOUR or len(all_starts) >= NEW_GAMES_PER_HOUR:
             return False
-        _starts[ip].append(now)
-        _all_starts.append(now)
+        starts[ip].append(now)
+        all_starts.append(now)
     return True
 
 
@@ -165,12 +168,9 @@ class Handler(SimpleHTTPRequestHandler):
                 out = {"live": live, "model": getattr(_model, "name", None),
                        "hosted": bool(info.get("hosted")), "provider": info.get("provider"),
                        "replays": len(_replay_list())}
-                if info.get("hosted") and not live:
-                    # Why the live model is off: the provider's status and message, never the key.
-                    out["live_error"] = getattr(_model, "last_error", None)
-                    key = getattr(_model, "_key", "") or ""
-                    out["key_length"] = len(key)                                   # to spot paste errors
-                    out["key_fingerprint"] = hashlib.sha256(key.encode()).hexdigest()[:8]   # not reversible
+                if info.get("hosted"):
+                    # Only whether a key is configured; nothing derived from it, and no provider messages.
+                    out["configured"] = bool(getattr(_model, "_key", ""))
                 return self._json(out)
             if u.path == "/api/replays":
                 return self._json(_replay_list())
@@ -183,8 +183,8 @@ class Handler(SimpleHTTPRequestHandler):
                 return self._json(_get(q["game"]).trace(q["id"]))
             if u.path == "/api/map":
                 g = _get(q["game"])
-                if g.scene not in MAP_SCENES and not g.ending:
-                    return self._json({"error": "the map is not open yet"}, HTTPStatus.FORBIDDEN)
+                if not g.ending:                       # the map opens from the ending
+                    return self._json({"error": "the map opens at the end of the night"}, HTTPStatus.FORBIDDEN)
                 return self._json(g.map_data())
             if u.path == "/api/verify":
                 g = _get(q["game"])
@@ -197,6 +197,8 @@ class Handler(SimpleHTTPRequestHandler):
                 return self._json(g.verify() | {"against": "this run's own log"})
             if u.path == "/api/evidence":
                 g = _get(q["game"])
+                if not g.ending:                       # the full log would give the other night away early
+                    return self._json({"error": "the evidence opens at the end of the night"}, HTTPStatus.FORBIDDEN)
                 return self._json({"log": g.log.records, "ops": g.timeline.ops,
                                    "model": g.log.model, "seed": g.seed,
                                    "crossings": [g.memory(x.intrusion_id) for x in g.timeline.intrusions],
@@ -231,6 +233,9 @@ class Handler(SimpleHTTPRequestHandler):
                 return self._json({"game": g.run_id, "seed": seed, "pocket": g.pocket, "view": g.view(),
                                    "model": f"{g.log.model.get('model')}{' (hosted)' if g.log.model.get('hosted') else ''} ·"})
             if u.path == "/api/replay/start":
+                if not _rate_ok(client_ip(self), "replay"):
+                    return self._json({"error": "Too many nights started from here; try again later."},
+                                      HTTPStatus.TOO_MANY_REQUESTS)
                 rid = str(body["id"])
                 if not rid.replace("_", "").isalnum():
                     raise KeyError("bad id")

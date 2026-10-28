@@ -237,12 +237,14 @@ const Sound = {
   },
   /* The room's resting level: lower while the other night is in focus, and held low behind the
      other door (the confrontation); both are desired state, so mute and unmute keep them. */
-  roomLevel() { return this.ROOM * (this.want.focused ? 0.35 : 1) * (this.want.hush ? 0.3 : 1); },
-  hush(on) {
-    if (Boolean(on) === this.want.hush) return;
-    this.want.hush = Boolean(on);
-    this.applyMix(on ? 2.5 : 1.5);
+  roomLevel() { return this.ROOM * (this.want.focused ? 0.35 : 1) * ({ true: 0.3, deep: 0.12 }[this.want.hush] || 1); },
+  hush(level) {                                 // false, true (held low) or "deep" (lowest: the central line)
+    const want = level === "deep" ? "deep" : Boolean(level);
+    if (want === this.want.hush) return;
+    this.want.hush = want;
+    this.applyMix(want ? 2.5 : 1.5);
   },
+  cancelLateKnock() { clearTimeout(this.mix.lateKnock); this.mix.lateKnock = null; },
   scene(name) {                                 // a scene change never carries the pen with it
     this.want.scene = name || null;
     this.stopPen();

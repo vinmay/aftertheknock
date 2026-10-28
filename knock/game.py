@@ -139,6 +139,8 @@ class Game:
         return line.replace("{said}", self.pocket_said)
 
     def fmt(self, text: str) -> str:
+        if "{door_opening}" in text:                      # where the door appears: the player's own second choice
+            text = text.replace("{door_opening}", self.story["endings"]["slots"][f"door_opening_{self.f2}"])
         if "{other_choice}" in text:
             for k, v in self.other_you()["slots"].items():
                 text = text.replace("{" + k + "}", v)
@@ -158,19 +160,22 @@ class Game:
             text = text.replace("{c1_on}", self._on(origin.target))
         return owned(text.strip(), self.pocket)
 
-    AUTHORED = "Authored scene, built from your choices and the events shown on the map."
+    AUTHORED = "Authored scene, built from your choices and the logged events of the other night."
 
     def other_you(self) -> dict:
         """What the other you (the protagonist of shadow B, who made the opposite first choice) says.
 
-        Every slot comes from the player's own choices, a committed event of shadow B, or the March
-        backstory; a slot with no supported variant is empty. `claims` lists the B event ids each
+        Every slot comes from the player's own choices, a committed event of shadow B, the player's own
+        canonical state, or the March backstory; a slot with no supported variant is empty. `claims` lists the B event ids each
         stated fact rests on, so a test can hold the scene to the log."""
         sl = self.story["endings"]["slots"]
         b_events = list(self.timeline.branch("B").events)
         b_o = self.timeline.event(self.crossings["B"]["intrusion"]["origin_event_id"])
-        slots = {"other_choice": sl[f"other_choice_{self.f1}"], "other_march": sl[f"other_march_{self.f1}"],
-                 "other_d": sl[f"other_d_{self.f2}"], "other_detail": ""}
+        here = self.timeline.state(self.canon())["chars"]
+        slots = {"other_choice": sl[f"other_choice_{self.f1}"], "other_turn": sl[f"other_turn_{self.f1}"],
+                 "other_detail": "",
+                 # Only when Mara's committed position in your own night is beside you.
+                 "mara_witness": sl["mara_witness"] if here["mara"]["location"] == here["player"]["location"] else ""}
         claims: list[str] = []
         if self.f1 == "lock" and b_o.action == "mark" and b_o.target == "pocket":
             verb = sl["other_verb_" + self.style_for("pocket")].replace("{b_text}", b_o.text)
@@ -308,6 +313,7 @@ class Game:
     def _end(self, which: str) -> None:
         self.scene = f"ending_{which}"
         self.ending = {"which": which, "text": self.ending_text(which)}
+        self.ending["changed"] = self.changed
 
     def material_for(self, oid: str) -> str:
         """The key's tag is paper; the pocket object is whatever the player said it was."""
@@ -375,10 +381,9 @@ class Game:
             for k, v in words.items():
                 line = line.replace(k, v)
             lines.append(line)
-        fill["open_objects"] = " ".join(lines)
         mh, mt = self._char_where(c, "mara"), self._char_where(d, "mara")
-        fill["open_mara"] = (slots["mara_same"] if mh == mt else slots["mara_split"]).replace(
-            "{here}", mh).replace("{there}", mt)
+        lines.append((slots["mara_same"] if mh == mt else slots["mara_split"]).replace("{here}", mh).replace("{there}", mt))
+        self.changed = [owned(x, self.pocket) for x in lines]      # for the evidence view ("What changed")
         rank = {"present": 0, "hurt": 1, "dead": 2, "departed": 0}
         teo = max((b["chars"]["teo"]["status"], d["chars"]["teo"]["status"]), key=lambda s: rank.get(s, 0))
         fill["open_teo"] = slots["open_teo_" + {"hurt": "hurt", "dead": "dead"}.get(teo, "fine")]
@@ -392,7 +397,7 @@ class Game:
     def view(self) -> dict:
         if self.ending:
             return {"scene": self.scene, "kind": "ending", "text": self.ending["text"], "choices": [],
-                    "ending": self.ending["which"],
+                    "ending": self.ending["which"], "changed": self.ending.get("changed", []),
                     "clock": self.story["endings"][self.ending["which"]].get("clock")}
         sc = self.story["scenes"][self.scene]
         v = {"scene": self.scene, "kind": sc.get("kind", "scene"),
@@ -402,7 +407,8 @@ class Game:
              "choice_ids": [c.get("fork") or c.get("ending") or c.get("next") for c in sc.get("choices", [])],
              "clock": sc.get("clock"), "power": sc.get("power"),
              # Presentation cues: a one-off sound on entering, and the room held low (desired state).
-             "sound": sc.get("sound"), "hush": bool(sc.get("hush"))}
+             "sound": sc.get("sound"), "hush": sc.get("hush") or False,
+             "door": bool(sc.get("door")), "climax": bool(sc.get("climax"))}
         if sc.get("authored"):
             v["authored"] = self.AUTHORED
         if v["kind"] == "crossing":

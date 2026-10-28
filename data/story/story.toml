@@ -147,9 +147,7 @@ Below the parapet, one window on the sixth floor is open to the storm. 6D. Teo i
 
 "I wasn't asking you to save me," he calls. "In March. I just needed somebody else to hear it."
 
-He looks at your hands.
-
-"The numbers on {c1_on}. That's the lock on 07. She never had them." The window closes.
+"Four numbers," he calls. "I heard her say them, through the wall. In the other night. They open 07." The window closes.
 
 Then the stairwell door bangs shut behind you, though nobody came through it.
 """
@@ -251,9 +249,7 @@ Below the parapet, one window on the sixth floor is open to the storm. 6D. Teo i
 
 "I wasn't asking you to save me," he calls. "In March. I just needed somebody else to hear it."
 
-He looks at your hands.
-
-"The numbers on {c1_on}. That's the lock on 07. She never had them." The window closes.
+"Four numbers," he calls. "I heard her say them, through the wall. In the other night. They open 07." The window closes.
 
 Behind you, the stairwell door bangs shut, though nobody came through it.
 """
@@ -270,7 +266,7 @@ The shackle drops open with a sound like a held breath let go.
 
 Inside 07 there is a folding chair, facing the door. {on_the_seat} {unit07_flaw}
 
-Mara doesn't go in. "That's from March," she says. "From the night you answered him."
+Mara doesn't go in. "That's what's left of the night you answered him," she says.
 """
 effects = [["set", "places.unit07.locked", false]]
 effect_summary = "You dial {digits}. The padlock on 07 opens."
@@ -288,31 +284,20 @@ choices = [{ label = "Keep going", next = "$fork2" }]
 clock = "12:18"
 kind = "crossing"
 shadow = "D"
-choices = [{ label = "Keep going", next = "map" }]
+choices = [{ label = "Keep going", next = "the_other_you" }]
 
-[scenes.map]
-clock = "12:19"
-kind = "map"
-text = """
-There were other versions of tonight. In some of them, you answered. In others, you didn't.
-
-Everything that found you came from somewhere. Follow a thread.
-"""
-choices = [{ label = "Go on", next = "the_other_you" }]
-
-# The climax. Authored scenes, after the map has shown every committed shadow event. They state only
-# the player's own choices (inverted), committed facts of shadow B (chosen by conditions on the log),
-# and the March backstory. No effects, no event ids: nothing here enters the timeline.
+# The climax. Authored scenes, straight after crossing 2. They state only the player's own choices
+# (inverted), committed facts of shadow B (chosen by conditions on the log), the player's own canonical
+# state, and the March backstory. No effects, no event ids: nothing here enters the timeline.
 [scenes.the_other_you]
 authored = true
 sound = "knock"
 hush = true
+door = true
 text = """
-The map folds back into the dark.
+{door_opening}
 
-Three knocks.
-
-Not on your door. On a door in front of you that wasn't there a moment ago. The same paint. The same brass peephole. The same scratch beside the lock.
+The same paint as yours. The same brass peephole. The same scratch beside the lock.
 
 Your door.
 
@@ -330,40 +315,39 @@ choices = [{ label = "Continue", next = "confrontation" }]
 
 [scenes.confrontation]
 authored = true
-hush = true
+hush = "deep"
 text = """
 "I know what you chose," they say. It's your voice, from the wrong side of the wood.
 
-"I remember standing where you stood."
-
 {other_choice}
+
+{mara_witness}
 
 {other_detail}
 
-{other_march}
+They try the handle. It doesn't move. They put a palm flat against the door. You can hear them breathing. Exactly as you are.
 
-{other_d}
-
-They put a palm flat against the door. You can hear them breathing. Exactly as you are.
+{other_turn}
 
 "Why do you get to be the real one?"
 """
+climax = true
 choices = [{ label = "Continue", next = "final" }]
 
 [scenes.final]
 clock = "12:20"
 kind = "final"
 text = """
-The knocking stops. They're waiting.
+They're waiting.
 
-Close the door, and the other you is gone. You won't have to hear them again.
+Lock it, and the other you is gone. You won't have to hear them again.
 
-Open it, and give them a chance. Neither of you knows what happens when two versions of one life meet.
+Open it, and they come in. Neither of you knows what happens when two versions of one life meet.
 """
 hush = true
 choices = [
-  { label = "Erase the other night", ending = "erase" },
-  { label = "Open the door and let it through", ending = "open" },
+  { label = "Lock it", ending = "erase" },
+  { label = "Open the door", ending = "open" },
 ]
 
 # ---------------------------------------------------------------- endings
@@ -371,9 +355,9 @@ choices = [
 [endings.erase]
 clock = "12:30"
 text = """
-You choose this night. Only this one.
+You turn the deadbolt. It is loud in the narrow entry, louder than it should be.
 
-The person behind the door stops knocking. For the first time, their face looks completely familiar. Not because it is yours. Because you know the expression. It's the face you make when you know no one is coming.
+Through the peephole, the other you goes still. You know that expression. It's the face you make when you know no one is coming.
 
 {erase_marks}
 
@@ -391,21 +375,17 @@ Somewhere, you made a different choice.
 [endings.open]
 clock = "12:31"
 text = """
-You turn the lock. On the other side, a hand settles against the wood exactly where yours is.
+You open the door.
 
-The other night comes in quietly, the way Mara did. It smells like rain that never reached this building.
+They don't come in at once. They look past you, at your life, the way you'd look at a room you used to live in.
 
-{open_objects}
+You look down at what the night left you. {open_marks}
 
-{open_mara}
+You understand now who it was meant for.
 
 {open_teo}
 
-You look at what the night left you. {open_marks}
-
-The other you is standing in the doorway. They look relieved. Then uncertain. Neither of you knows who should step back.
-
-Somewhere, you made a different choice.
+They step inside. You step back. There are two of you in the doorway, and the door won't close until one of you leaves.
 """
 
 [endings.slots]
@@ -413,8 +393,8 @@ erase_marks = "\"{b_text}\" fades from {b_on}, and \"{d_text}\" from {d_on}, lik
 erase_mara_present = "When you look up, Mara is gone. Where she stood, the floor is dry."
 erase_mara_absent = "Far below, a metal door closes, gently, and does not open again."
 
-# Object lines are built from each object's committed final holder in both nights (same or different),
-# told by feel rather than as a state report.
+# What changed, shown in the evidence view after the ending (not in the ending text): each object's
+# committed final holder in both nights (same or different), and Mara's position in both.
 object_same = "{Obj} {is} {here}. {It} always {was}."
 object_split = "{Obj} {is} {here}. And {it} {is} {there}. You can feel both, like holding one thing in two hands."
 
@@ -422,13 +402,13 @@ object_split = "{Obj} {is} {here}. And {it} {is} {there}. You can feel both, lik
 mara_same = "Mara is {here}. She looks relieved, and very tired, like someone who has been holding a door shut for a long time."
 mara_split = "Mara is {here}. She is also {there}; you can hear her, and she can hear herself. She doesn't look surprised."
 
-open_teo_hurt = "In 6D, Teo is sitting on his kitchen floor, holding his arm, not sure how he hurt it. This time you hear him. This time you cross the hall and knock."
-open_teo_dead = "In 6D, there is no sound at all. In March, he knocked and you didn't answer. Tonight, nobody will knock for him."
-open_teo_fine = "In 6D, Teo turns off his radio. \"Finally,\" he says. To no one. Or to you."
+open_teo_hurt = "Across the hall, Teo is on his kitchen floor, holding his arm. In March, you didn't answer. Now there are two of you, and you both turn toward his door at the same time."
+open_teo_dead = "Across the hall, 6D is silent. In March he knocked and you didn't answer. Tonight there are two of you, and it's still too late."
+open_teo_fine = "Across the hall, Teo's chain slides back. He opens his door, sees the two of you, and doesn't look surprised. \"Finally,\" he says."
 
 # ---- the other you (scene "confrontation"). Each slot is filled only from the player's own choices,
 # committed events of shadow B, or the March backstory; a slot with no supported variant is left out.
-other_choice_lock = "\"I opened it. I let her in. She was telling the truth.\""
+other_choice_lock = "\"I opened it. I let her in.\""
 other_choice_open = "\"I kept it locked. I sat against the door and listened to everything.\""
 # Player locked: B is the night where the door was opened. {verb_on} is the material-aware act.
 other_detail_took = "\"She took the {pocket} out of my hand and {verb_it}. I let her.\""
@@ -437,10 +417,14 @@ other_detail_self = "\"I {verb_it} myself. I didn't know where {it_sub} would go
 # Player opened: B is the night where the door stayed locked.
 other_detail_teo_open = "\"Teo opened his door for her. I heard the chain. He never opens it for anyone.\""
 other_detail_tag = "\"Somebody wrote {b_text} on the key's tag out there. I heard it all through the wood.\""
-other_march_lock = "\"I would have opened it for Teo, too.\""
-other_march_open = "\"You should have done what I did. You always did, before.\""
-other_d_basement = "\"And I'm not the only one. One of us went up to the roof. You left that one too.\""
-other_d_roof = "\"And I'm not the only one. One of us went down to 07. You left that one too.\""
+other_turn_lock = "\"I would have opened it for Teo, too.\""
+other_turn_open = "\"I did what we always do. I kept it shut. You're the one who changed.\""
+# Only when Mara's committed position in your night is beside you.
+mara_witness = "Beside you, Mara has gone very still. She isn't looking at the door. She's looking at you. This is what she needed someone to see."
+# The door's opening, by where you are (your own second choice).
+door_opening_roof = "Three knocks. Behind you. The door to the stairwell isn't the stairwell door any more."
+door_opening_basement = "Three knocks. Behind you. At the end of the row of cages, where the stairs should be, there is a door."
+
 # The other you's account of a mark, by what it was made on (as in the flashbacks).
 other_verb_paper = "wrote {b_text} on {obj}"
 other_verb_scratched = "scratched {b_text} into {obj}"

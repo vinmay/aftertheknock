@@ -181,6 +181,22 @@ const cases = {
     assert.strictEqual(knocks, 1, "a new night never hears the old one's knock");
     Sound.knock = k;
   },
+  "the central line: the room at its lowest, then held low again, then released"() {
+    fresh();
+    Sound.hush(true); Sound.hush("deep");
+    assert.ok(Math.abs(room() - Sound.ROOM * 0.12) < 1e-9, "lowest");
+    Sound.hush(true);
+    assert.ok(Math.abs(room() - Sound.ROOM * 0.3) < 1e-9);
+    Sound.hush(false);
+    assert.strictEqual(room(), Sound.ROOM);
+  },
+  "erase ending: opening the map or the evidence first cancels the late knock"() {
+    fresh();
+    let knocks = 0; const k = Sound.knock; Sound.knock = function (...a) { knocks++; return k.apply(this, a); };
+    Sound.ending("erase"); advance(3000); Sound.cancelLateKnock(); advance(11000);
+    assert.strictEqual(knocks, 0);
+    Sound.knock = k;
+  },
 };
 let failed = 0;
 for (const [name, fn] of Object.entries(cases)) {

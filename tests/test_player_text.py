@@ -97,20 +97,21 @@ def test_ending_matches_committed_state(name, g, views):
     t = g.timeline
     c, d = t.state("C"), t.state("D")
     opened = g.ending_text("open")
+    changed = " ".join(g.changed)                          # object and Mara positions: the evidence view
     for oid in ("key07", "pocket"):
         here, there = g._where(c, oid), g._where(d, oid)
         plural = oid == "pocket" and g.plural
         subj, is_, it = owned(display_name(oid, g.pocket, "subject"), g.pocket), "are" if plural else "is", "they" if plural else "it"
         if here == there:
-            assert f"{subj} {is_} {here}. {it.capitalize()} always {'were' if plural else 'was'}." in opened, (name, oid)
+            assert f"{subj} {is_} {here}. {it.capitalize()} always {'were' if plural else 'was'}." in changed, (name, oid)
         else:
             # Both positions are stated, this night's first.
-            assert f"{subj} {is_} {here}. And {it} {is_} {there}." in opened, (name, oid)
+            assert f"{subj} {is_} {here}. And {it} {is_} {there}." in changed, (name, oid)
     mh, mt = g._char_where(c, "mara"), g._char_where(d, "mara")
     if mh == mt:
-        assert f"Mara is {mh}. She looks relieved" in opened, name
+        assert f"Mara is {mh}. She looks relieved" in changed, name
     else:
-        assert f"Mara is {mh}. She is also {mt};" in opened, name
+        assert f"Mara is {mh}. She is also {mt};" in changed, name
     # Only the marks that actually crossed are mentioned, each with its real writer.
     crossed = {}
     for shadow in ("B", "D"):
@@ -120,9 +121,9 @@ def test_ending_matches_committed_state(name, g, views):
     for ending in (opened, g.ending_text("erase")):
         quoted = set(re.findall(r'"([^"]+)"', ending)) - {"Finally,"}
         assert quoted == set(crossed), (name, quoted)
-        # It ends on one short line.
-        last = ending.strip().split("\n")[-1]
-        assert len(last) <= 45 and last.count(".") == 1, (name, last)
+    # Erasing ends on one short line.
+    last = g.ending_text("erase").strip().split("\n")[-1]
+    assert last == "Somewhere, you made a different choice.", (name, last)
 
 
 @pytest.mark.parametrize("name,g,views", list(all_runs()), ids=lambda v: v if isinstance(v, str) else "")

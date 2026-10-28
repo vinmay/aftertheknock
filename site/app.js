@@ -299,12 +299,17 @@ function sceneHtml(v) {
       return `<p>${t}</p>`;
     }).join("") + `<p><button class="trace-hint">where did this come from? ↗</button></p>`;
   }
-  return paragraphs(v.text).map((p) => `<p>${esc(p)}</p>`).join("");
+  const ps = paragraphs(v.text);
+  return ps.map((p, i) => `<p${v.climax && i === ps.length - 1 ? ' class="climax"' : ""}>${esc(p)}</p>`).join("");
 }
+const CLIMAX_HOLD_MS = 2700;          // the central line fades in at 1.2 s; Continue follows 1.5 s after it
 
 async function show(v) {
   Sound.scene(v.scene || v.kind || "scene");        // a scene change never carries the pen with it
-  Sound.hush(Boolean(v.hush));                      // the room held low behind the other door (desired state)
+  // The room held low behind the other door (desired state): on the door scene only after "Your face."
+  // has had time to land; lowest through the confrontation.
+  if (v.door && !instantText()) setTimeout(() => { if (S.view === v) Sound.hush(v.hush); }, 4500);
+  else Sound.hush(v.hush);
   if (v.sound === "knock") Sound.knock();
   S.view = v;
   $("#title").hidden = true;
@@ -327,17 +332,17 @@ async function show(v) {
   cur.classList.remove("fade-in"); void cur.offsetWidth; cur.classList.add("fade-in");
   const text = $("#text");
   text.innerHTML = stampHtml(v) + sceneHtml(v);
+  if (v.door) text.prepend(sceneDoor());
   text.querySelectorAll(".ink, .trace-hint").forEach((b) => b.addEventListener("click", (ev) => { ev.stopPropagation(); openTrace(v.trace); }));
   const ch = $("#choices");
   ch.innerHTML = "";
   ch.hidden = true;
-  if (v.kind === "map" || v.kind === "final" || v.kind === "ending") S.mapSeen = true;
   if (!$("#evidence").hidden) loadEvidence();
   if (S.history?.length) cur.scrollIntoView({ behavior: REDUCED ? "auto" : "smooth", block: "start" });
   else window.scrollTo({ top: 0 });
 
   if (v.kind === "crossing") stageCrossing(v.crossing, v.scene === "crossing2");
-  else if (!instantText()) await wait(FADE_MS);
+  else if (!instantText()) await wait(FADE_MS + (v.climax ? CLIMAX_HOLD_MS : 0));
   if (S.view !== v) return;
 
   const recorded = S.replay ? S.replay.choices[S.step] : null;
@@ -385,14 +390,17 @@ async function show(v) {
     ch.appendChild(how);
   } else ch.classList.remove("afterword");
   ch.hidden = false;
-  if (v.kind === "map") {
-    // The map waits for the player: read the scene first, then open it yourself.
-    const b = document.createElement("button");
-    b.className = "cta map-open";
-    b.textContent = "Look at the map";
-    b.addEventListener("click", () => openMap());
-    ch.prepend(b);
-  }
+}
+
+/* The landing's door, shown again over the scene where the other you knocks: the same drawing, its
+   peephole lit. Ids are renamed so its gradients never point at the hidden landing copy. */
+function sceneDoor() {
+  const wrap = document.createElement("div");
+  wrap.className = "scene-door";
+  wrap.setAttribute("aria-hidden", "true");
+  wrap.innerHTML = $("#title .door").outerHTML.replace(/id="([^"]+)"/g, 'id="$1-again"').replace(/url\(#([^)]+)\)/g, "url(#$1-again)");
+  wrap.firstElementChild.classList.add("warm", "lit");
+  return wrap;
 }
 
 /* Move the finished scene into the history, keeping the option you didn't take. */
@@ -809,6 +817,7 @@ $("#drawer-close").addEventListener("click", closeDrawer);
 
 /* ---------------------------------------------------------------- verification */
 async function openVerify() {
+  Sound.cancelLateKnock();
   if (toggledShut("verify")) return;
   let d;
   try { d = await api(`/api/verify?game=${encodeURIComponent(S.game)}`); }
@@ -824,6 +833,7 @@ async function openVerify() {
 
 /* ---------------------------------------------------------------- map */
 async function openMap() {
+  Sound.cancelLateKnock();
   if (!$("#map").hidden && $("#map").classList.contains("revealing")) return;
   try {
     S.mapData = await api(`/api/map?game=${encodeURIComponent(S.game)}`);
@@ -1118,9 +1128,11 @@ async function loadEvidence() {
     ? `<p class="small muted ev-verify">This recorded night was re-run through the engine when this site was built, and the final state of every timeline matched the recording.</p>`
     : `<div class="ev-verify"><button class="linkish" id="ev-verify">Re-run this night through the engine</button>
        <p class="small muted">Feeds every recorded model output back through the validator and compares the final state of every timeline.</p></div>`;
+  const changed = (S.view?.changed || []).length
+    ? `<div class="ev-changed"><p><b>What changed</b></p>${S.view.changed.map((l) => `<p class="small">${esc(l)}</p>`).join("")}</div>` : "";
   const authored = (d.authored || []).length
     ? `<p class="small ev-authored">Behind the door: ${esc(d.authored[0].label)}</p>` : "";
-  $("#evidence-body").innerHTML = summary + authored + `<p class="small muted">model ${esc(d.model.model)} ${esc(d.model.quantization || "")} · seed ${esc(d.seed)} · ${d.log.length} records</p>` + body + verify;
+  $("#evidence-body").innerHTML = summary + changed + authored + `<p class="small muted">model ${esc(d.model.model)} ${esc(d.model.quantization || "")} · seed ${esc(d.seed)} · ${d.log.length} records</p>` + body + verify;
   $("#ev-verify")?.addEventListener("click", () => openVerify());
   $("#evidence-body").querySelectorAll(".ev-group").forEach((g) => g.addEventListener("toggle", () => {
     if (g.open) S.evOpen.add(g.dataset.key); else S.evOpen.delete(g.dataset.key);
@@ -1129,6 +1141,7 @@ async function loadEvidence() {
 function toggleEvidence(force) {
   const el = $("#evidence");
   const open = typeof force === "boolean" ? force : el.hidden;
+  if (open) Sound.cancelLateKnock();                // reading the evidence: the ending's late knock never comes
   el.hidden = !open;
   $(".afterword-how")?.setAttribute("aria-expanded", String(open));
   if (!$("#map").hidden && S.mapData) drawMap(S.mapData);

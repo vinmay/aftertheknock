@@ -156,14 +156,15 @@ def test_truncated_committed_speech_is_shown_with_ellipsis_but_proof_is_exact():
 
 
 @pytest.mark.parametrize("text", ["FLOOR COOKIE C", "BASSMENT STATIC", "R O O F B  A S E M E N", "FLOOR   ANTICAMBER  B",
-                                  "SIXTH FLOOR  LLB", "FIVELIGHT DOOR", "BATHROOM A", "COUNT THE"])
+                                  "SIXTH FLOOR  LLB", "FIVELIGHT DOOR", "BATHROOM A", "COUNT THE",
+                                  "FIND THE COLD SPOT"])
 def test_word_salad_marks_are_rejected(text):
     from knock.sim import words_problem
     assert words_problem(text)
 
 
-@pytest.mark.parametrize("text", ["FIND THE COLD SPOT", "COUNT THE STAIRS", "SIXTH FLOOR DOOR", "STAIRWELL", "ASK FOR ELENA",
-                                  "DON'T OPEN UNIT SEVEN"])
+@pytest.mark.parametrize("text", ["FIND THE KEY", "COUNT THE STAIRS", "SIXTH FLOOR DOOR", "STAIRWELL", "ASK FOR ELENA",
+                                  "DON'T OPEN SEVEN"])
 def test_readable_marks_are_accepted(text):
     from knock.sim import FALLBACK_WORDS, words_problem
     assert words_problem(text) is None

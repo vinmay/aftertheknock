@@ -52,7 +52,8 @@ RUNS = [(p, *path) for p in POCKETS for path in PATHS]
 def test_every_route_reads_cleanly(pocket, f1, f2, end):
     g, views = play(pocket, f1, f2, end)
     scenes = [v["scene"] for v in views]
-    assert scenes[-4:-1] == ["the_other_you", "confrontation", "final"] and scenes[-1] == f"ending_{end}"
+    assert scenes[-5:-1] == ["crossing2", "the_other_you", "confrontation", "final"] and scenes[-1] == f"ending_{end}"
+    assert "map" not in scenes                                   # the map opens only from the ending
     for t in texts(views):
         for pat in FORBIDDEN:
             m = pat.search(t)
@@ -85,9 +86,16 @@ def test_the_other_you_states_only_committed_b_facts(pocket, f1, f2, end):
         assert origin.event_id in other["claims"]
     if f1 == "lock" and origin.actor == "teo":
         assert detail == ""                                   # no variant for Teo's hand: say nothing
-    # The other you's own choices are the player's, inverted.
-    assert ("I opened it." in conf) == (f1 == "lock") and ("I kept it locked." in conf) == (f1 == "open")
-    assert ("One of us went up to the roof." in conf) == (f2 == "basement")
+    # The other you's own choices are the player's, inverted; the door appears where the player is.
+    assert ("I opened it. I let her in." in conf) == (f1 == "lock") and ("I kept it locked." in conf) == (f1 == "open")
+    assert ("You're the one who changed." in conf) == (f1 == "open")
+    door = next(v for v in views if v["scene"] == "the_other_you")["text"]
+    assert ("row of cages" in door) == (f2 == "basement") and ("stairwell door any more" in door) == (f2 == "roof")
+    # Mara witnesses only when her committed position in this night is beside the player.
+    c = g.timeline.state("C")["chars"]
+    assert ("Mara has gone very still" in conf) == (c["mara"]["location"] == c["player"]["location"])
+    for old in ("I remember standing where you stood", "One of us went", "You should have done what I did"):
+        assert old not in conf
 
 
 def _with_writer(g, actor, took):
@@ -128,20 +136,40 @@ def _patched_states(g, edit):
     g.timeline.state = state
 
 
-@pytest.mark.parametrize("status,line", [("present", "turns off his radio"), ("hurt", "This time you cross the hall"),
-                                         ("dead", "nobody will knock for him")])
-def test_teo_in_the_open_ending(status, line):
-    g, _ = play("ticket stub", "open", "roof", "open")
+TEO = {"present": "Teo's chain slides back", "hurt": "you both turn toward his door", "dead": "it's still too late"}
 
-    def edit(bid, s):
+
+@pytest.mark.parametrize("f1,f2", [(a, b) for a in ("lock", "open") for b in ("basement", "roof")])
+@pytest.mark.parametrize("status", list(TEO))
+@pytest.mark.parametrize("beside", [True, False])
+def test_routes_by_teo_and_mara(f1, f2, status, beside):
+    """Every route x Teo fine/hurt/dead x Mara beside you or not: no unfilled slot, the right Teo line in
+    the open ending, and Mara's witness line exactly when she is beside the player in this night."""
+    g, views = play("ticket stub", f1, f2, "open")
+    real = g.timeline.state
+
+    def state(bid):
+        s = copy.deepcopy(real(bid))
         if bid in ("B", "D"):
             s["chars"]["teo"]["status"] = status if bid == "D" else "present"
-    _patched_states(g, edit)
-    assert line in g.ending_text("open")
+        if bid == "C":
+            here = s["chars"]["player"]["location"]
+            if beside:
+                s["chars"]["mara"]["location"] = here
+            elif s["chars"]["mara"]["location"] == here:
+                s["chars"]["mara"]["location"] = next(p for p in s["places"] if p != here)
+        return s
+    g.timeline.state = state
+    conf, ending = g.fmt(g.story["scenes"]["confrontation"]["text"]), g.ending_text("open")
+    for t in (conf, ending, g.ending_text("erase")):
+        assert not re.search(r"\{\w+\}", t), t
+    assert ("Mara has gone very still" in conf) == beside
+    assert TEO[status] in ending
+    assert sum(line in ending for line in TEO.values()) == 1
 
 
 @pytest.mark.parametrize("split", [False, True])
-def test_mara_in_the_open_ending(split):
+def test_mara_in_what_changed(split):
     g, _ = play("ticket stub", "lock", "basement", "open")
     c, d = g.timeline.state("C"), g.timeline.state("D")
     mh = g._char_where(c, "mara")
@@ -157,18 +185,38 @@ def test_mara_in_the_open_ending(split):
             s["chars"]["mara"]["location"] = pick
     _patched_states(g, edit)
     text = g.ending_text("open")
-    assert ("She is also" in text) == split and ("She looks relieved" in text) == (not split)
+    changed = " ".join(g.changed)
+    assert ("She is also" in changed) == split and ("She looks relieved" in changed) == (not split)
+    assert "She is also" not in text and "She looks relieved" not in text     # positions live in the evidence view
+
+
+@pytest.mark.parametrize("f1,f2", [("lock", "basement"), ("open", "roof")])
+def test_opening_flashbacks_never_changes_the_story(f1, f2):
+    """Reading each crossing's trace (the flashback) or skipping it produces exactly the same text."""
+    def run(read):
+        g = Game("ticket stub", 9, RandomModel(), background=False)
+        want = {"fork1": f1, "fork2": f2, "final": "open"}
+        v, out = g.view(), []
+        while v["choices"]:
+            out.append((v["scene"], v["text"], tuple(v["choices"])))
+            if read and v.get("trace"):
+                g.trace(v["trace"]["intrusion"]["intrusion_id"])
+            sc = g.story["scenes"][g.scene]
+            w = want.get(sc.get("kind"))
+            v = g.choose(next((i for i, c in enumerate(sc["choices"]) if w in (c.get("fork"), c.get("ending"))), 0))
+        return out + [(v["scene"], v["text"])]
+    assert run(True) == run(False)
 
 
 @pytest.mark.parametrize("f1,f2,end", PATHS)
-def test_no_shadow_fact_before_the_map_except_what_crossed(f1, f2, end):
+def test_no_shadow_fact_before_the_door_except_what_crossed(f1, f2, end):
     g, views = play("ticket stub", f1, f2, end)
     t = g.timeline
     b_text = t.event(g.crossings["B"]["intrusion"]["origin_event_id"]).text
     facts = {e.text for bid in ("B", "D") for e in t.branch(bid).events if e.text and len(e.text) >= 3}
     released = set()
     for v in views:
-        if v["scene"] == "map":
+        if v["scene"] == "the_other_you":
             break
         if v["kind"] == "crossing":
             released.add(b_text if v["scene"] == "crossing1" else t.event(g.crossings["D"]["intrusion"]["origin_event_id"]).text)
@@ -191,9 +239,10 @@ def test_authored_scenes_add_no_events_and_are_labelled(f1):
         v = g.choose(next((i for i, c in enumerate(sc["choices"]) if w in (c.get("fork"), c.get("ending"))), 0))
         if g.scene in ("the_other_you", "confrontation"):
             assert v["authored"] == Game.AUTHORED
-    assert counts["the_other_you"] == counts["confrontation"] == counts["final"] == counts["map"]
+    assert counts["the_other_you"] == counts["confrontation"] == counts["final"] == counts["crossing2"]
     assert [a["scene"] for a in g.authored_seen()] == ["the_other_you", "confrontation"]
-    assert all(a["label"] == "Authored scene, built from your choices and the events shown on the map." for a in g.authored_seen())
+    assert all(a["label"] == "Authored scene, built from your choices and the logged events of the other night."
+               for a in g.authored_seen())
 
 
 @pytest.mark.parametrize("f1,line", [("lock", "You locked the door. Somewhere, you didn't."),
@@ -205,9 +254,8 @@ def test_first_crossing_echoes_the_first_choice(f1, line):
 
 
 @pytest.mark.parametrize("f1", ["lock", "open"])
-def test_teo_on_the_roof_names_the_first_crossing_object(f1):
+def test_teo_on_the_roof_tells_what_the_numbers_open(f1):
     g, views = play("ticket stub", f1, "roof", "erase")
     roof = next(v for v in views if v["scene"] == f"{f1}_roof")["text"]
-    target = g.timeline.event(g.crossings["B"]["intrusion"]["origin_event_id"]).target
-    name = {"pocket": "the ticket stub", "key07": "the key's paper tag"}[target]
-    assert f"The numbers on {name}. That's the lock on 07." in roof
+    assert '"Four numbers," he calls. "I heard her say them, through the wall. In the other night. They open 07."' in roof
+    assert "He looks at your hands." not in roof and "I wasn't asking you to save me" in roof

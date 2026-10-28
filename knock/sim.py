@@ -25,9 +25,7 @@ MEANINGS = {
     "digits": ["the year someone disappeared", "a date written as month and day", "an apartment number in another building",
                "the age someone will never reach", "the last four digits of a phone number nobody answers",
                "a bus route that stopped running", "the number of days someone waited", "a locker combination"],
-    "words": ["a name", "a place in this building", "an instruction", "a name and a place",
-              "an instruction about the stairs", "a floor and a door", "someone's first name, twice",
-              "a short instruction about what to do with the key"],
+    "words": ["a message of one to three words, written to the other you"],
 }
 # A words mark is composed only from these: the building, its people, plain instructions. The shape
 # check alone let a small model write word salad ("FLOOR COOKIE C", "BASSMENT STATIC").
@@ -53,8 +51,8 @@ def words_problem(text: str) -> str | None:
     words = text.split(" ")
     if "" in words:
         return "use single spaces between whole words"
-    if not 1 <= len(words) <= 4:
-        return "write one to four words"
+    if not 1 <= len(words) <= 3:
+        return "write one to three words"
     unknown = [w for w in words if w not in MARK_WORD_SET]
     if unknown:
         return f"{' '.join(unknown)} is not one of the allowed words; use only the listed words"
@@ -150,7 +148,7 @@ def build_messages(timeline: Timeline, bid: str, spec: dict, step: dict, feedbac
         "Rules: act only where you are; give, mark or hide only what you hold; move one step to an "
         "adjacent place; a locked place needs its key.",
         f"Next event: {step['hint']}" + (f" What is written is {flavor}." if flavor else ""),
-        *([f"Write it in one to four of these words only, in capitals: {' '.join(MARK_WORDS)}."]
+        *([f"Write it in one to three of these words only, in capitals: {' '.join(MARK_WORDS)}."]
           if step.get("mark") == "words" else []),
         "Never write these: " + ", ".join(BANNED_IN_PROMPT) + ". Write something specific to this night instead.",
         "Fields: summary (what happens), actor, action, target, recipient (person receiving, for give "

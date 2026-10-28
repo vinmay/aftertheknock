@@ -142,7 +142,7 @@ def test_plural_object_agreement():
     assert not is_plural("glass") and not is_plural("bus ticket")
     g = play("lock", "roof", "open", RandomModel(), seed=6, pocket="two pennies")
     assert "when you put them in your pocket" in g.crossings["B"]["narration"]
-    assert "Your two pennies are" in g.ending["text"]
+    assert any(line.startswith("Your two pennies are") for line in g.ending["changed"])
 
 
 @pytest.mark.parametrize("f1,f2,end", PATHS[::3])
