@@ -153,3 +153,25 @@ def test_truncated_committed_speech_is_shown_with_ellipsis_but_proof_is_exact():
     raw = "…something else I don"
     assert display_speech(raw) == raw + "…"
     assert display_speech("I kept your place.") == "I kept your place."
+
+
+@pytest.mark.parametrize("text", ["FLOOR COOKIE C", "BASSMENT STATIC", "R O O F B  A S E M E N", "FLOOR   ANTICAMBER  B",
+                                  "SIXTH FLOOR  LLB", "FIVELIGHT DOOR", "BATHROOM A", "COUNT THE"])
+def test_word_salad_marks_are_rejected(text):
+    from knock.sim import words_problem
+    assert words_problem(text)
+
+
+@pytest.mark.parametrize("text", ["FIND THE COLD SPOT", "COUNT THE STAIRS", "SIXTH FLOOR DOOR", "STAIRWELL", "ASK FOR ELENA",
+                                  "DON'T OPEN UNIT SEVEN"])
+def test_readable_marks_are_accepted(text):
+    from knock.sim import FALLBACK_WORDS, words_problem
+    assert words_problem(text) is None
+    assert all(words_problem(w) is None for w in FALLBACK_WORDS)
+
+
+def test_words_mark_step_rejects_word_salad_with_a_reason():
+    from knock.sim import beat_violations
+    step = {"mark": "words"}
+    v = beat_violations(step, {"actor": "mara", "action": "mark", "target": "key07", "text": "FLOOR COOKIE C"})
+    assert v and v[0][0] == "R_BEAT" and "COOKIE C is not one of the allowed words" in v[0][1]

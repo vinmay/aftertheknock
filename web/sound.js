@@ -14,7 +14,7 @@ const Sound = {
   mix: { restore: null, power: null },          // one pending room restore; a new cue cancels it
   want: { power: true, focused: null, ending: null, scene: null },
   on: (() => { try { return localStorage.getItem("knock.sound") !== "0"; } catch { return true; } })(),
-  ROOM: 0.035, HUM: 0.007,
+  ROOM: 0.035, HUM: 0.007, ROOM_LP: 6000,       // ROOM_LP: the room's filter wide open; a duck closes it
 
   guard(fn) { try { if (this.ctx && this.on) fn.call(this, this.ctx, this.ctx.currentTime); } catch { /* silent */ } },
 
@@ -33,7 +33,7 @@ const Sound = {
       if (room) {
         clearTimeout(this.mix.restore); this.mix.restore = null;
         this.set(room.gain.gain, w.focused ? this.ROOM * 0.35 : this.ROOM, c, tau);
-        this.set(room.lp.frequency, 900, c, tau);
+        this.set(room.lp.frequency, this.ROOM_LP, c, tau);
       }
       for (const id of ["B", "D"]) {
         const level = w.focused === id ? 0.045 : w.ending === "open" ? 0.012 : 0;
@@ -108,7 +108,7 @@ const Sound = {
 
   /* The room mixer: every duck goes through here. Starting a new duck cancels the previous cue's
      pending restore, so the rain can never jump back up in the middle of a later cue. */
-  duck({ gain = 1, lp = 900 }, holdMs, restoreTau = 1.5, attackTau = 0.3) {
+  duck({ gain = 1, lp = this.ROOM_LP }, holdMs, restoreTau = 1.5, attackTau = 0.3) {
     const c = this.ctx, room = this.layers.room;
     if (!room) return;
     clearTimeout(this.mix.restore);
@@ -116,23 +116,78 @@ const Sound = {
     this.set(room.lp.frequency, lp, c, attackTau);
     this.mix.restore = setTimeout(() => {
       this.mix.restore = null;
-      try { this.set(room.gain.gain, this.want.focused ? this.ROOM * 0.35 : this.ROOM, c, restoreTau); this.set(room.lp.frequency, 900, c, restoreTau); } catch { /* silent */ }
+      try { this.set(room.gain.gain, this.want.focused ? this.ROOM * 0.35 : this.ROOM, c, restoreTau); this.set(room.lp.frequency, this.ROOM_LP, c, restoreTau); } catch { /* silent */ }
     }, holdMs);
   },
 
   /* ---- layers: room tone (rain + mains hum), and one abstract texture per shadow night */
+  /* Rain on the window, from inside: a soft wash that breathes with the wind, many small ticks on
+     the glass at random moments (each a different pitch, weight and place), and now and then a
+     heavier drip from the sill. Drops are scheduled a quarter second ahead, a few at a time. */
   startRoom() {
     const c = this.ctx;
-    const rain = this.noiseSrc(c), lp = c.createBiquadFilter(); lp.type = "lowpass"; lp.frequency.value = 900;
     const rg = c.createGain(); rg.gain.value = 0.0001;
-    rain.connect(lp).connect(rg).connect(this.master);
+    const lp = c.createBiquadFilter(); lp.type = "lowpass"; lp.frequency.value = this.ROOM_LP;
+    rg.connect(lp).connect(this.master);
+    const bed = this.noiseSrc(c);
+    const hp = c.createBiquadFilter(); hp.type = "highpass"; hp.frequency.value = 350;
+    const soft = c.createBiquadFilter(); soft.type = "lowpass"; soft.frequency.value = 2400;
+    const bg = c.createGain(); bg.gain.value = 0.12;
+    bed.connect(hp).connect(soft).connect(bg).connect(rg);
+    const wind = c.createOscillator(); wind.frequency.value = 0.06;          // a slow swell, about every 17 s
+    const wd = c.createGain(); wd.gain.value = 0.06; wind.connect(wd).connect(bg.gain); wind.start();
+    const drops = c.createGain(); drops.connect(rg);
     const hg = c.createGain(); hg.gain.value = 0.0001;
     const h1 = c.createOscillator(); h1.frequency.value = 60;
     const h2 = c.createOscillator(); h2.frequency.value = 120;
     const h2g = c.createGain(); h2g.gain.value = 0.45;
     h1.connect(hg); h2.connect(h2g).connect(hg); hg.connect(this.master);
     h1.start(); h2.start();
-    this.layers.room = { srcs: [rain, h1, h2], gain: rg, lp, hum: hg };
+    const room = { srcs: [bed, wind, h1, h2], gain: rg, lp, hum: hg, drops, tick: 0, drip: 0 };
+    room.timer = setInterval(() => this.rain(), 100);
+    this.layers.room = room;
+  },
+  rain() {
+    try {
+      const c = this.ctx, room = this.layers.room;
+      if (!c || !room || !this.on || c.state !== "running") return;     // muted or suspended: nothing to schedule
+      const now = c.currentTime, ahead = now + 0.25;
+      room.tick = Math.max(room.tick, now);
+      while (room.tick < ahead) {                                       // ~26 ticks a second, at random
+        this.drop(c, room.drops, room.tick, false);
+        room.tick += -Math.log(1 - Math.random()) / 26;
+      }
+      room.drip = Math.max(room.drip, now + 0.1);
+      while (room.drip < ahead) {                                       // a drip every half second to two seconds
+        this.drop(c, room.drops, room.drip, true);
+        room.drip += 0.45 + Math.random() * 1.5;
+      }
+    } catch { /* silent */ }
+  },
+  drop(c, bus, t, heavy) {
+    let out = bus;
+    if (c.createStereoPanner) {
+      out = c.createStereoPanner();
+      out.pan.value = heavy ? -0.45 + Math.random() * 0.25 : Math.random() * 1.6 - 0.8;
+      out.connect(bus);
+    }
+    const s = c.createBufferSource(); s.buffer = this.noise;
+    const f = c.createBiquadFilter(); f.type = "bandpass";
+    if (!heavy) {                                                       // a tick on the glass: a few ms, never the same twice
+      const dur = 0.003 + Math.random() * 0.01;
+      f.frequency.value = 2200 + Math.random() * 4500; f.Q.value = 1.5 + Math.random() * 6;
+      s.connect(f).connect(this.env(c, t, 0.35 + Math.random() ** 3 * 2.2, 0.001, 0, dur)).connect(out);
+      s.start(t, Math.random() * 1.8); this.track(s, t + dur + 0.03);
+      return;
+    }
+    // a drip from the sill: a soft hit, then a short rising "plip" as the water closes
+    f.frequency.value = 1100 + Math.random() * 600; f.Q.value = 1.2;
+    s.connect(f).connect(this.env(c, t, 1.4, 0.001, 0, 0.012)).connect(out);
+    s.start(t, Math.random() * 1.8); this.track(s, t + 0.05);
+    const o = c.createOscillator(), f0 = 520 + Math.random() * 480;
+    o.frequency.setValueAtTime(f0, t + 0.004); o.frequency.exponentialRampToValueAtTime(f0 * 2.3, t + 0.04);
+    o.connect(this.env(c, t + 0.004, 0.9 + Math.random() * 0.5, 0.002, 0.004, 0.045)).connect(out);
+    o.start(t + 0.004); this.track(o, t + 0.1);
   },
   shadowLayer(id) {
     const c = this.ctx;
@@ -184,17 +239,46 @@ const Sound = {
   },
 
   /* ---- story cues */
+  /* Three knuckle knocks on a wooden door, heard from inside the hall: a low panel thump that
+     drops in pitch, the wood's own resonances, a dull click, and a short hallway echo. */
   knock() {
     this.guard((c, now) => {
+      const hall = this.hall(c);
       let t = now + 0.3;
       for (let i = 0; i < 3; i++) {
-        const v = 1 + (Math.random() - 0.5) * 0.12;
-        const o = this.tone(c, t, 68 * v, 0.5 * v, 0.008, 0, 0.28);
-        o.frequency.setValueAtTime(68 * v, t); o.frequency.exponentialRampToValueAtTime(40, t + 0.25);
-        this.burst(c, t, 300 + Math.random() * 600, 1.2, 0.35 * v, 0.03 + Math.random() * 0.03);
-        t += 0.34 + Math.random() * 0.08;
+        this.knuckle(c, t, 1 + (Math.random() - 0.5) * 0.08, hall);
+        t += 0.31 + Math.random() * 0.05;
       }
     });
+  },
+  knuckle(c, t, v, hall) {
+    const out = c.createGain(); out.connect(this.master); if (hall) out.connect(hall);
+    const o = c.createOscillator();
+    o.frequency.setValueAtTime(140 * v, t); o.frequency.exponentialRampToValueAtTime(62 * v, t + 0.09);
+    o.connect(this.env(c, t, 0.75 * v, 0.002, 0.01, 0.17)).connect(out);
+    o.start(t); this.track(o, t + 0.3);
+    for (const [freq, q, peak, dur] of [[180, 3, 2.4, 0.13], [380, 6, 1.6, 0.1], [760, 4, 0.5, 0.04], [2600, 1, 0.12, 0.008]]) {
+      const s = c.createBufferSource(); s.buffer = this.noise;
+      const f = c.createBiquadFilter(); f.type = "bandpass"; f.frequency.value = freq * v; f.Q.value = q;
+      s.connect(f).connect(this.env(c, t, peak * v, 0.001, 0, dur)).connect(out);
+      s.start(t, Math.random() * 1.8); this.track(s, t + dur + 0.05);
+    }
+  },
+  hall(c) {                                     // a short, dark hallway echo, made once
+    try {
+      if (!this.verb && c.createConvolver) {
+        const len = Math.floor(c.sampleRate * 0.7), ir = c.createBuffer(2, len, c.sampleRate);
+        for (let ch = 0; ch < 2; ch++) {
+          const d = ir.getChannelData(ch); let lowp = 0;
+          for (let i = 0; i < len; i++) { lowp += 0.25 * ((Math.random() * 2 - 1) - lowp); d[i] = lowp * Math.exp(-i / (c.sampleRate * 0.14)); }
+        }
+        const conv = c.createConvolver(); conv.buffer = ir;
+        const wet = c.createGain(); wet.gain.value = 0.5;
+        conv.connect(wet).connect(this.master);
+        this.verb = conv;
+      }
+    } catch { this.verb = null; }
+    return this.verb;
   },
   deadbolt() {                                  // committed Lock: a heavy bolt, then the wrong silence
     this.guard((c, now) => {
@@ -210,7 +294,7 @@ const Sound = {
     this.guard((c, now) => {
       this.burst(c, now + 0.05, 1900, 3, 0.22, 0.03);
       this.burst(c, now + 0.14, 2600, 3, 0.15, 0.025);
-      this.duck({ gain: 1.4, lp: 1700 }, 5000, 2, 0.6);
+      this.duck({ gain: 1.4, lp: 12000 }, 5000, 2, 0.6);
     });
   },
   power(on) {                                   // scene field power = "out" cuts the hum at once
@@ -323,7 +407,7 @@ const Sound = {
     clearTimeout(this.mix.power); this.mix.power = null;
     try { this.live.forEach((n) => { try { n.stop(); n.disconnect(); } catch { /* already stopped */ } }); } catch { /* silent */ }
     this.live.clear();
-    Object.values(this.layers).forEach((L) => { clearTimeout(L.release); clearTimeout(L.bleed); try { L.srcs?.forEach((x) => { x.stop(); x.disconnect(); }); } catch { /* silent */ } });
+    Object.values(this.layers).forEach((L) => { clearTimeout(L.release); clearTimeout(L.bleed); clearInterval(L.timer); try { L.srcs?.forEach((x) => { x.stop(); x.disconnect(); }); } catch { /* silent */ } });
     this.layers = {};
     this.want = { power: true, focused: null, ending: null, scene: null };
   },

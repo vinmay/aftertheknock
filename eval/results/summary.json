@@ -17,28 +17,29 @@
  "replay_reproduces": "24/24 (100%)",
  "shadow_steps": {
   "total": 156,
-  "first_try": "132/156 (85%)",
-  "model_committed": "148/156 (95%)",
-  "fallback": "8/156 (5%)",
+  "first_try": "128/156 (82%)",
+  "model_committed": "146/156 (94%)",
+  "fallback": "10/156 (6%)",
   "skipped": "0/156 (0%)"
  },
  "validator": {
-  "proposals": 189,
+  "proposals": 195,
   "rejections_by_rule": {
    "R_ADJACENT": 18,
-   "R_TYPE": 7,
-   "R_REACH": 6,
-   "R_BEAT": 5,
-   "R_NOOP": 5
+   "R_BEAT": 9,
+   "R_NOOP": 9,
+   "R_REACH": 7,
+   "R_TYPE": 6
   },
-  "rejected": "41/189 (22%)"
+  "rejected": "49/195 (25%)"
  },
  "impossible_give": {
   "probe_calls": 30,
   "impossible_proposed": 30,
   "rejected": "30/30 (100%)",
   "rules": {
-   "R_HOLDS": 30
+   "R_HOLDS": 29,
+   "R_REACH": 1
   }
  },
  "narration": {
@@ -57,33 +58,33 @@
   "lock/basement": {
    "runs": 6,
    "distinct_chains": 6,
-   "mean_pairwise_event_overlap_jaccard": 0.23
+   "mean_pairwise_event_overlap_jaccard": 0.26
   },
   "lock/roof": {
    "runs": 6,
    "distinct_chains": 6,
-   "mean_pairwise_event_overlap_jaccard": 0.31
+   "mean_pairwise_event_overlap_jaccard": 0.32
   },
   "open/basement": {
    "runs": 6,
    "distinct_chains": 6,
-   "mean_pairwise_event_overlap_jaccard": 0.3
+   "mean_pairwise_event_overlap_jaccard": 0.27
   },
   "open/roof": {
    "runs": 6,
    "distinct_chains": 6,
-   "mean_pairwise_event_overlap_jaccard": 0.41
+   "mean_pairwise_event_overlap_jaccard": 0.44
   }
  },
  "performance": {
-  "model_call_latency_p50_s": 1.58,
-  "model_call_latency_p95_s": 2.16,
-  "shadow_sim_p50_s": 5.8,
-  "shadow_sim_p95_s": 8.63,
-  "crossing_scene_p50_s": 6.33,
-  "crossing_scene_p95_s": 9.21,
+  "model_call_latency_p50_s": 1.83,
+  "model_call_latency_p95_s": 2.96,
+  "shadow_sim_p50_s": 7.43,
+  "shadow_sim_p95_s": 12.58,
+  "crossing_scene_p50_s": 8.13,
+  "crossing_scene_p95_s": 13.19,
   "crossing_note": "time from click to crossing text with no reading pause; includes waiting for the shadow",
-  "model_calls_per_playthrough_mean": 9.9,
-  "tokens_per_playthrough_mean": 5694
+  "model_calls_per_playthrough_mean": 10.2,
+  "tokens_per_playthrough_mean": 6143
  }
 }

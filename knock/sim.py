@@ -29,6 +29,40 @@ MEANINGS = {
               "an instruction about the stairs", "a floor and a door", "someone's first name, twice",
               "a short instruction about what to do with the key"],
 }
+# A words mark is composed only from these: the building, its people, plain instructions. The shape
+# check alone let a small model write word salad ("FLOOR COOKIE C", "BASSMENT STATIC").
+MARK_WORDS = """
+MARA TEO ELENA ELIAS NORA RUTH VICTOR
+ROOF ROOFTOP BASEMENT STAIRWELL STAIRS STAIR STEP STEPS HALL DOOR DOORS ROOM UNIT CAGE FLOOR LANDING
+WINDOW LIGHT LIGHTS KEY TAG LOCK PADLOCK STORM RAIN WATER PIPES COLD SPOT DARK NIGHT NAME BELL CLOCK
+CHAIR APARTMENT BUILDING ELEVATOR LOBBY
+COUNT FIND LEAVE ASK OPEN CLOSE KEEP WAIT STAY TRUST LISTEN GO COME TURN HIDE TAKE GIVE BRING KNOCK
+ANSWER CALL REMEMBER FORGET WATCH LOOK SAY TELL LET SIT SLEEP
+ONE TWO THREE FOUR FIVE SIX SEVEN EIGHT NINE TEN FIRST SECOND THIRD FOURTH FIFTH SIXTH SEVENTH
+EIGHTH NINTH TENTH LAST NEXT
+THE A AN TO FOR OF ON IN UP DOWN AT BY FROM WITH AND OR NOT NO NEVER ALWAYS ONLY AGAIN TWICE ONCE
+NOW HERE THERE BACK UNLOCKED LOCKED SHUT LEFT RIGHT SAME OTHER ALONE INSIDE OUTSIDE BELOW ABOVE STILL
+DON'T IT HER HIM ME YOU US THEM SHE HE I WE IS WAS ARE MY YOUR
+""".split()
+MARK_WORD_SET = set(MARK_WORDS)
+DANGLING = {"THE", "A", "AN", "TO", "FOR", "OF", "ON", "IN", "AT", "BY", "FROM", "WITH", "AND", "OR", "MY", "YOUR", "NOT"}
+
+
+def words_problem(text: str) -> str | None:
+    """Why a words mark is not a readable phrase from this night, or None."""
+    words = text.split(" ")
+    if "" in words:
+        return "use single spaces between whole words"
+    if not 1 <= len(words) <= 4:
+        return "write one to four words"
+    unknown = [w for w in words if w not in MARK_WORD_SET]
+    if unknown:
+        return f"{' '.join(unknown)} is not one of the allowed words; use only the listed words"
+    if words[-1] in DANGLING:
+        return f"the phrase cannot end on {words[-1]}"
+    return None
+
+
 FALLBACK_WORDS = ["ASK FOR ELENA", "SIXTH STEP DOWN", "LEAVE IT UNLOCKED", "ROOM SEVEN AGAIN", "COUNT THE STAIRS"]
 # Shown to the model; the full list (knock.narrator.BANNED_PHRASES) is enforced at validation.
 BANNED_IN_PROMPT = ["HELP ME", "GET OUT", "YOU'RE NEXT", "RUN", "BEHIND YOU", "IT'S NOT OVER", "DON'T LOOK BACK"]
@@ -116,6 +150,8 @@ def build_messages(timeline: Timeline, bid: str, spec: dict, step: dict, feedbac
         "Rules: act only where you are; give, mark or hide only what you hold; move one step to an "
         "adjacent place; a locked place needs its key.",
         f"Next event: {step['hint']}" + (f" What is written is {flavor}." if flavor else ""),
+        *([f"Write it in one to four of these words only, in capitals: {' '.join(MARK_WORDS)}."]
+          if step.get("mark") == "words" else []),
         "Never write these: " + ", ".join(BANNED_IN_PROMPT) + ". Write something specific to this night instead.",
         "Fields: summary (what happens), actor, action, target, recipient (person receiving, for give "
         "only, else \"\"), text (words spoken or written, else \"\").",
@@ -199,6 +235,8 @@ def beat_violations(step: dict, p: dict, decision=None, state: dict | None = Non
             out.append(("R_BEAT", "this step must be a mark"))
         elif not re.fullmatch(pat, p.get("text") or ""):
             out.append(("R_BEAT", f"mark text {p.get('text')!r} does not match {pat}"))
+        elif step["mark"] == "words" and words_problem(p["text"]):
+            out.append(("R_BEAT", f"mark text {p['text']!r}: {words_problem(p['text'])}"))
         elif step["mark"] == "digits" and trivial_code(p["text"]):
             out.append(("R_BEAT", f"{p['text']} is too obvious; choose digits that mean something to the writer"))
     return out
