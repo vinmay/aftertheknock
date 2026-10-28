@@ -133,6 +133,22 @@ $("#start").addEventListener("focusin", () => document.body.classList.add("typin
 $("#start").addEventListener("focusout", () => setTimeout(() => {
   if (!$("#start").contains(document.activeElement)) document.body.classList.remove("typing");
 }, 300));
+/* Dismissing the on-screen keyboard (Done, back, swipe) usually leaves the field focused, so blur alone
+   never fires. Watch the keyboard instead: the visual viewport shrinks when it opens and grows back when
+   it closes. On close, let go of the field: the full landing returns, and the next tap starts again. */
+if (window.visualViewport) {
+  const vv = window.visualViewport;
+  let base = vv.height, keyboard = false;
+  vv.addEventListener("resize", () => {
+    if (!document.body.classList.contains("typing")) { base = vv.height; keyboard = false; return; }
+    if (base - vv.height > 120) keyboard = true;
+    else if (keyboard) {
+      keyboard = false;
+      if ($("#start").contains(document.activeElement)) document.activeElement.blur();
+      document.body.classList.remove("typing");
+    }
+  });
+}
 /* The peephole warms while there is something in the pocket field, and cools when it's cleared. */
 $("#pocket").addEventListener("input", (ev) => $(".door")?.classList.toggle("warm", ev.target.value.trim() !== ""));
 ["mouseenter", "focus"].forEach((ev) => $("#begin").addEventListener(ev, () => $(".door")?.classList.add("lit")));
