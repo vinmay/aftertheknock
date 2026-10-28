@@ -16,6 +16,21 @@ ACTIONS = ("move", "speak", "give", "take", "mark", "open", "hide", "discover", 
 PROPOSAL_FIELDS = ("actor", "action", "target", "to", "text", "summary")
 MAX_MARK = 24
 MAX_SPEECH = 120
+SPEECH_SCHEMA_MAX = 60          # the model-facing JSON schema's maxLength for "text" (unchanged)
+TERMINAL = (".", "!", "?", "\u2026", "\"", "\u201d", "'", "\u2019")
+# Contraction stems a cut-off line tends to end on: "I don", "we can", "it wasn".
+UNFINISHED = {"don", "didn", "doesn", "can", "couldn", "won", "wouldn", "shouldn", "isn", "wasn", "aren",
+              "weren", "haven", "hasn", "hadn", "ain", "i", "a", "an", "the", "to", "and", "of", "my", "your"}
+
+
+def looks_truncated(text: str, limit: int = SPEECH_SCHEMA_MAX) -> bool:
+    """A spoken line that stopped mid-sentence: it hit the length limit without ending, or it
+    ends on a word that can't end a sentence (an unfinished contraction such as "I don")."""
+    t = (text or "").strip()
+    if not t or t.endswith(TERMINAL):
+        return False
+    last = t.split()[-1].lower().strip(",;:-\u2014")
+    return len(t) >= limit - 1 or last in UNFINISHED or t.endswith(("'", "\u2019", "-", ","))
 
 
 @dataclass
@@ -145,7 +160,8 @@ def validate(state: dict, proposal: dict, *, frozen: bool = False) -> Decision:
             c.pre.append(f"{actor} speaks aloud in {here}")
         if aloud or (tkind != "places" and need_kind("chars") and colocated_char(target)):
             if c.need(bool(text), "R_TEXT", "speak needs text") and \
-               c.need(len(text) <= MAX_SPEECH, "R_TEXT", f"speech longer than {MAX_SPEECH} chars"):
+               c.need(len(text) <= MAX_SPEECH, "R_TEXT", f"speech longer than {MAX_SPEECH} chars") and \
+               c.need(not looks_truncated(text), "R_TEXT", "the line stops mid-sentence. Finish the sentence in fewer words."):
                 delta.append(["append", f"chars.{actor}.said", text])
 
     elif action == "give":

@@ -53,7 +53,7 @@ def build(out: Path) -> None:
     if out.exists():
         shutil.rmtree(out)
     (out / "replays").mkdir(parents=True)
-    for name in ("app.js", "style.css"):
+    for name in ("app.js", "causal.js", "sound.js", "style.css"):
         shutil.copy(WEB / name, out / name)
     html = (WEB / "index.html").read_text()
     assert '<script src="app.js"></script>' in html

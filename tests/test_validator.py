@@ -130,3 +130,26 @@ def test_speak_aloud_only_where_you_are(s):
     assert validate(s, {"actor": "mara", "action": "speak", "target": "hall", "text": "Hello."}).accepted
     d = validate(s, {"actor": "mara", "action": "speak", "target": "roof", "text": "Hello."})
     assert d.rules == ["R_REACH"] and "to speak aloud, the target is hall" in d.violations[0][1]
+
+
+@pytest.mark.parametrize("text", ["…something else I don", "I kept the key for you, and something else I don",
+                                  "The damp air carries things you shouldn't look for tonight a"])
+def test_truncated_speech_is_rejected(s, text):
+    from knock.validator import looks_truncated
+    assert looks_truncated(text)
+    d = validate(s, {"actor": "mara", "action": "speak", "target": "hall", "text": text})
+    assert d.rules == ["R_TEXT"] and "Finish the sentence in fewer words." in d.violations[0][1]
+
+
+@pytest.mark.parametrize("text", ["I kept your place.", "Leave the light off", "Count the stairs on the way down.",
+                                  "“You already let me in.”", "Wait.", "Leave it",
+                                  "I'll find you"])
+def test_finished_speech_is_accepted(s, text):
+    assert validate(s, {"actor": "mara", "action": "speak", "target": "hall", "text": text}).accepted
+
+
+def test_truncated_committed_speech_is_shown_with_ellipsis_but_proof_is_exact():
+    from knock.describe import display_speech
+    raw = "…something else I don"
+    assert display_speech(raw) == raw + "…"
+    assert display_speech("I kept your place.") == "I kept your place."

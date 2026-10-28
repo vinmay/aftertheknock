@@ -216,3 +216,31 @@ def test_material_classification():
         assert material_of(pocket_info(raw)[0]) == kind, raw
     for raw in ("nothing", "regret"):
         assert material_of(pocket_info(raw)[0]) == "paper"      # the ticket stub fallback
+
+
+@pytest.mark.parametrize("pocket,material", [("bus ticket", "paper"), ("wedding ring", "metal"), ("guitar pick", "small"),
+                                             ("spoon", "unknown"), ("two pennies", "metal")])
+@pytest.mark.parametrize("f1", ["lock", "open"])
+def test_unit07_duplicate_matches_the_material(pocket, material, f1):
+    """Both routes into unit 07 (locked door and opened door, then the basement) describe the old copy
+    by what it is made of; a ring never has a crease, a pick never has ink."""
+    g = Game(pocket, 3, RandomModel(), background=False)
+    assert g.material == material
+    want = {"fork1": f1, "fork2": "basement", "final": "erase"}
+    seen = {}
+    v = g.view()
+    while v["choices"]:
+        seen[g.scene] = v["text"]
+        sc = g.story["scenes"][g.scene]
+        w = want.get(sc.get("kind"))
+        v = g.choose(next((k for k, c in enumerate(sc["choices"]) if w in (c.get("fork"), c.get("ending"))), 0))
+    text = seen["unit07_open"]
+    assert "{" not in text and "old, and dry" in text and "waiting here for years" in text
+    marker = {"paper": "worn corner", "metal": "nick along one edge", "small": "chipped edge", "unknown": "small flaw"}[material]
+    assert marker in text
+    if material != "paper":
+        assert not re.search(r"\b(crease|ink|handwriting|paper|fold|written)\b", text.split("Inside 07")[1], re.I), text
+    if g.plural:
+        assert f"On the seat lie {g.pocket}." in text and "as if they have been" in text
+    else:
+        assert re.search(rf"On the seat lies an? {g.pocket}\.", text)

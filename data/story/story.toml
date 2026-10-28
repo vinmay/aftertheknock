@@ -6,6 +6,13 @@
 
 start = "opening"
 
+# Unit 07 holds an older copy of the player's object. What gives it away depends on what it is made of.
+[unit07_flaw]
+paper = "Yours: the same crease, the same worn corner. But old, and dry, as if {it_has} been waiting here for years. The ink on {it} has faded almost to nothing."
+metal = "Yours: the same nick along one edge. But old, and dry, the finish gone dull, as if {it_has} been waiting here for years. The engraving has worn almost smooth."
+small = "Yours: the same chipped edge, the same pale scuff. But old, and dry, as if {it_has} been waiting here for years. The scratches have worn nearly away."
+unknown = "Yours: the same small flaw you would know anywhere. But old, and dry, as if {it_has} been waiting here for years. Whatever marked {it} has worn nearly away."
+
 # The one tactile mention of the pocket object before the knock. "abstract" covers inputs
 # you can't hold ("regret", "a promise"): they become the same fallback object as an empty pocket.
 [pocket_lines]
@@ -231,7 +238,7 @@ The dials are cold and stiff. {digits}.
 
 The shackle drops open with a sound like a held breath let go.
 
-Inside 07 there is a folding chair, facing the door. On the seat lies a {pocket}. Yours: the same crease, the same small stain. But old, and dry, as if it has been waiting here for years. Whatever was written on it has faded almost to nothing.
+Inside 07 there is a folding chair, facing the door. {on_the_seat} {unit07_flaw}
 
 Mara doesn't go in. "That's what's in 07," she says. "Every time."
 """

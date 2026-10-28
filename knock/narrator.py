@@ -26,6 +26,9 @@ BANNED_PHRASES = ("help me", "get out", "you're next", "youre next", "it's not o
                   "watch out", "too late", "behind you", "run while you can", "run", "you will die",
                   "die", "kill", "blood")
 MAX_COLOR = 160
+REPEAT_OVERLAP = 0.5        # share of content words two color sentences may have in common
+STOP = {"the", "a", "an", "and", "of", "to", "in", "on", "at", "your", "you", "it", "its", "is", "are", "as",
+        "with", "from", "into", "then", "through", "against", "over", "by", "for", "like", "that", "this"}
 
 
 def normalize(text: str) -> str:
@@ -35,6 +38,18 @@ def normalize(text: str) -> str:
 def banned_in(text: str) -> list[str]:
     t = normalize(text)
     return [p for p in BANNED_PHRASES if re.search(rf"(?<![a-z']){re.escape(p)}(?![a-z'])", t)]
+
+
+def _words(text: str) -> set[str]:
+    return {w.rstrip("s") for w in re.findall(r"[a-z']+", normalize(text)) if w not in STOP}
+
+
+def near_duplicate(text: str, previous: str | None) -> bool:
+    """Too close to the previous crossing's sentence: most of the smaller one's content words recur."""
+    if not previous:
+        return False
+    a, b = _words(text), _words(previous)
+    return bool(a and b) and len(a & b) / min(len(a), len(b)) >= REPEAT_OVERLAP
 
 
 def canonical_view(timeline: Timeline, bid: str) -> dict:
@@ -116,12 +131,14 @@ def template_parts(m: dict, templates: dict, pocket: str, style: str = "paper") 
             "inscription": m["text"], "after": _fill(t["after"], slots), "who": _fill(who, slots)}
 
 
-def build_messages(m: dict) -> list[dict]:
+def build_messages(m: dict, avoid: str | None = None) -> list[dict]:
     with_you = ", ".join(CHAR_NAMES[c] for c in m["with_you"] if c in CHAR_NAMES) or "no one"
     user = (f"Where you are: {m['place']}. With you: {with_you}. The power is out; the only light is the "
             f"storm's. Something impossible has just happened, and you have gone very still.\n"
             f"Write ONE short sentence (under 20 words) about what you sense in the room. "
             f"No names, no numbers, no quotes, no words in ALL CAPS, and don't explain anything.")
+    if avoid:
+        user += f"\nDo not repeat the last one, or its images: {avoid}"
     return [{"role": "system", "content": SYSTEM}, {"role": "user", "content": user}]
 
 
@@ -157,12 +174,12 @@ def compose(parts: dict, color: str | None) -> str:
 
 
 def narrate_crossing(timeline: Timeline, x: Intrusion, model, pocket: str, seed: int, log=None,
-                     templates: dict | None = None, style: str = "paper") -> dict:
+                     templates: dict | None = None, style: str = "paper", avoid: str | None = None) -> dict:
     view = canonical_view(timeline, x.target_branch)
     oid = _crossing_fact([f for f in view["released"] if f in x.released])[0]
     m = moment(view, x, seen_before(timeline, x, oid))
     parts = template_parts(m, templates, pocket, style)
-    msgs = build_messages(m)
+    msgs = build_messages(m, avoid)
     raw, color = None, None
     for attempt in range(2):
         transport = None
@@ -174,6 +191,9 @@ def narrate_crossing(timeline: Timeline, x: Intrusion, model, pocket: str, seed:
         except Exception as exc:
             model_text, meta = "", {"error": repr(exc)}
         problems = check(model_text) if transport is None else [f"TRANSPORT: {transport}"]
+        repeat = transport is None and not problems and near_duplicate(model_text, avoid)
+        if repeat:
+            problems = ["C_REPEAT: too close to the last crossing's sentence"]
         if raw is None:
             raw = {"text": model_text, "problems": problems}
         if log is not None:
@@ -183,8 +203,8 @@ def narrate_crossing(timeline: Timeline, x: Intrusion, model, pocket: str, seed:
             if transport is not None:
                 rec["transport"] = transport
             log.add(**rec)
-        if transport is not None:
-            break                                   # the provider is down: hand-written lines only, no wait
+        if transport is not None or repeat:
+            break                                   # provider down, or a repeat: hand-written lines only, no extra call
         if not problems:
             color = model_text
             break

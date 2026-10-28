@@ -97,37 +97,37 @@ Model: gemma4:e2b Q4_K_M, 24 live playthroughs (every fork path), raw logs in `e
 | Intrusions revealing a post-fork fact | 48/48 (100%) |
 | Intrusions with valid origin event | 48/48 (100%) |
 | Replays reproducing every state hash | 24/24 (100%) |
-| Shadow events accepted on the model's first proposal | 140/156 (90%) |
+| Shadow events accepted on the model's first proposal | 132/156 (85%) |
 | Shadow events committed from the model | 148/156 (95%) |
-| Shadow events from hand-written fallback | 6/156 (4%) |
-| Proposals rejected by the validator | 35/183 (19%) |
+| Shadow events from hand-written fallback | 8/156 (5%) |
+| Proposals rejected by the validator | 41/189 (22%) |
 | Deliberate impossible give rejected | 30/30 (100%) |
-| Model's atmosphere sentence failing rule checks (first attempt) | 0/48 (0%) |
+| Model's atmosphere sentence failing rule checks (first attempt) | 1/48 (2%) |
 | Crossings that kept a model sentence (rest: hand-written lines only) | 48/48 (100%) |
 | Narration contradictions, hand-labeled | not labeled |
 | Intrusion accuracy, hand-labeled | not labeled |
-| Model call latency p50 / p95 | 1.64 s / 2.28 s |
-| Whole shadow timeline p50 / p95 | 5.79 s / 8.48 s |
-| Model calls per playthrough (mean) | 9.6 |
-| Tokens per playthrough (mean) | 5398 |
+| Model call latency p50 / p95 | 1.58 s / 2.16 s |
+| Whole shadow timeline p50 / p95 | 5.8 s / 8.63 s |
+| Model calls per playthrough (mean) | 9.9 |
+| Tokens per playthrough (mean) | 5694 |
 
 Variation (same choices, different seeds):
 
 | Path | Runs | Distinct event chains | Mean pairwise overlap (Jaccard) |
 |---|---|---|---|
-| lock/basement | 6 | 6 | 0.21 |
-| lock/roof | 6 | 6 | 0.23 |
-| open/basement | 6 | 6 | 0.25 |
+| lock/basement | 6 | 6 | 0.23 |
+| lock/roof | 6 | 6 | 0.31 |
+| open/basement | 6 | 6 | 0.3 |
 | open/roof | 6 | 6 | 0.41 |
 
-Rejections by rule: R_ADJACENT 18, R_NOOP 9, R_REACH 6, R_TYPE 2.
+Rejections by rule: R_ADJACENT 18, R_TYPE 7, R_REACH 6, R_BEAT 5, R_NOOP 5.
 
 Notes on these numbers:
 
-- A *shadow step* is one shadow event: up to three model proposals, then a hand-written fallback. 2 of 156 steps were skipped (the model failed and no fallback fitted the state). Every shadow still ended with its committed crossing.
+- A *shadow step* is one shadow event: up to three model proposals, then a hand-written fallback. 0 of 156 steps were skipped (the model failed and no fallback fitted the state). Every shadow still ended with its committed crossing.
 - "Rejected" counts proposals stopped by the validator or by a story-beat check (`R_BEAT`, which includes banned phrases). A rejected proposal never changes state.
 - The crossing text is hand-written around the committed facts. The atmosphere-sentence rows measure only the model's optional extra sentence, which is rule-checked. That doesn't prove the sentence never contradicts anything; hand labels go in `eval/labels/` and show as "not labeled" until a person fills them in.
-- Time from the click to the crossing, with no reading pause at all: p50 6.31 s, p95 9.01 s. In real play the shadow runs while you read the scenes before it.
+- Time from the click to the crossing, with no reading pause at all: p50 6.33 s, p95 9.21 s. In real play the shadow runs while you read the scenes before it.
 <!-- RESULTS:END -->
 
 ### Hosted model, reported separately

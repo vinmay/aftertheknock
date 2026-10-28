@@ -6,6 +6,13 @@ The model's own summary is kept and shown, labeled, but this is what the map tre
 from __future__ import annotations
 
 from .narrator import CHAR_NAMES
+from .validator import looks_truncated
+
+
+def display_speech(text: str) -> str:
+    """For display only: a committed line that was cut off ends in an ellipsis. The proof keeps it exact."""
+    t = (text or "").rstrip()
+    return t + "\u2026" if looks_truncated(t) else t
 
 
 def who(cid: str, shadow: bool) -> str:
@@ -56,8 +63,8 @@ def describe(e: dict, state: dict, pocket: str, style_for=None) -> str:
         return f"{a} went to {t}."
     if act == "speak":
         if e["target"] in state["places"]:
-            return f'{a} said aloud: "{e["text"]}"'
-        return f'{a} said to {t}: "{e["text"]}"'
+            return f'{a} said aloud: "{display_speech(e["text"])}"'
+        return f'{a} said to {t}: "{display_speech(e["text"])}"'
     if act == "give":
         return f"{a} gave {t} to {who(e['to'], shadow)}."
     if act == "take":

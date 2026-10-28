@@ -222,3 +222,28 @@ def test_basement_digits_open_unit07(f1):
     unlock = next(e for e in g.timeline.branch("C").events if ["set", "places.unit07.locked", False] in [list(d) for d in e.state_delta])
     assert unlock.evidence_refs == (g.crossings["B"]["intrusion"]["manifestation_event_id"],)
     assert digits in unlock.summary
+
+
+@pytest.mark.parametrize("second,kept", [
+    ("The rain ticks against the window, then goes silent.", False),       # the same images again
+    ("Somewhere below, a pipe knocks once and settles.", True),
+])
+def test_second_color_sentence_never_repeats_the_first(second, kept):
+    """The second crossing's prompt names the first sentence to avoid; a near-repeat is dropped
+    without another model call."""
+    first = "The rain ticks against the window, then goes quiet."
+    g = Game("bus ticket", 5, ScriptedModel([]), narrator_model=ScriptedModel([first, second, "spare"]), background=False)
+    want = {"fork1": "lock", "fork2": "roof", "final": "open"}
+    v = g.view()
+    while v["choices"]:
+        sc = g.story["scenes"][g.scene]
+        w = want.get(sc.get("kind"))
+        v = g.choose(next((i for i, c in enumerate(sc["choices"]) if w in (c.get("fork"), c.get("ending"))), 0))
+    assert g.crossings["B"]["parts"]["color"] == first
+    assert first in g.crossings["D"]["prompt"][-1]["content"]
+    assert first not in g.crossings["B"]["prompt"][-1]["content"]
+    assert g.crossings["D"]["parts"]["color"] == (second if kept else None)
+    calls = [r for r in g.log.records if r["kind"] == "narration" and r["branch"] == "C"]
+    assert len(calls) == 1
+    if not kept:
+        assert calls[0]["problems"][0].startswith("C_REPEAT")

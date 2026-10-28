@@ -15,7 +15,7 @@ from .state import STORY_DIR, INACTIVE, apply_delta
 from .engine import crossed_objects
 from .models import TransportError
 from .narrator import banned_in
-from .validator import ACTIONS
+from .validator import ACTIONS, SPEECH_SCHEMA_MAX
 
 MAX_ATTEMPTS = 3
 WORDS_PATTERN = "^[A-Z][A-Z' ]{2,22}$"
@@ -112,6 +112,7 @@ def build_messages(timeline: Timeline, bid: str, spec: dict, step: dict, feedbac
         "(or, for speak, the place you are in, to say something aloud). "
         "take = get an object from someone with you; give = hand an object you hold to the recipient; "
         "mark = write text on an object you hold.",
+        "Spoken lines: one complete sentence, under 45 characters.",
         "Rules: act only where you are; give, mark or hide only what you hold; move one step to an "
         "adjacent place; a locked place needs its key.",
         f"Next event: {step['hint']}" + (f" What is written is {flavor}." if flavor else ""),
@@ -134,7 +135,7 @@ def step_schema(state: dict, step: dict, crossed: set[str] = frozenset()) -> dic
         "action": {"enum": list(step.get("actions", ACTIONS))},
         "target": {"enum": ids},
         "recipient": {"enum": [""] + list(state["chars"])},
-        "text": {"type": "string", "maxLength": 60},
+        "text": {"type": "string", "maxLength": SPEECH_SCHEMA_MAX},
     }
     if step.get("mark"):
         held = {o: v["holder"] for o, v in state["objects"].items()

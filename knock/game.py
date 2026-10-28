@@ -8,7 +8,7 @@ import time
 import tomllib
 import uuid
 
-from .describe import describe, display_name
+from .describe import describe, display_name, display_speech
 from .engine import Timeline
 from .narrator import CHAR_NAMES, narrate_crossing
 from .sim import RunLog, load_shadows, pick_origin, simulate_shadow
@@ -140,6 +140,11 @@ class Game:
 
     def fmt(self, text: str) -> str:
         text = text.replace("{pocket_line}", self.pocket_line())
+        if "{unit07_flaw}" in text:
+            a = "" if self.plural else ("an " if self.pocket[:1] in "aeiou" else "a ")
+            text = text.replace("{on_the_seat}", f"On the seat {'lie' if self.plural else 'lies'} {a}{self.pocket}.")
+            flaw = self.story["unit07_flaw"].get(self.material, self.story["unit07_flaw"]["unknown"])
+            text = text.replace("{unit07_flaw}", flaw.replace("{it_has}", "they have" if self.plural else "it has"))
         text = text.replace("{it}", "them" if self.plural else "it")
         text = text.replace("{pocket}", self.pocket)
         if "B" in self.crossings:
@@ -208,7 +213,8 @@ class Game:
         t0 = time.perf_counter()
         oid = self.timeline.event(x.origin_event_id).target
         narration = narrate_crossing(self.timeline, x, self.narrator_model, self.pocket, self.seed, self.log,
-                                     self.story["crossings"], style=self.style_for(oid))
+                                     self.story["crossings"], style=self.style_for(oid),
+                                     avoid=next((c["parts"].get("color") for c in self.crossings.values()), None))
         narration["parts"]["material"] = self.material_for(oid)
         self.crossings[shadow] = {"intrusion": x.to_dict(), "narration": narration["text"],
                                   "parts": narration["parts"],
@@ -447,7 +453,8 @@ class Game:
                      "on": display_name(e.target, self.pocket, "on") if is_obj else "",
                      "it": ("them" if plural else "it") if is_obj else "",
                      "place": places[e.target]["name"] if e.target in places else "",
-                     "text": e.text, "from": f" from {name(prev)}" if prev else ""}
+                     "text": display_speech(e.text) if e.action == "speak" else e.text,
+                     "from": f" from {name(prev)}" if prev else ""}
             line = tmpl[key]
             for k, v in slots.items():
                 line = line.replace("{" + k + "}", v)
