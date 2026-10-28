@@ -541,3 +541,22 @@ body.instant-text .stage-color, body.instant-text .trace-hint { opacity: 1 !impo
 .ev-head { position: sticky; top: -2.5rem; z-index: 3; background: #0b0a09; padding: 0.4rem 0 0.6rem; }
 .evidence { top: 3.4rem; padding-top: 0 !important; border-top: 1px solid var(--faint); }
 .ev-head { top: 0; padding-top: 0.9rem; }
+
+/* Landing as a title card: the door, the name in spaced capitals and the tagline form one centred
+   mark; the hook below it is the first scene (the in-game clock, then the line); then the question. */
+#title { text-align: center; }
+#title .door { margin: 0 auto -1.2rem; }
+#title h1 { text-transform: uppercase; letter-spacing: 0.32em; padding-left: 0.32em; font-size: 1.7rem; margin: 2.4rem 0 0.6rem; }
+#title .tagline { font-size: 1rem; line-height: 1.5; color: #8f877b; margin: 0 auto 2.6rem; }
+#title .hook { color: var(--ink); font-size: 1.05rem; max-width: 30rem; margin: 0 auto 0.6rem; }
+#title .hook .clock { display: block; font-family: var(--mono); font-size: 0.72rem; letter-spacing: 0.12em; text-transform: uppercase; color: var(--muted); margin-bottom: 0.4rem; }
+#title form { max-width: 30rem; margin-left: auto; margin-right: auto; }
+#title label { display: block; }
+#title input { text-align: center; }
+#title form .cta { justify-self: center; }
+#title .replays { text-align: left; max-width: 34rem; margin-left: auto; margin-right: auto; }
+#title .replays > p { text-align: center; }
+@media (max-width: 40rem) {
+  #title h1 { font-size: 1.2rem; letter-spacing: 0.22em; padding-left: 0.22em; margin-top: 1.6rem; }
+  #title .tagline { font-size: 0.95rem; margin-bottom: 2rem; }
+}
