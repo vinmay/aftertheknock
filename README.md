@@ -81,7 +81,7 @@ flowchart LR
 
 **Banned phrases.** Horror clichés such as "HELP ME", "GET OUT", "YOU'RE NEXT", "RUN" and "BEHIND YOU" are rejected (`R_BEAT`) wherever the model writes text, both in shadow proposals and in the atmosphere sentence. The words on the second object are steered instead by a seeded meaning: a name, a place in the building, an instruction.
 
-**Endings agree with committed state.** Every sentence in an ending about where an object is comes from that object's committed final holder in your night and in the other night. When the two differ, the ending says so outright ("The brass key is at your feet. In the other night, it is in Mara's hand. Both are true now."). A test checks this over every recorded and evaluated run, and another checks that no internal identifier ever reaches player-facing text. "Verify this run", after the ending, re-runs the night's log through the engine and compares every timeline's state hash.
+**Endings agree with committed state.** Every sentence in an ending about where an object is comes from that object's committed final holder in your night and in the other night. When the two differ, the ending says so outright ("The brass key is at your feet. In the other night, it is in Mara's hand. Both are true now."). A test checks this over every recorded and evaluated run, and another checks that no internal identifier ever reaches player-facing text. In the evidence panel, "Re-run this night through the engine" feeds the night's log back through the engine and compares every timeline's state hash. The replay site has no engine in the browser, so there each recording is re-run when the site is built, and the build fails if one does not reproduce.
 
 **Reproducible.** Each run records the seed, model and quantization, a hash of every prompt, every proposal and validator decision, and every committed event. Replaying a log through the engine reproduces every timeline's state hash. The test suite checks this, and checks that a tampered log fails.
 
@@ -190,7 +190,7 @@ The same open-weight family runs in both live modes. Gemma 4 E2B runs locally on
 
 ## Recording the demo
 
-`scripts/demo` serves the recommended recorded night with no model, identical on every take, and prints the steps. The path is: lock the door → the first mark appears on the receipt → open its flashback → the map lights the first crossing's thread → after the ending, **Verify this run**. `scripts/demo --live` plays the same choices live with a fixed seed instead.
+`scripts/demo` serves the recommended recorded night with no model, identical on every take, and prints the steps. The path is: lock the door → the first mark appears on the receipt → open its flashback → the map lights the first crossing's thread → after the ending, open **evidence** and **Re-run this night through the engine**. `scripts/demo --live` plays the same choices live with a fixed seed instead.
 
 ## Tests
 

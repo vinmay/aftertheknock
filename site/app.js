@@ -36,7 +36,6 @@ async function staticApi(path, body) {
     return { log: d.log.slice(0, d.steps[Static.step].log_len), ops: d.ops, model: d.model, seed: d.seed,
              crossings: d.map.intrusions.slice(0, seen).map((x) => x.memory) };
   }
-  if (route === "/api/verify") return { verified: true, hashes: d.state_hashes, replayed: d.state_hashes, against: "recording, when this site was built" };
   throw new Error("not available in the static replay");
 }
 
@@ -268,7 +267,6 @@ async function show(v) {
   if (v.kind === "ending") {
     ch.classList.add("afterword");
     [["Explore the nights you didn't live", () => openMap()],
-     ["Verify this run", () => openVerify()],
      ["Begin another night", () => (location.href = location.pathname)]].forEach(([label, fn], i) => {
       const b = document.createElement("button");
       b.innerHTML = `<span class="num">${i + 1}</span>${esc(label)}`;
@@ -358,9 +356,6 @@ function setClock(t) {
 const REDUCED = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 
 /* Props: SVG only. The inscription is drawn last, in a hand, over the printed object. */
-function inscriptionSize(text, room = 380) {
-  return Math.max(22, Math.min(64, Math.round(room / Math.max(text.length, 5))));
-}
 /* Props by material (decided by the server from what the player typed): paper is written on,
    metal is engraved, small hard things are scratched, anything else is an honest close-up. */
 function propSvg(c) {
@@ -372,6 +367,21 @@ function propSvg(c) {
   return paperSvg(c);
 }
 function noun() { return (S.pocket || "").toLowerCase().split(" ").pop(); }
+/* A mark sits inside the object's face: sized to fit `width` (a hand runs about 0.55 em per letter),
+   and squeezed to that width if even the smallest size would overrun it. */
+function markFit(text, width, max, min = 12) {
+  const fs = Math.max(min, Math.min(max, Math.floor(width / (0.55 * Math.max(text.length, 3)))));
+  const over = 0.55 * fs * text.length > width;
+  return { fs, fit: over ? ` textLength="${width}" lengthAdjust="spacingAndGlyphs"` : "" };
+}
+/* Age: strokes that wander a little and ink that has faded unevenly, as if written years ago. */
+const AGED = `<filter id="aged" x="-10%" y="-30%" width="120%" height="160%">
+    <feTurbulence type="fractalNoise" baseFrequency="0.8" numOctaves="2" seed="7" result="grain"/>
+    <feDisplacementMap in="SourceGraphic" in2="grain" scale="1.8" xChannelSelector="R" yChannelSelector="G" result="wander"/>
+    <feTurbulence type="fractalNoise" baseFrequency="0.05" numOctaves="2" seed="3" result="blot"/>
+    <feColorMatrix in="blot" type="matrix" values="0 0 0 0 0  0 0 0 0 0  0 0 0 0 0  0 0 0 -1.8 1.75" result="fade"/>
+    <feComposite in="wander" in2="fade" operator="in"/>
+  </filter>`;
 function fitSize(text, room, max = 52, min = 16) { return Math.max(min, Math.min(max, Math.round(room / Math.max(text.length, 3)))); }
 
 function metalSvg(c) {
@@ -379,6 +389,7 @@ function metalSvg(c) {
   const defs = `<defs>
     <radialGradient id="mg" cx="0.35" cy="0.3" r="0.8"><stop offset="0" stop-color="#f6e7c4"/><stop offset="0.35" stop-color="#c7a764"/><stop offset="0.75" stop-color="#7d6232"/><stop offset="1" stop-color="#3b2d15"/></radialGradient>
     <linearGradient id="glint" x1="0" x2="1"><stop offset="0" stop-color="#fff" stop-opacity="0"/><stop offset="0.5" stop-color="#fff" stop-opacity="0.65"/><stop offset="1" stop-color="#fff" stop-opacity="0"/></linearGradient>
+    ${AGED}
   </defs>`;
   if (/^(ring|rings|band|bracelet)$/.test(n)) {
     // A band seen at an angle; the engraving follows the curve of its face.
@@ -387,7 +398,7 @@ function metalSvg(c) {
       <ellipse cx="210" cy="118" rx="150" ry="72" fill="none" stroke="#1d150b" stroke-opacity="0.35" stroke-width="2"/>
       <path d="M95,82 Q140,52 190,48" stroke="url(#glint)" stroke-width="5" fill="none" stroke-linecap="round"/>
       <path id="arc" d="M66,128 C92,218 328,218 354,128" fill="none"/>
-      <text class="engrave" style="font-size:${fitSize(c.inscription, 640, 44, 18)}px"><textPath href="#arc" startOffset="50%" text-anchor="middle">${mark}</textPath></text>
+      <text class="engrave" filter="url(#aged)" style="font-size:${fitSize(c.inscription, 420, 26, 12)}px"><textPath href="#arc" startOffset="50%" text-anchor="middle">${mark}</textPath></text>
     </svg>`;
   }
   if (/^(key|keys)$/.test(n)) {
@@ -395,7 +406,7 @@ function metalSvg(c) {
       <circle cx="110" cy="110" r="62" fill="url(#mg)"/><circle cx="110" cy="110" r="16" fill="#0e0d0c"/>
       <path d="M168,96 L380,96 L380,124 L352,124 L352,144 L330,144 L330,124 L312,124 L312,140 L292,140 L292,124 L168,124 Z" fill="url(#mg)"/>
       <path d="M70,72 Q100,56 132,58" stroke="url(#glint)" stroke-width="4" fill="none" stroke-linecap="round"/>
-      <text x="268" y="119" text-anchor="middle" class="engrave" style="font-size:${fitSize(c.inscription, 300, 34, 14)}px">${mark}</text>
+      <text x="268" y="118" text-anchor="middle" class="engrave" filter="url(#aged)" style="font-size:${fitSize(c.inscription, 170, 22, 10)}px">${mark}</text>
     </svg>`;
   }
   // Coins, medals, lockets, watches, pins, pennies: a disc, the engraving along its rim.
@@ -405,24 +416,26 @@ function metalSvg(c) {
     <path d="M150,48 Q190,26 238,30" stroke="url(#glint)" stroke-width="5" fill="none" stroke-linecap="round"/>
     <path id="rim" d="M140,118 A72,72 0 0 0 280,118" fill="none"/>
     ${c.inscription.length <= 5
-      ? `<text x="210" y="126" text-anchor="middle" class="engrave" style="font-size:${fitSize(c.inscription, 200, 48, 20)}px">${mark}</text>`
-      : `<text class="engrave" style="font-size:${fitSize(c.inscription, 300, 24, 11)}px"><textPath href="#rim" startOffset="50%" text-anchor="middle">${mark}</textPath></text>`}
+      ? `<text x="210" y="126" text-anchor="middle" class="engrave" filter="url(#aged)" style="font-size:${fitSize(c.inscription, 170, 38, 18)}px">${mark}</text>`
+      : `<text class="engrave" filter="url(#aged)" style="font-size:${fitSize(c.inscription, 300, 24, 11)}px"><textPath href="#rim" startOffset="50%" text-anchor="middle">${mark}</textPath></text>`}
   </svg>`;
 }
 
 function smallSvg(c) {
   const mark = esc(c.inscription), n = noun(), obj = esc(S.pocket || "object");
-  // The mark is scratched across the surface and deliberately overruns it: impossible writing.
-  const fs = fitSize(c.inscription, 520, 84, 30);       // larger than the object on purpose
-  const scratch = (y) => `<text x="210" y="${y}" text-anchor="middle" class="scratch" style="font-size:${fs}px">${mark}</text>`;
-  let shape, what;
-  if (n === "pick") { shape = `<path d="M150,40 C200,24 280,30 300,64 C312,96 250,170 214,196 C196,206 186,200 176,186 C150,140 116,96 120,70 C122,54 132,46 150,40 Z" fill="#7a2e1f"/><path d="M160,56 C200,44 252,48 272,66" stroke="#f1c9b9" stroke-opacity="0.35" stroke-width="3" fill="none"/>`; what = "a small plastic pick"; }
-  else if (n === "lighter") { shape = `<rect x="150" y="60" width="120" height="150" rx="10" fill="#273b52"/><rect x="150" y="30" width="120" height="38" rx="6" fill="#9aa3ab"/><circle cx="180" cy="48" r="9" fill="#5e676f"/><rect x="160" y="76" width="8" height="120" fill="#fff" fill-opacity="0.12"/>`; what = "a lighter"; }
-  else if (/^buttons?$/.test(n)) { shape = `<circle cx="210" cy="112" r="88" fill="#6b4a2e"/><circle cx="210" cy="112" r="70" fill="none" stroke="#3e2a18" stroke-width="3"/>${[[190, 92], [230, 92], [190, 132], [230, 132]].map(([x, y]) => `<circle cx="${x}" cy="${y}" r="8" fill="#0e0d0c"/>`).join("")}`; what = "a button"; }
-  else if (/^dice?$/.test(n)) { shape = `<rect x="130" y="34" width="160" height="160" rx="22" fill="#e8e2d4"/>${[[170, 74], [250, 154], [210, 114]].map(([x, y]) => `<circle cx="${x}" cy="${y}" r="12" fill="#1a1612"/>`).join("")}`; what = "a die"; }
-  else if (/^(pen|pens|lipstick|usb|chalk|crayon)$/.test(n)) { shape = `<rect x="60" y="88" width="300" height="48" rx="24" fill="#2c2a33"/><rect x="300" y="88" width="60" height="48" rx="20" fill="#8c8a93"/><rect x="74" y="96" width="210" height="6" rx="3" fill="#fff" fill-opacity="0.15"/>`; what = `a ${esc(n)}`; }
+  // The mark is scratched into the surface, inside its face, and worn as if by years in a pocket.
+  let shape, what, face = [210, 126, 180, 36];          // x, y, width, largest size
+  const scratch = ([x, y, width, max]) => {
+    const { fs, fit } = markFit(c.inscription, width, max, 10);
+    return `<defs>${AGED}</defs><text x="${x}" y="${y}" text-anchor="middle" class="scratch" filter="url(#aged)" style="font-size:${fs}px"${fit}>${mark}</text>`;
+  };
+  if (n === "pick") { shape = `<path d="M150,40 C200,24 280,30 300,64 C312,96 250,170 214,196 C196,206 186,200 176,186 C150,140 116,96 120,70 C122,54 132,46 150,40 Z" fill="#7a2e1f"/><path d="M160,56 C200,44 252,48 272,66" stroke="#f1c9b9" stroke-opacity="0.35" stroke-width="3" fill="none"/>`; what = "a small plastic pick"; face = [212, 106, 120, 34]; }
+  else if (n === "lighter") { shape = `<rect x="150" y="60" width="120" height="150" rx="10" fill="#273b52"/><rect x="150" y="30" width="120" height="38" rx="6" fill="#9aa3ab"/><circle cx="180" cy="48" r="9" fill="#5e676f"/><rect x="160" y="76" width="8" height="120" fill="#fff" fill-opacity="0.12"/>`; what = "a lighter"; face = [214, 142, 96, 30]; }
+  else if (/^buttons?$/.test(n)) { shape = `<circle cx="210" cy="112" r="88" fill="#6b4a2e"/><circle cx="210" cy="112" r="70" fill="none" stroke="#3e2a18" stroke-width="3"/>${[[190, 92], [230, 92], [190, 132], [230, 132]].map(([x, y]) => `<circle cx="${x}" cy="${y}" r="8" fill="#0e0d0c"/>`).join("")}`; what = "a button"; face = [210, 176, 100, 22]; }
+  else if (/^dice?$/.test(n)) { shape = `<rect x="130" y="34" width="160" height="160" rx="22" fill="#e8e2d4"/>${[[170, 74], [250, 154], [210, 114]].map(([x, y]) => `<circle cx="${x}" cy="${y}" r="12" fill="#1a1612"/>`).join("")}`; what = "a die"; face = [210, 182, 130, 24]; }
+  else if (/^(pen|pens|lipstick|usb|chalk|crayon)$/.test(n)) { shape = `<rect x="60" y="88" width="300" height="48" rx="24" fill="#2c2a33"/><rect x="300" y="88" width="60" height="48" rx="20" fill="#8c8a93"/><rect x="74" y="96" width="210" height="6" rx="3" fill="#fff" fill-opacity="0.15"/>`; what = `a ${esc(n)}`; face = [180, 120, 200, 28]; }
   else { shape = `<path d="M110,120 C104,70 170,40 230,46 C300,52 330,96 320,140 C310,184 250,200 196,194 C140,188 114,160 110,120 Z" fill="#5d5a55"/><path d="M150,72 C190,56 240,58 270,72" stroke="#fff" stroke-opacity="0.18" stroke-width="4" fill="none"/>`; what = `a small hard ${esc(n || "object")}`; }
-  return `<svg class="prop" viewBox="0 0 420 220" role="img" aria-label="Your ${obj}: ${what}. Scratched across its surface: ${mark}">${shape}${scratch(124)}</svg>`;
+  return `<svg class="prop" viewBox="0 0 420 220" role="img" aria-label="Your ${obj}: ${what}. Scratched across its surface: ${mark}">${shape}${scratch(face)}</svg>`;
 }
 
 function unknownSvg(c) {
@@ -432,13 +445,17 @@ function unknownSvg(c) {
     <defs><radialGradient id="dim" cx="0.5" cy="0.45" r="0.65"><stop offset="0" stop-color="#2a2622"/><stop offset="1" stop-color="#0b0a09"/></radialGradient></defs>
     <rect x="10" y="10" width="400" height="200" rx="6" fill="url(#dim)" stroke="#3a3631"/>
     <text x="398" y="30" text-anchor="end" class="printed own">${esc((S.pocket || "").toUpperCase())}</text>
-    <text x="210" y="128" text-anchor="middle" class="scratch chalk" style="font-size:${fitSize(c.inscription, 420, 60, 24)}px">${mark}</text>
+    ${(() => { const { fs, fit } = markFit(c.inscription, 320, 40); return `<defs>${AGED}</defs><text x="210" y="126" text-anchor="middle" class="scratch chalk" filter="url(#aged)" style="font-size:${fs}px"${fit}>${mark}</text>`; })()}
   </svg>`;
 }
 
 function paperSvg(c) {
-  const mark = esc(c.inscription), fs = inscriptionSize(c.inscription, c.object === "key07" ? 300 : 380);
+  const mark = esc(c.inscription);
   const pocket = (S.pocket || "").toLowerCase();
+  const hand = (x, y, width, max) => {
+    const { fs, fit } = markFit(c.inscription, width, max);
+    return `<defs>${AGED}</defs><text x="${x}" y="${y}" text-anchor="middle" class="ink-hand" filter="url(#aged)" style="font-size:${fs}px"${fit}>${mark}</text>`;
+  };
   if (c.object === "key07") {
     return `<svg class="prop" viewBox="0 0 420 210" role="img" aria-label="The brass key's paper tag. Printed: BASEMENT 07. Handwritten: ${mark}">
       <path d="M118,104 C80,96 52,70 44,48" fill="none" stroke="#b9975a" stroke-width="2.5"/>
@@ -449,7 +466,7 @@ function paperSvg(c) {
       <circle cx="140" cy="110" r="7" fill="#0e0d0c"/>
       <text x="282" y="70" text-anchor="middle" class="printed">BASEMENT 07</text>
       <line x1="178" y1="84" x2="384" y2="84" stroke="#8a6f43" stroke-width="1"/>
-      <text x="280" y="150" text-anchor="middle" class="ink-hand" style="font-size:${fs}px">${mark}</text>
+      ${hand(280, 146, 190, 40)}
     </svg>`;
   }
   if (/ticket|stub|pass|transfer|fare/.test(pocket)) {
@@ -464,7 +481,7 @@ function paperSvg(c) {
       <path d="M300,12 L262,198" stroke="#000" stroke-opacity="0.07" stroke-width="3"/>
       <path d="M302,12 L264,198" stroke="#fff" stroke-opacity="0.35" stroke-width="1"/>
       <text x="398" y="188" text-anchor="end" class="printed serial">N\u00ba 0047193</text>
-      <text x="256" y="138" text-anchor="middle" class="ink-hand" style="font-size:${fs}px">${mark}</text>
+      ${hand(256, 134, 250, 44)}
     </svg>`;
   }
   if (/receipt/.test(pocket)) {
@@ -479,7 +496,7 @@ function paperSvg(c) {
       ${row(68, "COFFEE", "1.80")}${row(82, "AA BATTERIES", "4.99")}
       <line x1="124" y1="164" x2="296" y2="164" stroke="#b9ad93" stroke-dasharray="3 3"/>
       ${row(180, "TOTAL", "6.79")}
-      <text x="210" y="134" text-anchor="middle" class="ink-hand" style="font-size:${Math.min(fs, 50)}px">${mark}</text>
+      ${hand(210, 132, 160, 34)}
     </svg>`;
   }
   return `<svg class="prop" viewBox="0 0 420 210" role="img" aria-label="Your ${esc(S.pocket)}. Handwritten on it: ${mark}">
@@ -487,7 +504,7 @@ function paperSvg(c) {
     <path d="M210,14 L212,198" stroke="#000" stroke-opacity="0.08" stroke-width="3"/>
     <path d="M212,14 L214,198" stroke="#fff" stroke-opacity="0.4" stroke-width="1"/>
     <text x="392" y="40" text-anchor="end" class="printed small">${esc((S.pocket || "").toUpperCase())}</text>
-    <text x="210" y="128" text-anchor="middle" class="ink-hand" style="font-size:${fs}px">${mark}</text>
+    ${hand(210, 124, 320, 46)}
   </svg>`;
 }
 
@@ -932,7 +949,13 @@ async function loadEvidence() {
     return `<details class="ev-group" data-key="${key}"${S.evOpen.has(key) ? " open" : ""}>
       <summary><span>${esc(title)}</span><span class="ev-counts">${counts}</span></summary>${rs.map(row).join("")}</details>`;
   }).join("");
-  $("#evidence-body").innerHTML = summary + `<p class="small muted">model ${esc(d.model.model)} ${esc(d.model.quantization || "")} · seed ${esc(d.seed)} · ${d.log.length} records</p>` + body;
+  // Reproducibility is a check for the curious, not a step of the story: it lives here, not on the ending.
+  const verify = STATIC
+    ? `<p class="small muted ev-verify">This recorded night was re-run through the engine when this site was built, and the final state of every timeline matched the recording.</p>`
+    : `<div class="ev-verify"><button class="linkish" id="ev-verify">Re-run this night through the engine</button>
+       <p class="small muted">Feeds every recorded model output back through the validator and compares the final state of every timeline.</p></div>`;
+  $("#evidence-body").innerHTML = summary + `<p class="small muted">model ${esc(d.model.model)} ${esc(d.model.quantization || "")} · seed ${esc(d.seed)} · ${d.log.length} records</p>` + body + verify;
+  $("#ev-verify")?.addEventListener("click", () => openVerify());
   $("#evidence-body").querySelectorAll(".ev-group").forEach((g) => g.addEventListener("toggle", () => {
     if (g.open) S.evOpen.add(g.dataset.key); else S.evOpen.delete(g.dataset.key);
   }));
