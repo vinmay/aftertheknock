@@ -590,8 +590,6 @@ body.instant-text .stage-color, body.instant-text .trace-hint { opacity: 1 !impo
    smaller (the Close pills, Go on, the inscription in the text), so nothing looks different. */
 @media (max-width: 40rem) {
   .close-btn::after { content: ""; position: absolute; inset: -3px -2px; }
-  .stage-go { position: relative; }
-  .stage-go::after { content: ""; position: absolute; inset: -3px -2px; }
   .ink { position: relative; }
   .ink::after { content: ""; position: absolute; inset: -8px -4px; }
 }
@@ -604,12 +602,37 @@ body.instant-text .stage-color, body.instant-text .trace-hint { opacity: 1 !impo
 .map { padding-top: calc(var(--bar-h) + 0.6rem); }
 .ev-head .close-btn { top: 0.25rem; }       /* inside the panel, so none of it is clipped above the panel's edge */
 
-/* One way on: a quiet Continue, unnumbered, so it never reads as a choice. */
-.choices .continue { color: #b9b1a4; font-style: italic; letter-spacing: 0.02em; width: auto; justify-self: start;
-  min-height: 44px; min-width: 44px; padding: 0 0.6rem 0 0; }
-.choices .continue::after { content: "\2192"; font-style: normal; margin-left: 0.5rem; color: var(--faint); transition: color 0.2s, transform 0.2s; }
-.choices .continue:hover, .choices .continue:focus-visible { color: var(--ink); }
-.choices .continue:hover::after, .choices .continue:focus-visible::after { color: var(--muted); transform: translateX(2px); }
+/* One way on (Continue, and Go on on the crossing stage): a thin outlined pill with an arrow. Upright,
+   slightly dimmed ink; quieter than the numbered two-option choices. No glow, no pulse, no accent. */
+.choices .continue, .crossing-stage .stage-go {
+  position: relative; display: inline-flex; align-items: center; width: auto; min-height: 44px;
+  padding: 0.45rem 1.1rem; border: 1px solid var(--faint); border-radius: 999px;
+  color: rgba(230, 223, 210, 0.85); font-style: normal; letter-spacing: 0.02em; background: none;
+}
+.choices .continue { justify-self: start; }
+.choices .continue::after, .crossing-stage .stage-go::after {
+  content: "\2192"; position: static; inset: auto; margin-left: 0.5rem; color: var(--muted); transition: color 0.2s, transform 0.2s;
+}
+.choices .continue:hover, .choices .continue:focus-visible,
+.crossing-stage .stage-go:hover, .crossing-stage .stage-go:focus-visible { border-color: var(--muted); color: var(--ink); }
+.choices .continue:hover::after, .choices .continue:focus-visible::after,
+.crossing-stage .stage-go:hover::after, .crossing-stage .stage-go:focus-visible::after { color: var(--ink); transform: translateX(2px); }
+/* On appearance the arrow nudges twice, then stops: Continue ~0.4 s after the choices fade in; Go on once ready. */
+@keyframes nudge-twice { 0%, 50%, 100% { transform: none; } 25%, 75% { transform: translateX(4px); } }
+.choices .continue::after { animation: nudge-twice 1.2s ease-in-out 0.4s 1; }
+.crossing-stage.ready .stage-go::after { animation: nudge-twice 1.2s ease-in-out 0.4s 1; }
+body.instant-text .choices .continue::after, body.instant-text .crossing-stage .stage-go::after,
+.crossing-stage.instant .stage-go::after { animation: none; }
+@media (prefers-reduced-motion: reduce) {
+  .choices .continue::after, .crossing-stage .stage-go::after { animation: none; transition: none; }
+}
+/* Desktop with a keyboard and a mouse: a small muted "Enter" hint just after the Continue pill. */
+@media (hover: hover) and (pointer: fine) {
+  .choices .continue::before {
+    content: "Enter"; position: absolute; left: calc(100% + 0.7rem); top: 50%; transform: translateY(-50%);
+    font-family: var(--mono); font-size: 0.7rem; letter-spacing: 0.06em; color: var(--muted); font-style: normal; pointer-events: none;
+  }
+}
 .ev-authored { color: var(--muted); font-style: italic; }
 
 /* The other you's door: the landing's door again, peephole lit, over the scene. */
@@ -617,7 +640,7 @@ body.instant-text .stage-color, body.instant-text .trace-hint { opacity: 1 !impo
 .scene-door .door { width: 8rem; margin: 0; }
 @media (prefers-reduced-motion: reduce) { .scene-door .door * { transition: none !important; } }
 /* The central line: its own paragraph, more room above, a little larger; it arrives after the rest. */
-.text p.climax { margin-top: 2.4rem; font-size: 1.15em; animation-delay: 1.2s; }
+.text p.climax { margin-top: 2.4rem; font-size: 1.15em; animation-delay: 1.2s !important; opacity: 0; }   /* !important beats the pacing rule's shorthand; opacity 0 keeps it hidden until its own fade */
 body.instant-text .text p.climax { animation: none; opacity: 1; transform: none; }
 .ev-changed { border-top: 1px solid var(--faint); margin: 0.6rem 0; padding-top: 0.4rem; }
 .ev-changed p { margin: 0.2rem 0 0.5rem; }
