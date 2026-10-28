@@ -111,7 +111,7 @@ function howItWorks() {
       ? `<p>When you press Begin, the other night is generated <b>live</b> by ${esc(st.model)}, an open-weight Gemma model, through ${esc(st.provider)}. If the model is unavailable, this page shows replays of real recorded runs instead, and says so.</p>
          <p>What you say is in your pocket becomes part of the model's prompt. It is kept only in this run's log, which is cleared when the server restarts.</p>`
       : `<p>When you press Begin, the other night is generated <b>live, on this machine</b>, by ${esc(st.model || "a local Gemma model")}.</p>`;
-  openDrawer(`<p class="kicker">how this works</p>
+  openDrawer(`<p class="kicker">about</p>
     <h3>The night you didn't choose keeps going</h3>
     <p>Every choice splits the night in two. You live one side. The other side keeps happening without you: a small open model proposes what the people there do next, one event at a time, and a strict rule engine decides whether each event is possible before it becomes fact.</p>
     <p>Twice, something from that other night crosses into yours. Each crossing points to the exact event that made it. Follow the thread at the end, or switch on <b>evidence</b> at the top to see every proposal, rejection and commit as it happens.</p>
@@ -123,7 +123,6 @@ uv run knock-server    # http://localhost:8047</pre>
     <p class="small">Code, tests and evaluation: <a href="${LINKS.repo}">${LINKS.repo.replace("https://", "")}</a>${st.static ? "" : ` · Replays: <a href="${LINKS.replay}">${LINKS.replay.replace("https://", "")}</a>`}</p>`, null, "how");
 }
 $("#how").addEventListener("click", howItWorks);
-$("#how-menu").addEventListener("click", () => { setSettings(false); howItWorks(); });
 /* The peephole warms while there is something in the pocket field, and cools when it's cleared. */
 $("#pocket").addEventListener("input", (ev) => $(".door")?.classList.toggle("warm", ev.target.value.trim() !== ""));
 ["mouseenter", "focus"].forEach((ev) => $("#begin").addEventListener(ev, () => $(".door")?.classList.add("lit")));
@@ -215,17 +214,11 @@ function paragraphs(text) {
 }
 
 /* Reading preferences. "Show text immediately" turns off every fade and slow reveal. */
-const Prefs = {
-  get(k) { try { return localStorage.getItem("knock." + k); } catch { return null; } },
-  set(k, v) { try { localStorage.setItem("knock." + k, v); } catch { /* private mode: keep for this page only */ } },
-};
-let INSTANT = Prefs.get("instant") === "1";
-const instantText = () => INSTANT || REDUCED;
+// Animations are off when the system asks for reduced motion; each long one can also be skipped.
+const instantText = () => REDUCED;
 function applyInstant() {
   document.body.classList.toggle("instant-text", instantText());
   if (instantText()) Sound.stopPen();
-  const b = $("#instant-toggle");
-  if (b) b.setAttribute("aria-pressed", String(INSTANT));
 }
 const FADE_MS = 250;
 const wait = (ms) => new Promise((r) => setTimeout(r, ms));
@@ -1057,20 +1050,6 @@ $("#evidence-close").addEventListener("click", () => { toggleEvidence(false); $(
 $("#evidence-title").addEventListener("click", () => { toggleEvidence(false); $("#evidence-toggle").focus({ preventScroll: true }); });
 $("#sound-toggle").addEventListener("click", () => { Sound.init(); Sound.toggle(); });
 $("#sound-toggle").setAttribute("aria-pressed", String(Sound.on));
-$("#instant-toggle").addEventListener("click", () => { INSTANT = !INSTANT; Prefs.set("instant", INSTANT ? "1" : "0"); applyInstant(); });
-/* Settings popover: reading and sound preferences, kept out of the header's way. */
-function setSettings(open) {
-  $("#settings").hidden = !open;
-  $("#settings-toggle").setAttribute("aria-expanded", String(open));
-  if (open) $("#settings button").focus({ preventScroll: true });
-}
-$("#settings-toggle").addEventListener("click", () => setSettings($("#settings").hidden));
-document.addEventListener("click", (ev) => {
-  if (!$("#settings").hidden && !ev.target.closest("#settings, #settings-toggle")) setSettings(false);
-});
-document.addEventListener("keydown", (ev) => {
-  if (ev.key === "Escape" && !$("#settings").hidden) { ev.stopImmediatePropagation(); setSettings(false); $("#settings-toggle").focus({ preventScroll: true }); }
-}, true);
 applyInstant();
 document.addEventListener("keydown", (ev) => {
   if (ev.target.tagName === "INPUT") return;

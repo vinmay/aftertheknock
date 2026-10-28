@@ -177,7 +177,7 @@ Every number above comes from `uv run python eval/run_all.py` (or `--from-result
 ## Accessibility and reading
 
 - A full night can be played with the keyboard only: number keys or Enter for choices, Enter on the inscription for its memory, Escape to close drawers (focus returns to what opened them) and to skip the map reveal. Map nodes are focusable, with names that say which crossing they belong to, and there is an equivalent chronological event list for screen readers.
-- **Show text immediately** (top right, remembered on this device) turns off fades, the crossing animation and the map reveal. The page does the same automatically when your system asks for reduced motion. That path was checked through the toggle; the reduced-motion media query itself was not tested in a browser.
+- When your system asks for reduced motion, the page turns off fades, the crossing animation, the map reveal and the start card. Without it, each long animation can be skipped: click anywhere to finish a crossing, **Skip** on the map reveal, any key on the start card. The reduced-motion path has not been tested in a browser with the system setting on.
 - Body, secondary and red text meet WCAG AA contrast on the dark background; controls are at least 44 px tall.
 
 ## Why open models

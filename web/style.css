@@ -201,7 +201,6 @@ body.staged main { filter: blur(2px) brightness(0.5); }
 .crossing-stage.instant *, 
 .play-live { margin: 2.5rem 0 1rem; }
 .play-live a { color: var(--ink); text-decoration: none; display: inline-block; }
-.foot { position: fixed; bottom: 0; right: 0; padding: 0.6rem 1rem; z-index: 4; }
 .linkish { font-family: var(--mono); font-size: 0.72rem; letter-spacing: 0.04em; color: var(--muted); text-decoration: underline; text-underline-offset: 3px; padding: 0.4rem 0.2rem; }
 .linkish:hover { color: var(--ink); }
 .drawer a { color: var(--ink); }
@@ -349,7 +348,6 @@ label[for="pocket"] { color: var(--ink); }
 @media (prefers-reduced-motion: reduce) { .door .seam, .door .edge, .door .spill, .door .lens, .door .lens-warm { transition: none !important; } }
 input::placeholder { color: #8f887c; font-style: italic; }
 @media (max-width: 40rem) {
-  .foot { position: static; text-align: center; padding: 0 1rem 2rem; }
 }
 
 /* ---------- final polish ---------- */
@@ -395,8 +393,6 @@ body.instant-text main { animation: none !important; }
 .ink-text { color: var(--blood-text); font-style: italic; }
 .cta.small { min-height: 44px; padding: 0.4rem 1rem; margin-right: 1rem; }
 .tool[aria-pressed="false"] { color: var(--muted); }
-#instant-toggle[aria-pressed="true"] { color: var(--ink); }
-@media (max-width: 40rem) { #instant-toggle { max-width: 7rem; line-height: 1.2; text-align: right; } }
 
 /* Props */
 .prop-wrap { width: min(26rem, 100%); margin: 0 auto 1.4rem; transform: rotate(-1.5deg); filter: drop-shadow(0 18px 40px rgba(0, 0, 0, 0.7)); }
@@ -436,20 +432,12 @@ a.cta { display: inline-flex; align-items: center; text-decoration: none; }
 
 .prop .printed.faded { fill: #9a907c; font-size: 11px; }
 .tools { position: relative; display: flex; gap: 0.2rem; }
-.settings {
-  position: absolute; top: 2.6rem; right: 0; display: grid; gap: 0.1rem; min-width: 14rem; padding: 0.4rem;
-  background: var(--bg-raised); border: 1px solid var(--faint); z-index: 7;
-}
-.settings .tool { text-align: left; }
-.settings .tool::before { content: "\25CB  "; }
-.settings .tool[aria-pressed="true"]::before { content: "\25CF  "; }
-@media (max-width: 40rem) { #instant-toggle { max-width: none; text-align: left; } }
 
 /* The power cut: a brief darkening, nothing more. */
 body.blackout main { animation: blackout 1.3s ease both; }
 @keyframes blackout { 0% { opacity: 1; } 12% { opacity: 0.08; } 70% { opacity: 0.08; } 100% { opacity: 1; } }
 body.instant-text.blackout main { animation: none; }
-/* The header (status, settings, mute, evidence) stays reachable above the crossing stage. */
+/* The header (status, sound, about, evidence) stays reachable above the crossing stage. */
 .bar { z-index: 35; }
 /* With animations off (Show text immediately / reduced motion), nothing may stay at its pre-fade opacity. */
 body.instant-text .choices, body.instant-text .text p, body.instant-text .stage-after,
@@ -474,19 +462,9 @@ body.instant-text .stage-color, body.instant-text .trace-hint { opacity: 1 !impo
 #evidence-toggle[aria-pressed="true"] { color: var(--ink); text-decoration: underline; text-underline-offset: 3px; }
 .evidence { padding-top: 3.6rem; }   /* the panel's title sits below the header bar, so it can be clicked */
 
-/* "How this works" stays clickable above the drawer, so it can close what it opened. */
-.foot { z-index: 36; }
-.settings .menu-link::before { content: "\2192  "; }
 #how[aria-expanded="true"] { color: var(--ink); }
 @media (max-width: 40rem) {
-  /* While the bottom sheet is open, "How this works" sits just above it, so it can close what it opened. */
-  body.drawer-open .foot { position: fixed; bottom: 78vh; right: 0; padding: 0 1rem 0.3rem; text-align: right; }
-}
-@media (max-width: 40rem) {
   body.drawer-from-story main { padding-bottom: 85vh; }   /* room to scroll an in-story opener above the sheet */
-}
-@media (max-width: 40rem) {
-  body.drawer-open .foot { background: var(--bg); padding: 0.2rem 1rem 0.3rem 0.8rem; border-top-left-radius: 3px; }
 }
 
 /* Engraved (metal) and scratched (small solids) marks: thin light strokes that draw in, no ink. */
