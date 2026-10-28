@@ -3,22 +3,25 @@
 const $ = (s) => document.querySelector(s);
 const esc = (s) => String(s ?? "").replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
 
-const S = { game: null, view: null, replay: null, step: 0, labels: {}, mapData: null, busy: false };
+const S = { game: null, view: null, replay: null, step: 0, labels: {}, mapData: null, busy: false, startSeq: 0 };
 
 const STATIC = Boolean(window.KNOCK_STATIC);
 const REPLAY_LABEL = "Replay of a real recorded run — the model is not running live";
 
 /* Static site: answer the same API calls from files exported at build time. */
-const Static = { data: null, step: 0, index: null };
+const Static = { data: null, step: 0, index: null, seq: 0 };
 async function staticApi(path, body) {
   const route = path.split("?")[0];
   const index = async () => (Static.index ??= await (await fetch("replays/index.json")).json());
   if (route === "/api/status") return { live: false, static: true, replays: (await index()).length };
   if (route === "/api/replays") return index();
   if (route === "/api/replay/start") {
+    const seq = ++Static.seq;
     const r = await fetch(`replays/${encodeURIComponent(body.id)}.json`);
-    if (!r.ok) throw new Error("no such recorded run");
-    const d = (Static.data = await r.json());
+    if (!r.ok) throw new Error("This recording is missing.");
+    const loaded = await r.json();
+    if (seq !== Static.seq) throw new Error("superseded");   // a newer start owns Static.data
+    const d = (Static.data = loaded);
     Static.step = 0;
     return { game: d.id, seed: d.seed, pocket: d.pocket, view: d.steps[0].view,
              replay: { choices: d.choices, model: d.model, recorded_run: d.run_id } };
@@ -68,6 +71,7 @@ async function boot() {
       fallBackToReplays("The live model isn't available right now. These nights were recorded earlier.");
     }
     // One line per night, named by what was in the pocket; the clearest night quietly leads the list.
+    $("#pocket-note").hidden = !st.hosted;                // the hosted model sees the answer; the replay site has no input
     const list = (await api("/api/replays")).sort((a, b) => Number(Boolean(b.recommended)) - Number(Boolean(a.recommended)));
     if (list.length) {
       $("#replays").hidden = false;
@@ -133,67 +137,120 @@ $("#pocket").addEventListener("input", (ev) => $(".door")?.classList.toggle("war
 ["mouseenter", "focus"].forEach((ev) => $("#begin").addEventListener(ev, () => $(".door")?.classList.add("lit")));
 ["mouseleave", "blur"].forEach((ev) => $("#begin").addEventListener(ev, () => $(".door")?.classList.remove("lit")));
 
+/* Starting a night, live or recorded: one at a time. Every start button is disabled while one loads,
+   and a start token drops any response that arrives for a start that is no longer current. */
+function setStarting(on) {
+  S.busy = on;
+  $("#begin").disabled = on;
+  document.querySelectorAll("#replay-list button").forEach((b) => (b.disabled = on));
+}
+const plainError = (e) => (e instanceof TypeError ? "The game couldn't be reached. Check your connection." : e.message || "Something went wrong.");
+
+/* While a live night opens: honest status text, changing only with elapsed time (no fake progress). */
+const StartWait = { timers: [] };
+function startWaiting(on) {
+  StartWait.timers.forEach(clearTimeout); StartWait.timers = [];
+  const st = $("#start-status");
+  st.hidden = !on;
+  if (!on) return;
+  st.textContent = "Opening your night…";
+  StartWait.timers.push(setTimeout(() => (st.textContent = "Something is happening behind the door…"), 5000));
+  StartWait.timers.push(setTimeout(() => (st.textContent = "The other night is taking longer than expected."), 12000));
+}
+
 $("#start").addEventListener("submit", async (ev) => {
   ev.preventDefault();
   if (S.busy) return;
+  const token = ++S.startSeq;
+  setStarting(true);
+  $("#start-fail").hidden = true; $("#status-line").textContent = "";
+  startWaiting(true);
   Sound.reset(); Sound.init();
-  S.busy = true; $("#begin").disabled = true; $("#begin").textContent = "…";
+  const card = soundCard();                           // shown while the night is set up, not after
   try {
-    const card = soundCard();                         // shown while the night is set up, not after
     const d = await api("/api/new", { pocket: $("#pocket").value });
-    const knocked = await card;
+    if (token !== S.startSeq) return;
+    await card.done;
     S.game = d.game; S.replay = null; S.pocket = d.pocket;
     $("#mode").innerHTML = "";                         // a live night needs no label; "about" explains what runs it
     show(d.view);
-    if (!knocked) Sound.knock();
+    Sound.knock();                                    // only once the night has really begun
   } catch (e) {
+    card.cancel();                                    // no knock after a failed start
+    if (token !== S.startSeq) return;
     if (e.fallback === "replay") fallBackToReplays(`${e.message} These nights were recorded earlier; the model isn't running.`);
-    else $("#status-line").textContent = e.message;
+    else {
+      $("#start-status").hidden = false;
+      $("#start-status").textContent = `Your night couldn't start. ${plainError(e)}`;
+      $("#start-fail").hidden = false;
+      $("#start-watch").hidden = $("#replays").hidden && !LINKS.replay;
+    }
   } finally {
-    S.busy = false; $("#begin").disabled = false; $("#begin").textContent = "Begin your night";
+    StartWait.timers.forEach(clearTimeout); StartWait.timers = [];
+    if (token === S.startSeq) setStarting(false);
+    if (!$("#scene").hidden) $("#start-status").hidden = true;
   }
+});
+$("#start-watch").addEventListener("click", () => {
+  const first = $("#replay-list button");
+  if (!$("#replays").hidden && first) { first.scrollIntoView({ block: "center" }); first.focus({ preventScroll: true }); }
+  else location.href = LINKS.replay;
 });
 
 /* Right after Begin, the way games do it: a short dark card while the rain fades in, then the
    knock. Once per visit; any click or key skips it; none with instant text or reduced motion. */
-/* Resolves true if the knock already played (as the card faded), so the caller doesn't repeat it.
-   Muted players get one button to turn sound on, and a little longer to find it. */
+/* Returns { done, cancel }: `done` resolves once the card has cleared; `cancel` removes it at once
+   (a failed start). The caller plays the knock when the night has really begun, so a failed start
+   is never followed by one. Muted players get one button to turn sound on, and longer to find it. */
 function soundCard() {
   let seen = false;
   try { seen = sessionStorage.getItem("knock.soundcard") === "1"; sessionStorage.setItem("knock.soundcard", "1"); } catch { /* per page only */ }
-  if (seen || instantText()) return Promise.resolve(false);
+  if (seen || instantText()) return { done: Promise.resolve(), cancel() {} };
   const card = $("#sound-card"), on = $("#sound-card-on");
   const muted = !Sound.on;
   $("#sound-card-text").textContent = muted ? "Sound is off." : "Best with headphones.";
   $("#sound-card-hint").textContent = muted ? "This night is told partly in sound." : "Listen for the knock.";
   on.hidden = !muted;
   card.hidden = false;
-  return new Promise((done) => {
-    const end = (ev) => {
-      if (ev && ev.target === on) return;                         // the button handles its own click
-      clearTimeout(t); document.removeEventListener("pointerdown", end); document.removeEventListener("keydown", end);
-      Sound.knock();                                              // the first thing heard, as the card clears
-      card.classList.add("out");
-      setTimeout(() => { card.hidden = true; card.classList.remove("out"); done(true); }, 350);
-    };
-    on.onclick = () => { Sound.init(); if (!Sound.on) Sound.toggle(); end(); };
-    const t = setTimeout(end, muted ? 4000 : 2200);
-    document.addEventListener("pointerdown", end); document.addEventListener("keydown", end);
-    if (muted) on.focus({ preventScroll: true });
-  });
+  let finish, t;
+  const unhook = () => { clearTimeout(t); document.removeEventListener("pointerdown", end); document.removeEventListener("keydown", end); };
+  const done = new Promise((r) => (finish = r));
+  function end(ev) {
+    if (ev && ev.target === on) return;                           // the button handles its own click
+    unhook();
+    card.classList.add("out");
+    setTimeout(() => { card.hidden = true; card.classList.remove("out"); finish(); }, 350);
+  }
+  on.onclick = () => { Sound.init(); if (!Sound.on) Sound.toggle(); end(); };
+  t = setTimeout(end, muted ? 4000 : 2200);
+  document.addEventListener("pointerdown", end); document.addEventListener("keydown", end);
+  if (muted) on.focus({ preventScroll: true });
+  return { done, cancel() { unhook(); card.hidden = true; card.classList.remove("out"); finish(); } };
 }
 
 async function startReplay(id) {
+  if (S.busy) return;                                 // one start at a time; the rows are disabled meanwhile
+  const token = ++S.startSeq;
+  setStarting(true);
+  $("#status-line").textContent = "";
   Sound.reset(); Sound.init();
   const card = soundCard();
-  const d = await api("/api/replay/start", { id });
-  const knocked = await card;
-  S.game = d.game; S.replay = d.replay; S.step = 0; S.pocket = d.pocket;
-  const liveHref = STATIC ? LINKS.live : location.pathname;
-  setMode(`<span class="tag replay">recorded night</span>`,
-    `following a path someone already took · ${esc(REPLAY_LABEL.split("— ")[1] || REPLAY_LABEL)} · <a href="${liveHref}">Start a live night</a>`);
-  show(d.view);
-  if (!knocked) Sound.knock();
+  try {
+    const d = await api("/api/replay/start", { id });
+    if (token !== S.startSeq) return;                 // a stale response never touches the game state
+    await card.done;
+    S.game = d.game; S.replay = d.replay; S.step = 0; S.pocket = d.pocket;
+    const liveHref = STATIC ? LINKS.live : location.pathname;
+    setMode(`<span class="tag replay">recorded night</span>`,
+      `following a path someone already took · ${esc(REPLAY_LABEL.split("— ")[1] || REPLAY_LABEL)} · <a href="${liveHref}">Start a live night</a>`);
+    show(d.view);
+    Sound.knock();
+  } catch (e) {
+    card.cancel();
+    if (token === S.startSeq) $("#status-line").textContent = `That night couldn't be loaded. ${plainError(e)} Please try again.`;
+  } finally {
+    if (token === S.startSeq) setStarting(false);
+  }
 }
 
 function fallBackToReplays(why) {
@@ -1080,5 +1137,5 @@ window.addEventListener("resize", () => { if (!$("#map").hidden && S.mapData) dr
 
 boot().then(() => {
   const rid = new URLSearchParams(location.search).get("replay");
-  if (rid) startReplay(rid).catch((e) => ($("#status-line").textContent = e.message));
+  if (rid) startReplay(rid);
 });
