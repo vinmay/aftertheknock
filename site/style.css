@@ -481,7 +481,7 @@ body.instant-text .stage-color, body.instant-text .trace-hint { opacity: 1 !impo
   body.drawer-open .foot { position: fixed; bottom: 78vh; right: 0; padding: 0 1rem 0.3rem; text-align: right; }
 }
 @media (max-width: 40rem) {
-  body.drawer-open main { padding-bottom: 85vh; }   /* room to scroll an opener above the sheet */
+  body.drawer-from-story main { padding-bottom: 85vh; }   /* room to scroll an in-story opener above the sheet */
 }
 @media (max-width: 40rem) {
   body.drawer-open .foot { background: var(--bg); padding: 0.2rem 1rem 0.3rem 0.8rem; border-top-left-radius: 3px; }
@@ -507,3 +507,32 @@ body.instant-text .stage-color, body.instant-text .trace-hint { opacity: 1 !impo
 .choices .map-open { width: auto; justify-self: start; margin-bottom: 0.4rem; }
 .choices button.map-open { width: auto; padding: 0.6rem 1.4rem; color: var(--ink); display: inline-flex; justify-content: center; }
 .choices button.map-open:hover, .choices button.map-open:focus-visible { color: var(--ink); background: #3a1612; }
+
+/* A close button you can't miss: labelled, bordered, pinned to the top of its panel. */
+.close-btn {
+  position: sticky; top: 0; z-index: 3; float: right; display: inline-flex; align-items: center; gap: 0.45rem;
+  min-height: 40px; padding: 0.35rem 0.85rem; margin: -1.6rem 0 0.6rem 0.8rem;
+  font-family: var(--mono); font-size: 0.8rem; letter-spacing: 0.06em; color: var(--ink);
+  background: var(--bg-raised); border: 1px solid #6b6358; border-radius: 999px; cursor: pointer;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.5);
+}
+.close-btn span { font-size: 0.9rem; line-height: 1; }
+.close-btn:hover, .close-btn:focus-visible { border-color: var(--ink); background: #24201c; }
+.map-head .close-btn { position: absolute; top: -0.4rem; right: 0; float: none; margin: 0; }
+.ev-head .close-btn { position: absolute; top: -0.4rem; right: 0; float: none; margin: 0; }
+.drawer { padding-top: 2.6rem; }
+@media (min-width: 40.01rem) {
+  .drawer { top: 3.4rem; padding-top: 2.2rem; border-top: 1px solid var(--faint); }   /* below the header, so Close stays reachable */
+}
+
+/* The drawer's Close sits in a pinned bar with its own background; content scrolls under it. */
+.drawer { padding-top: 0 !important; }
+.drawer-bar {
+  position: sticky; top: 0; z-index: 3; display: flex; justify-content: flex-end;
+  margin: 0 -1.25rem 0.6rem; padding: 0.7rem 1.25rem 0.6rem; background: var(--bg-raised);
+  border-bottom: 1px solid var(--faint);
+}
+.drawer-bar .close-btn { position: static; float: none; margin: 0; box-shadow: none; }
+.ev-head { position: sticky; top: -2.5rem; z-index: 3; background: #0b0a09; padding: 0.4rem 0 0.6rem; }
+.evidence { top: 3.4rem; padding-top: 0 !important; border-top: 1px solid var(--faint); }
+.ev-head { top: 0; padding-top: 0.9rem; }

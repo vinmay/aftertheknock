@@ -639,9 +639,9 @@ document.addEventListener("keydown", (ev) => {
   const n = parseInt(ev.key, 10);
   if (n >= 1) {
     const b = $("#choices").querySelector(`button[data-index="${n - 1}"]`);
-    if (b && !b.disabled) { ev.preventDefault(); b.focus(); b.click(); }
+    if (b && !b.disabled) { ev.preventDefault(); b.focus({ preventScroll: true }); b.click(); }
   } else if (ev.key === "Enter" && buttons.length === 1 && document.activeElement === document.body) {
-    ev.preventDefault(); buttons[0].focus(); buttons[0].click();
+    ev.preventDefault(); buttons[0].focus({ preventScroll: true }); buttons[0].click();
   }
 });
 
@@ -808,9 +808,9 @@ function stageCrossing(c, second = false) {
   // The mark is drawn from 0.4 s to 2.6 s; the scratches follow it (and still play, faster, without animation).
   if (instantText()) Sound.crossing(second ? 2 : 1, c.object, 0.05, 0.8);
   else Sound.crossing(second ? 2 : 1, c.object, 0.4, 2.2);
-  const close = () => { Sound.stopPen(); el.hidden = true; document.body.classList.remove("staged"); $("#current .ink")?.focus(); };
+  const close = () => { Sound.stopPen(); el.hidden = true; document.body.classList.remove("staged"); $("#current .ink")?.focus({ preventScroll: true }); };
   $("#stage-go").addEventListener("click", close);
-  const ready = () => { el.classList.add("ready"); $("#stage-go")?.focus(); };
+  const ready = () => { el.classList.add("ready"); $("#stage-go")?.focus({ preventScroll: true }); };
   if (instantText()) ready();
   else {
     const t = setTimeout(ready, 3100);              // the mark has finished writing itself
@@ -898,7 +898,9 @@ function openDrawer(html, shadow = null, key = null) {
   document.body.classList.add("drawer-open");
   // Phones: the sheet covers the lower part of the page; keep an in-story opener visible above it,
   // so tapping it again closes the drawer.
-  if (key && window.matchMedia("(max-width: 40rem)").matches && S.drawerTrigger && $("#scene").contains(S.drawerTrigger)) {
+  const inStory = S.drawerTrigger && $("#scene").contains(S.drawerTrigger);
+  document.body.classList.toggle("drawer-from-story", Boolean(inStory));
+  if (key && window.matchMedia("(max-width: 40rem)").matches && inStory) {
     const top = S.drawerTrigger.getBoundingClientRect().top;
     window.scrollBy({ top: top - 76, behavior: "instant" });
   }
@@ -906,17 +908,17 @@ function openDrawer(html, shadow = null, key = null) {
   $("#drawer").hidden = false;
   const body = $("#drawer-body");
   body.setAttribute("tabindex", "-1");
-  body.focus();                                      // screen readers start at the memory, before the proof
+  body.focus({ preventScroll: true });                                      // screen readers start at the memory, before the proof
   body.scrollTop = 0;
 }
 function closeDrawer() {
   Sound.focusShadow(null);
   $("#drawer").hidden = true;
-  document.body.classList.remove("drawer-open");
+  document.body.classList.remove("drawer-open", "drawer-from-story");
   S.drawerKey = null;
   S.drawerTrigger?.setAttribute?.("aria-expanded", "false");
   const t = S.drawerTrigger;
-  if (t && document.contains(t)) t.focus();
+  if (t && document.contains(t)) t.focus({ preventScroll: true });
 }
 $("#drawer-close").addEventListener("click", closeDrawer);
 
@@ -960,7 +962,7 @@ function showAll() {
   $("#map").querySelectorAll("[data-stage]").forEach((el) => el.classList.add("on"));
   if (S.mapData && S.mapData.intrusions.length) selectCrossing(0, false);
   // Keyboard users land on the first crossing's "Follow this thread" (or the first night card on phones).
-  if (!$("#map").hidden) ($("#map-detail:not([hidden]) .cta") || $("#map-list .ev-row.crossing") || $("#map-close")).focus();
+  if (!$("#map").hidden) ($("#map-detail:not([hidden]) .cta") || $("#map-list .ev-row.crossing") || $("#map-close")).focus({ preventScroll: true });
 }
 function reveal() {
   if (REDUCED) return showAll();
@@ -968,7 +970,7 @@ function reveal() {
   map.classList.add("revealing");
   map.querySelectorAll("[data-stage]").forEach((el) => el.classList.remove("on"));
   $("#map-intro").hidden = false;
-  $("#map-skip").focus();
+  $("#map-skip").focus({ preventScroll: true });
   const at = (ms, fn) => Reveal.timers.push(setTimeout(fn, ms));
   const stage = (n) => map.querySelectorAll(`[data-stage="${n}"]`).forEach((el) => el.classList.add("on"));
   at(1800, () => { $("#map-intro").hidden = true; stage(1); Sound.mapStart(); });
@@ -986,7 +988,7 @@ function closeMap() {
   $("#map").hidden = true;
   const t = S.mapTrigger;
   const back = t && t !== document.body && document.contains(t) ? t : $("#choices button");
-  back?.focus();
+  back?.focus({ preventScroll: true });
 }
 $("#map-close").addEventListener("click", closeMap);
 
@@ -1136,7 +1138,7 @@ function drawMap(d) {
     n.addEventListener("mouseleave", () => { if (S.mapSelected && S.mapSelected !== id) setDetail(detailFor(S.mapSelected), false); });
     n.addEventListener("click", () => selectNode(id));
     n.addEventListener("keydown", (ev) => {
-      if (ev.key === "Enter" || ev.key === " ") { ev.preventDefault(); selectNode(id); $("#map-detail [data-open]")?.focus(); }
+      if (ev.key === "Enter" || ev.key === " ") { ev.preventDefault(); selectNode(id); $("#map-detail [data-open]")?.focus({ preventScroll: true }); }
     });
   });
   // A redraw (resize, graph/list toggle) keeps the current selection lit.
@@ -1259,8 +1261,8 @@ function toggleEvidence(force) {
   if (open) loadEvidence();
 }
 $("#evidence-toggle").addEventListener("click", () => toggleEvidence());
-$("#evidence-close").addEventListener("click", () => { toggleEvidence(false); $("#evidence-toggle").focus(); });
-$("#evidence-title").addEventListener("click", () => { toggleEvidence(false); $("#evidence-toggle").focus(); });
+$("#evidence-close").addEventListener("click", () => { toggleEvidence(false); $("#evidence-toggle").focus({ preventScroll: true }); });
+$("#evidence-title").addEventListener("click", () => { toggleEvidence(false); $("#evidence-toggle").focus({ preventScroll: true }); });
 $("#sound-toggle").addEventListener("click", () => { Sound.init(); Sound.toggle(); });
 $("#sound-toggle").setAttribute("aria-pressed", String(Sound.on));
 $("#instant-toggle").addEventListener("click", () => { INSTANT = !INSTANT; Prefs.set("instant", INSTANT ? "1" : "0"); applyInstant(); });
@@ -1268,14 +1270,14 @@ $("#instant-toggle").addEventListener("click", () => { INSTANT = !INSTANT; Prefs
 function setSettings(open) {
   $("#settings").hidden = !open;
   $("#settings-toggle").setAttribute("aria-expanded", String(open));
-  if (open) $("#settings button").focus();
+  if (open) $("#settings button").focus({ preventScroll: true });
 }
 $("#settings-toggle").addEventListener("click", () => setSettings($("#settings").hidden));
 document.addEventListener("click", (ev) => {
   if (!$("#settings").hidden && !ev.target.closest("#settings, #settings-toggle")) setSettings(false);
 });
 document.addEventListener("keydown", (ev) => {
-  if (ev.key === "Escape" && !$("#settings").hidden) { ev.stopImmediatePropagation(); setSettings(false); $("#settings-toggle").focus(); }
+  if (ev.key === "Escape" && !$("#settings").hidden) { ev.stopImmediatePropagation(); setSettings(false); $("#settings-toggle").focus({ preventScroll: true }); }
 }, true);
 applyInstant();
 document.addEventListener("keydown", (ev) => {

@@ -82,7 +82,7 @@
 <section id="crossing-stage" class="crossing-stage" hidden aria-live="assertive"></section>
 
 <aside id="drawer" class="drawer" hidden aria-label="Where this came from">
-  <button class="close" id="drawer-close" aria-label="Close">×</button>
+  <div class="drawer-bar"><button class="close-btn" id="drawer-close" aria-label="Close this panel">Close <span aria-hidden="true">✕</span></button></div>
   <div id="drawer-body"></div>
 </aside>
 
@@ -95,7 +95,7 @@
       <li><span class="key crossed"></span>what crossed over</li>
     </ul>
     <button class="linkish" id="map-graph-toggle" hidden>View as a graph</button>
-    <button class="close" id="map-close" aria-label="Close map">×</button>
+    <button class="close-btn" id="map-close" aria-label="Close the map">Close <span aria-hidden="true">✕</span></button>
   </div>
   <div class="map-scroll">
     <svg id="map-svg" role="group" aria-label="Timelines and crossings"></svg>
@@ -111,7 +111,7 @@
   <div class="ev-head">
     <h2><button class="ev-title" id="evidence-title" title="Hide evidence">Evidence <span aria-hidden="true">▴</span></button></h2>
     <p class="small muted">Every model proposal, validator decision and commit in this run.</p>
-    <button class="close" id="evidence-close" aria-label="Close">×</button>
+    <button class="close-btn" id="evidence-close" aria-label="Close the evidence">Close <span aria-hidden="true">✕</span></button>
   </div>
   <div id="evidence-body"></div>
 </aside>
