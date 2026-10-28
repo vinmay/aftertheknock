@@ -584,11 +584,11 @@ body.instant-text .stage-color, body.instant-text .trace-hint { opacity: 1 !impo
 /* The list's heading is a prompt, like the pocket question: italic and muted at the rows' size, so it
    leads the list without looking like one of its items (those are upright, in full ink). */
 #title #replays-head { font-family: var(--serif); font-style: italic; font-size: 1rem; letter-spacing: 0.01em; color: var(--muted); margin: 1.6rem 0 0.5rem; }
-/* Under Begin: the hosted-model note (live site only), then start status and, on failure, two ways on. */
-#title .pocket-note, #title .start-status { font-size: 0.85rem; color: var(--muted); margin: 0.7rem 0 0; }
+/* Under Begin: start status and, on failure, two ways on. (Where the answer goes is told in "about".) */
+#title .start-status { font-size: 0.85rem; color: var(--muted); margin: 0.7rem 0 0; }
 #title .start-fail { margin: 0.2rem 0 0; font-size: 0.9rem; }
 #title .start-fail .linkish { color: var(--ink); }
-#title .start-fail[hidden], #title .start-status[hidden], #title .pocket-note[hidden] { display: none; }
+#title .start-fail[hidden], #title .start-status[hidden] { display: none; }
 /* Phones: every tap target at least 44x44 CSS px. Invisible hit areas where the visible control is
    smaller (the Close pills, Go on, the inscription in the text), so nothing looks different. */
 @media (max-width: 40rem) {

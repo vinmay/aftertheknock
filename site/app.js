@@ -71,7 +71,6 @@ async function boot() {
       fallBackToReplays("The live model isn't available right now. These nights were recorded earlier.");
     }
     // One line per night, named by what was in the pocket; the clearest night quietly leads the list.
-    $("#pocket-note").hidden = !st.hosted;                // the hosted model sees the answer; the replay site has no input
     const list = (await api("/api/replays")).sort((a, b) => Number(Boolean(b.recommended)) - Number(Boolean(a.recommended)));
     if (list.length) {
       $("#replays").hidden = false;
