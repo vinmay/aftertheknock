@@ -71,7 +71,7 @@ def main(argv=None) -> None:
 
     model = make_model(args.model)
     if args.cmd == "play":
-        pocket = input("Your hand finds something in your pocket. What is it? ")
+        pocket = input("What's in your pocket tonight? ")
         game = Game(pocket, args.seed, model)
         v = game.view()
         while True:
