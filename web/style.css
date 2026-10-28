@@ -327,6 +327,7 @@ label[for="pocket"] { color: var(--ink); }
 .xmark { display: block; font-family: var(--mono); font-size: 0.72rem; letter-spacing: 0.06em; text-transform: uppercase; margin-top: 0.2rem; }
 .fork-note { font-style: italic; color: var(--muted); margin: 0.2rem 0 1rem; font-size: 0.95rem; }
 .afterword button { color: var(--ink); }
+.afterword .afterword-how { color: var(--muted); font-size: 0.85rem; margin-top: 0.8rem; }
 #map-svg[hidden] { display: none; }
 
 /* Landing: one closed door, light under it, a peephole that catches the light */

@@ -273,6 +273,11 @@ async function show(v) {
       b.dataset.index = i;
       b.addEventListener("click", fn); ch.appendChild(b);
     });
+    const how = document.createElement("button");             // low emphasis, unnumbered: not a story choice
+    how.className = "linkish afterword-how";
+    how.textContent = "See how this haunting was generated and verified";
+    how.addEventListener("click", () => toggleEvidence(true));
+    ch.appendChild(how);
   } else ch.classList.remove("afterword");
   ch.hidden = false;
   if (v.kind === "map") {
