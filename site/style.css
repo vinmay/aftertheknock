@@ -448,7 +448,6 @@ body.instant-text .stage-color, body.instant-text .trace-hint { opacity: 1 !impo
 .ev-group[open] summary::before { transform: rotate(90deg); }
 .ev-group summary span:first-child { flex: 1; }
 .ev-counts { font-family: var(--mono); font-size: 0.72rem; color: var(--muted); white-space: nowrap; }
-#evidence-toggle[aria-pressed="true"] { color: var(--ink); text-decoration: underline; text-underline-offset: 3px; }
 .evidence { padding-top: 3.6rem; }   /* the panel's title sits below the header bar, so it can be clicked */
 
 #how[aria-expanded="true"] { color: var(--ink); }

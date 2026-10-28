@@ -96,7 +96,7 @@ function howItWorks() {
   openDrawer(`<p class="kicker">about</p>
     <h3>The night you didn't choose keeps going</h3>
     <p>Every choice splits the night in two. You live one side. The other side keeps happening without you: a small open model proposes what the people there do next, one event at a time, and a strict rule engine decides whether each event is possible before it becomes fact.</p>
-    <p>Twice, something from that other night crosses into yours. Each crossing points to the exact event that made it: click the inscription to see where it came from. After the night ends, <b>evidence</b> shows every proposal, rejection and commit.</p>
+    <p>Twice, something from that other night crosses into yours. Each crossing points to the exact event that made it: click the inscription to see where it came from. After the night ends, a link opens the full evidence: every proposal, rejection and commit.</p>
     <h3>What's running</h3>
     ${mode}
     <h3>Run it yourself</h3>
@@ -257,9 +257,8 @@ async function show(v) {
     }
   }
   if (v.kind === "ending") Sound.ending(v.ending);
-  // The full log would give the other night away early, so it opens only once the night is over.
+  // The full log would give the other night away early, so it opens only from the ending (its link, or E).
   // During play, each crossing's own proof is one click away on its inscription.
-  $("#evidence-toggle").hidden = v.kind !== "ending" && $("#evidence-toggle").hidden;
   const cur = $("#current");
   cur.classList.remove("fade-in"); void cur.offsetWidth; cur.classList.add("fade-in");
   const text = $("#text");
@@ -309,6 +308,7 @@ async function show(v) {
     const how = document.createElement("button");             // low emphasis, unnumbered: not a story choice
     how.className = "linkish afterword-how";
     how.textContent = "See how this haunting was generated and verified";
+    how.setAttribute("aria-controls", "evidence"); how.setAttribute("aria-expanded", "false");
     how.addEventListener("click", () => toggleEvidence(true));
     ch.appendChild(how);
   } else ch.classList.remove("afterword");
@@ -1054,22 +1054,20 @@ function toggleEvidence(force) {
   const el = $("#evidence");
   const open = typeof force === "boolean" ? force : el.hidden;
   el.hidden = !open;
-  const b = $("#evidence-toggle");
-  b.setAttribute("aria-pressed", String(open));
-  b.setAttribute("aria-expanded", String(open));
-  b.textContent = open ? "hide evidence" : "evidence";
+  $(".afterword-how")?.setAttribute("aria-expanded", String(open));
   if (!$("#map").hidden && S.mapData) drawMap(S.mapData);
   if (open) loadEvidence();
 }
-$("#evidence-toggle").addEventListener("click", () => toggleEvidence());
-$("#evidence-close").addEventListener("click", () => { toggleEvidence(false); $("#evidence-toggle").focus({ preventScroll: true }); });
-$("#evidence-title").addEventListener("click", () => { toggleEvidence(false); $("#evidence-toggle").focus({ preventScroll: true }); });
+/* Closing the evidence view returns focus to the ending's link that opened it. */
+const closeEvidence = () => { toggleEvidence(false); $(".afterword-how")?.focus({ preventScroll: true }); };
+$("#evidence-close").addEventListener("click", closeEvidence);
+$("#evidence-title").addEventListener("click", closeEvidence);
 $("#sound-toggle").addEventListener("click", () => { Sound.init(); Sound.toggle(); });
 $("#sound-toggle").setAttribute("aria-pressed", String(Sound.on));
 applyInstant();
 document.addEventListener("keydown", (ev) => {
   if (ev.target.tagName === "INPUT") return;
-  if ((ev.key === "e" || ev.key === "E") && !$("#evidence-toggle").hidden) toggleEvidence();
+  if ((ev.key === "e" || ev.key === "E") && S.view?.kind === "ending") toggleEvidence();
   if (ev.key === "Escape") {
     if (!$("#drawer").hidden) closeDrawer();
     else if (!$("#evidence").hidden) toggleEvidence();

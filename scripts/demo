@@ -10,7 +10,8 @@
 #   4. Click the digits in the story: the flashback of the other night opens. Hold 3 s. Close it.
 #   5. Continue to the map. Let the reveal play; the first crossing lights up with its thread.
 #      Click "Follow this thread" once, then close it.
-#   6. Close the map, choose the recorded ending. Open "evidence", scroll to the end, click
+#   6. Close the map, choose the recorded ending. Click "See how this haunting was generated and
+#      verified", scroll to the end, click
 #      "Re-run this night through the engine". Hold on "Reproduced exactly."
 # Tips: 1280x800 window, browser zoom 100%, sound on if recording video, hide bookmarks and other tabs.
 set -euo pipefail
