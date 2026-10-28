@@ -116,6 +116,51 @@ const cases = {
     assert.strictEqual(hum(), Sound.HUM);
     assert.strictEqual(room(), Sound.ROOM);
   },
+  "map: closing at once, before the tones start, is silent and safe"() {
+    fresh();
+    Sound.mapStop(); Sound.mapStop();
+    assert.strictEqual(Sound.mapVoices, null);
+    Sound.mapStart();
+    assert.ok(Sound.mapVoices, "reopening starts the tones");
+    Sound.mapStop();
+  },
+  "map: closing mid-reveal stops both tones and the pending step"() {
+    fresh();
+    Sound.mapStart();
+    const v = Sound.mapVoices;
+    Sound.mapApart(45); Sound.mapMeet();          // a step is now pending for 0.7 s
+    Sound.mapStop();                              // closeMap()
+    assert.ok(v.a.stopped && v.b.stopped, "both oscillators stopped");
+    assert.strictEqual(Sound.mapVoices, null);
+    Sound.mapStart();                             // reopen at once
+    const v2 = Sound.mapVoices;
+    advance(1000);                                // the old step's moment passes
+    assert.strictEqual(v2.b.detune.target, 0, "an earlier opening's step never reaches the new tones");
+    assert.ok(!v2.a.stopped && !v2.b.stopped);
+    Sound.mapStop();
+  },
+  "map: closing after the full reveal, then reopening"() {
+    fresh();
+    Sound.mapStart(); Sound.mapMeet(); advance(800);
+    const v = Sound.mapVoices;
+    assert.strictEqual(v.b.detune.target, 70, "the reveal's own step still plays");
+    Sound.mapStop(1.5);                           // end of the reveal
+    Sound.mapStop();                              // then closeMap(): idempotent
+    assert.ok(v.a.stopped && v.b.stopped);
+    Sound.mapStart();
+    assert.ok(Sound.mapVoices && Sound.mapVoices !== v);
+    Sound.mapStop();
+  },
+  "map: muted, no tones start, and every close is safe"() {
+    fresh();
+    Sound.toggle();                               // mute
+    Sound.mapStart(); Sound.mapMeet();
+    assert.strictEqual(Sound.mapVoices, null);
+    Sound.mapStop(); advance(1000);
+    Sound.toggle();                               // unmute after closing: nothing left to hear
+    assert.strictEqual(Sound.mapVoices, null);
+    assert.strictEqual(Sound.mapTimer, null);
+  },
 };
 let failed = 0;
 for (const [name, fn] of Object.entries(cases)) {

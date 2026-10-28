@@ -796,6 +796,7 @@ $("#map-skip").addEventListener("click", showAll);
 $("#map-graph-toggle").addEventListener("click", () => { S.mapGraph = !S.mapGraph; drawMap(S.mapData); showAll(); });
 function closeMap() {
   Reveal.timers.forEach(clearTimeout); Reveal.timers = [];
+  Sound.mapStop();                                  // the reveal's tones end with the map, wherever it was
   $("#map").classList.remove("revealing");
   $("#map").hidden = true;
   const t = S.mapTrigger;

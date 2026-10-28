@@ -10,7 +10,7 @@
    in `want`; setting it always updates `want`, muted or not, and `apply()` makes the layers match.
    Muting only zeroes the master gain, so unmuting simply lets the current state be heard. */
 const Sound = {
-  ctx: null, master: null, noise: null, layers: {}, live: new Set(), mapVoices: null, pens: new Set(),
+  ctx: null, master: null, noise: null, layers: {}, live: new Set(), mapVoices: null, mapGen: 0, pens: new Set(),
   mix: { restore: null, power: null },          // one pending room restore; a new cue cancels it
   want: { power: true, focused: null, ending: null, scene: null },
   on: (() => { try { return localStorage.getItem("knock.sound") !== "0"; } catch { return true; } })(),
@@ -344,10 +344,12 @@ const Sound = {
   },
   tick() { this.guard((c, now) => this.tone(c, now, 1800, 0.02, 0.002, 0, 0.05)); },
 
-  /* ---- the map: two voices drift apart as the lanes draw, and meet at each crossing */
+  /* ---- the map: two voices drift apart as the lanes draw, and meet at each crossing.
+     mapGen changes on every start and stop, so a step scheduled for an earlier opening does nothing. */
   mapStart() {
     this.guard((c, now) => {
       this.mapStop();
+      this.mapGen += 1;
       const g = c.createGain(); g.gain.setValueAtTime(0.0001, now); g.gain.exponentialRampToValueAtTime(0.02, now + 1); g.connect(this.master);
       const a = c.createOscillator(), b = c.createOscillator();
       a.frequency.value = 147; b.frequency.value = 147; a.connect(g); b.connect(g); a.start(); b.start();
@@ -360,10 +362,13 @@ const Sound = {
     this.guard((c, now) => {
       const v = this.mapVoices; if (!v) return;
       this.set(v.b.detune, 0, c, 0.12);
-      setTimeout(() => this.mapApart(70), 700);
+      const gen = this.mapGen;
+      this.mapTimer = setTimeout(() => { if (this.mapGen === gen) this.mapApart(70); }, 700);
     });
   },
-  mapStop(fade = 0) {
+  mapStop(fade = 0) {                           // safe to call any number of times
+    this.mapGen += 1;
+    clearTimeout(this.mapTimer); this.mapTimer = null;
     const v = this.mapVoices; this.mapVoices = null;
     if (!v) return;
     try {
