@@ -133,6 +133,13 @@ class Handler(SimpleHTTPRequestHandler):
         if os.environ.get("KNOCK_HTTP_LOG"):
             super().log_message(fmt, *args)
 
+    def end_headers(self):
+        # Page files are revalidated on every load (a cheap 304 when unchanged), so a deploy never pairs
+        # a new page with a browser's stale copy of app.js or style.css. API replies set no-store.
+        if not any(h.lower().startswith(b"cache-control:") for h in getattr(self, "_headers_buffer", [])):
+            self.send_header("Cache-Control", "no-cache")
+        super().end_headers()
+
     def _json(self, obj, status=HTTPStatus.OK):
         body = json.dumps(obj).encode()
         self.send_response(status)

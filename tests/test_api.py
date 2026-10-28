@@ -107,3 +107,17 @@ def test_concurrent_choices_on_one_game_get_409():
             t.join()
     assert sorted(results) == [200, 409]
     assert Slow.calls == 1                     # the second choice never ran
+
+
+def test_page_files_are_revalidated_and_api_replies_are_not_stored():
+    """A deploy must never pair a new page with a stale cached app.js: page files say no-cache."""
+    import urllib.request
+
+    from tests._fakehttp import serve
+    with serve(api.Handler) as base:
+        root = base.removesuffix("/v1")
+        for path in ("/", "/app.js", "/style.css", "/sound.js", "/causal.js"):
+            with urllib.request.urlopen(root + path, timeout=5) as r:
+                assert r.headers.get("Cache-Control") == "no-cache", path
+        with urllib.request.urlopen(root + "/api/replays", timeout=5) as r:
+            assert r.headers.get("Cache-Control") == "no-store"
