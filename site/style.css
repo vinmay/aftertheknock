@@ -533,8 +533,10 @@ body.instant-text .stage-color, body.instant-text .trace-hint { opacity: 1 !impo
 #title label { display: block; }
 #title input { text-align: center; }
 #title form .cta { justify-self: center; }
-#title .replays { text-align: left; max-width: 34rem; margin-left: auto; margin-right: auto; }
-#title .replays > p { text-align: center; }
+#title .replays { max-width: 34rem; margin-left: auto; margin-right: auto; }
+#title .card-head { justify-content: center; text-align: center; }
+#title .tech summary { justify-content: center; }
+#title .card-body .watch { display: block; margin-left: auto; margin-right: auto; }
 @media (max-width: 40rem) {
   #title h1 { font-size: 1.2rem; letter-spacing: 0.22em; padding-left: 0.22em; margin-top: 1.6rem; }
   #title .tagline { font-size: 0.95rem; margin-bottom: 2rem; }
