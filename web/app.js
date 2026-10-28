@@ -118,15 +118,19 @@ $("#start").addEventListener("focusout", () => setTimeout(() => {
 }, 300));
 /* Dismissing the on-screen keyboard (Done, back, swipe) usually leaves the field focused, so blur alone
    never fires. Watch the keyboard instead: the visual viewport shrinks when it opens and grows back when
-   it closes. On close, let go of the field: the full landing returns, and the next tap starts again. */
+   it closes. On close, let go of the field: the full landing returns, and the next tap starts again.
+   Measured as growth back from the lowest visible height since typing began; a rotation (the width
+   changes) restarts the measurement, and the resizes that follow a rotation are not read as a close. */
 if (window.visualViewport) {
   const vv = window.visualViewport;
-  let base = vv.height, keyboard = false;
+  let low = vv.height, width = vv.width, settledAt = 0;
   vv.addEventListener("resize", () => {
-    if (!document.body.classList.contains("typing")) { base = vv.height; keyboard = false; return; }
-    if (base - vv.height > 120) keyboard = true;
-    else if (keyboard) {
-      keyboard = false;
+    if (!document.body.classList.contains("typing")) { low = vv.height; width = vv.width; return; }
+    if (vv.width !== width) { width = vv.width; low = vv.height; settledAt = performance.now() + 600; return; }
+    low = Math.min(low, vv.height);
+    if (performance.now() < settledAt) return;
+    if (vv.height - low > 120) {                      // the keyboard went away
+      low = vv.height;
       if ($("#start").contains(document.activeElement)) document.activeElement.blur();
       document.body.classList.remove("typing");
     }
