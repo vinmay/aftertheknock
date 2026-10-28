@@ -18,11 +18,11 @@
   <span class="mode" id="mode"></span>
   <span class="clock" id="clock" hidden aria-label="Time"></span>
   <span class="tools">
+    <button class="tool sound-icon" id="sound-toggle" aria-pressed="true" aria-label="Sound" title="Sound on or off"><svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M4 9h4l5-4v14l-5-4H4z" fill="currentColor"/><path class="waves" d="M16 8.5a5 5 0 0 1 0 7M18.5 6a8.5 8.5 0 0 1 0 12" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/><path class="slash" d="M16 9l6 6M22 9l-6 6" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg></button>
     <button class="tool" id="settings-toggle" aria-expanded="false" aria-controls="settings">settings</button>
     <button class="tool" id="evidence-toggle" aria-pressed="false" aria-expanded="false" aria-controls="evidence" title="Show or hide the evidence (E)">evidence</button>
     <span id="settings" class="settings" hidden role="group" aria-label="Settings">
       <button class="tool" id="instant-toggle" aria-pressed="false">show text immediately</button>
-      <button class="tool" id="sound-toggle" aria-pressed="true">sound</button>
       <button class="tool menu-link" id="how-menu" aria-controls="drawer">how this works</button>
     </span>
   </span>
@@ -86,6 +86,8 @@
 <div id="sound-card" class="sound-card" hidden role="status">
   <svg viewBox="0 0 48 48" aria-hidden="true" focusable="false"><path d="M10 28v-4a14 14 0 0 1 28 0v4" fill="none" stroke="currentColor" stroke-width="2"/><rect x="7" y="27" width="8" height="13" rx="3" fill="none" stroke="currentColor" stroke-width="2"/><rect x="33" y="27" width="8" height="13" rx="3" fill="none" stroke="currentColor" stroke-width="2"/></svg>
   <p id="sound-card-text">Best with headphones.</p>
+  <p class="sound-card-hint" id="sound-card-hint">Listen for the knock.</p>
+  <button class="cta small" id="sound-card-on" hidden>Turn sound on</button>
 </div>
 <aside id="drawer" class="drawer" hidden aria-label="Where this came from">
   <div class="drawer-bar"><button class="close-btn" id="drawer-close" aria-label="Close this panel">Close <span aria-hidden="true">✕</span></button></div>

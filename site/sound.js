@@ -50,6 +50,8 @@ const Sound = {
   init() {
     try {
       if (!this.ctx) {
+        // iOS 17+: play as media, so the ring/silent switch doesn't silence the night.
+        try { if (navigator.audioSession) navigator.audioSession.type = "playback"; } catch { /* older browsers */ }
         this.ctx = new (window.AudioContext || window.webkitAudioContext)();
         const c = this.ctx;
         const limiter = c.createDynamicsCompressor();

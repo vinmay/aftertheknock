@@ -570,3 +570,11 @@ body.instant-text .stage-color, body.instant-text .trace-hint { opacity: 1 !impo
 .sound-card p { margin: 0; font-style: italic; letter-spacing: 0.02em; }
 .sound-card.out { opacity: 0; transition: opacity 0.35s ease; }
 @keyframes card-in { from { opacity: 0; } to { opacity: 1; } }
+.sound-card .sound-card-hint { font-size: 0.85rem; color: #8f877b; margin-top: -0.4rem; }
+.sound-card .cta { margin-top: 0.4rem; }
+/* The sound switch, always visible in the bar: a speaker with waves when on, crossed out when off. */
+.sound-icon { display: inline-flex; align-items: center; justify-content: center; }
+.sound-icon svg { width: 1.15rem; height: 1.15rem; }
+.sound-icon .slash { display: none; }
+.sound-icon[aria-pressed="false"] .waves { display: none; }
+.sound-icon[aria-pressed="false"] .slash { display: inline; }

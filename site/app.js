@@ -137,11 +137,11 @@ $("#start").addEventListener("submit", async (ev) => {
   try {
     const card = soundCard();                         // shown while the night is set up, not after
     const d = await api("/api/new", { pocket: $("#pocket").value });
-    await card;
+    const knocked = await card;
     S.game = d.game; S.replay = null; S.pocket = d.pocket;
     setMode(`<span class="tag live">live</span>`, d.seed, `${esc(d.model || "")} generating the other night now`);
     show(d.view);
-    Sound.knock();
+    if (!knocked) Sound.knock();
   } catch (e) {
     if (e.fallback === "replay") fallBackToReplays(`${e.message} These are replays of real recorded runs; the model is not running live.`);
     else $("#status-line").textContent = e.message;
@@ -152,21 +152,30 @@ $("#start").addEventListener("submit", async (ev) => {
 
 /* Right after Begin, the way games do it: a short dark card while the rain fades in, then the
    knock. Once per visit; any click or key skips it; none with instant text or reduced motion. */
+/* Resolves true if the knock already played (as the card faded), so the caller doesn't repeat it.
+   Muted players get one button to turn sound on, and a little longer to find it. */
 function soundCard() {
   let seen = false;
   try { seen = sessionStorage.getItem("knock.soundcard") === "1"; sessionStorage.setItem("knock.soundcard", "1"); } catch { /* per page only */ }
-  if (seen || instantText()) return Promise.resolve();
-  const card = $("#sound-card");
-  $("#sound-card-text").textContent = Sound.on ? "Best with headphones." : "Sound is off. You can turn it on in settings.";
+  if (seen || instantText()) return Promise.resolve(false);
+  const card = $("#sound-card"), on = $("#sound-card-on");
+  const muted = !Sound.on;
+  $("#sound-card-text").textContent = muted ? "Sound is off." : "Best with headphones.";
+  $("#sound-card-hint").textContent = muted ? "This night is told partly in sound." : "Listen for the knock.";
+  on.hidden = !muted;
   card.hidden = false;
   return new Promise((done) => {
-    const end = () => {
+    const end = (ev) => {
+      if (ev && ev.target === on) return;                         // the button handles its own click
       clearTimeout(t); document.removeEventListener("pointerdown", end); document.removeEventListener("keydown", end);
+      Sound.knock();                                              // the first thing heard, as the card clears
       card.classList.add("out");
-      setTimeout(() => { card.hidden = true; card.classList.remove("out"); done(); }, 350);
+      setTimeout(() => { card.hidden = true; card.classList.remove("out"); done(true); }, 350);
     };
-    const t = setTimeout(end, 2200);
+    on.onclick = () => { Sound.init(); if (!Sound.on) Sound.toggle(); end(); };
+    const t = setTimeout(end, muted ? 4000 : 2200);
     document.addEventListener("pointerdown", end); document.addEventListener("keydown", end);
+    if (muted) on.focus({ preventScroll: true });
   });
 }
 
@@ -174,13 +183,13 @@ async function startReplay(id) {
   Sound.reset(); Sound.init();
   const card = soundCard();
   const d = await api("/api/replay/start", { id });
-  await card;
+  const knocked = await card;
   S.game = d.game; S.replay = d.replay; S.step = 0; S.pocket = d.pocket;
   const liveHref = STATIC ? LINKS.live : location.pathname;
   setMode(`<span class="tag replay">recorded night</span>`, d.seed,
     `following a path someone already took · ${esc(REPLAY_LABEL.split("— ")[1] || REPLAY_LABEL)} · <a href="${liveHref}">Start a live night</a>`);
   show(d.view);
-  Sound.knock();
+  if (!knocked) Sound.knock();
 }
 
 function fallBackToReplays(why) {
