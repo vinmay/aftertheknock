@@ -106,7 +106,7 @@ function howItWorks() {
     <h3>Run it yourself</h3>
     <pre>scripts/setup          # needs uv and Ollama
 uv run knock-server    # http://localhost:8047</pre>
-    <p class="small">Code, tests and evaluation: <a href="${LINKS.repo}">${LINKS.repo.replace("https://", "")}</a>${st.static ? "" : ` · Replays: <a href="${LINKS.replay}">${LINKS.replay.replace("https://", "")}</a>`}</p>`, null, "how");
+    <p class="small">Code, tests and evaluation: <a href="${LINKS.repo}">${LINKS.repo.replace("https://", "")}</a>${st.static ? "" : ` · Replays: <a href="${LINKS.replay}">${LINKS.replay.replace("https://", "")}</a>`}</p>`, null, "how", "About the game");
 }
 $("#how").addEventListener("click", howItWorks);
 /* Phones: a compact landing while typing (the door recedes, the rest steps aside) so the field stays
@@ -746,7 +746,7 @@ function openTrace(tr) {
   if (toggledShut("trace:" + tr.intrusion.intrusion_id)) return;
   const evidence = !$("#evidence").hidden;
   openDrawer(memoryHtml(tr.memory) + proofHtml(crossingProof(tr.origin, tr.intrusion, tr.manifestation, tr.attempts), evidence),
-    tr.intrusion.origin_branch, "trace:" + tr.intrusion.intrusion_id);
+    tr.intrusion.origin_branch, "trace:" + tr.intrusion.intrusion_id, "Where this came from");
 }
 
 /* Every link that opens the drawer also closes it: the same opener clicked again shuts it.
@@ -755,7 +755,9 @@ function toggledShut(key) {
   if (!$("#drawer").hidden && S.drawerKey === key) { closeDrawer(); return true; }
   return false;
 }
-function openDrawer(html, shadow = null, key = null) {
+/* `name` is the drawer's accessible name, set on every open to match what it now shows. */
+function openDrawer(html, shadow = null, key = null, name = "Where this came from") {
+  $("#drawer").setAttribute("aria-label", name);
   Sound.focusShadow(shadow);
   const a = document.activeElement;
   if (a && a !== document.body && !$("#drawer").contains(a)) {
@@ -796,14 +798,14 @@ async function openVerify() {
   if (toggledShut("verify")) return;
   let d;
   try { d = await api(`/api/verify?game=${encodeURIComponent(S.game)}`); }
-  catch (e) { openDrawer(`<p class="bad">${esc(e.message)}</p>`); return; }
+  catch (e) { openDrawer(`<p class="bad">${esc(e.message)}</p>`, null, "verify", "Verify this run"); return; }
   const rows = Object.keys(d.hashes).map((b) =>
     `<li>timeline ${esc(b)} · ${esc(d.hashes[b])} ${d.replayed[b] === d.hashes[b] ? `<span class="ok">matches</span>` : `<span class="bad">differs: ${esc(d.replayed[b])}</span>`}</li>`).join("");
   openDrawer(`<p class="kicker">verify this run</p>
     <h3>${d.verified ? "Reproduced exactly." : "Did not reproduce."}</h3>
     <p>Every model output from this night was fed back through the engine, which re-validated and re-committed every event from the start. The resulting state of every timeline was compared with the ${esc(d.against)}.</p>
     <ul class="facts">${rows}</ul>
-    <p class="small muted">The same check runs on every recorded night in the test suite, and fails if a single recorded model output is changed.</p>`, null, "verify");
+    <p class="small muted">The same check runs on every recorded night in the test suite, and fails if a single recorded model output is changed.</p>`, null, "verify", "Verify this run");
 }
 
 /* ---------------------------------------------------------------- map */
@@ -1053,11 +1055,11 @@ function openEvent(id) {
     const o = d.events.find((y) => y.event_id === x.origin_event_id);
     const m = d.events.find((y) => y.event_id === x.manifestation_event_id);
     openDrawer(memoryHtml(x.memory, x.origin_event_id === id ? "the other night" : "your night") +
-      proofHtml(crossingProof(o, x, m, o.attempts), evidence), x.origin_branch, "event:" + id);
+      proofHtml(crossingProof(o, x, m, o.attempts), evidence), x.origin_branch, "event:" + id, "Where this came from");
     return;
   }
   openDrawer(`<p class="kicker">${esc(d.labels[e.branch] || e.branch)}</p>
-    <div class="quote ${e.branch === "B" || e.branch === "D" ? "shadowq" : ""}">${esc(e.desc)}</div>` + proofHtml(raw, evidence), null, "event:" + id);
+    <div class="quote ${e.branch === "B" || e.branch === "D" ? "shadowq" : ""}">${esc(e.desc)}</div>` + proofHtml(raw, evidence), null, "event:" + id, "Timeline event");
 }
 
 /* ---------------------------------------------------------------- evidence */
