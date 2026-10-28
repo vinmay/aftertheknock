@@ -74,7 +74,8 @@ def test_concurrent_choices_on_one_game_get_409():
     import threading
     import urllib.error
     import urllib.request
-    from http.server import ThreadingHTTPServer
+
+    from tests._fakehttp import serve
 
     class Slow:
         run_id = "slowgame"
@@ -88,9 +89,6 @@ def test_concurrent_choices_on_one_game_get_409():
 
     api._games.clear()
     api._add_game(Slow())
-    srv = ThreadingHTTPServer(("127.0.0.1", 0), api.Handler)
-    threading.Thread(target=srv.serve_forever, daemon=True).start()
-    url = f"http://127.0.0.1:{srv.server_address[1]}/api/choose"
     results = []
 
     def post():
@@ -101,10 +99,11 @@ def test_concurrent_choices_on_one_game_get_409():
         except urllib.error.HTTPError as e:
             results.append(e.code)
 
-    ts = [threading.Thread(target=post) for _ in range(2)]
-    ts[0].start(); time.sleep(0.1); ts[1].start()
-    for t in ts:
-        t.join()
-    srv.shutdown()
+    with serve(api.Handler) as base:
+        url = base.removesuffix("/v1") + "/api/choose"
+        ts = [threading.Thread(target=post) for _ in range(2)]
+        ts[0].start(); time.sleep(0.1); ts[1].start()
+        for t in ts:
+            t.join()
     assert sorted(results) == [200, 409]
     assert Slow.calls == 1                     # the second choice never ran

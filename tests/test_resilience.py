@@ -5,34 +5,27 @@ import random
 import socket
 import threading
 import time
-from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 
 import pytest
 
 from knock import audit
 from knock.game import Game, replay, verify_replay
 from knock.models import OpenAICompatModel, SpendLedger
+from tests._fakehttp import QuietHandler, serve
 
 KEY = "test-key"
 TIMEOUT = 0.4      # per call (production: 12 s)
 BUDGET = 2.0       # per shadow (production: 25 s)
 
 
-class Provider(BaseHTTPRequestHandler):
+class Provider(QuietHandler):
     mode = "ok"            # ok | hang | 503 | 429 | die_after
     calls = 0
     die_after = 0
-
-    def log_message(self, *a):
-        pass
+    stop = threading.Event()   # set on teardown, so a hanging reply wakes instead of outliving the test
 
     def _send(self, code, obj):
-        body = json.dumps(obj).encode()
-        self.send_response(code)
-        self.send_header("Content-Type", "application/json")
-        self.send_header("Content-Length", str(len(body)))
-        self.end_headers()
-        self.wfile.write(body)
+        self.reply(code, json.dumps(obj).encode())
 
     def do_POST(self):
         req = json.loads(self.rfile.read(int(self.headers["Content-Length"])))
@@ -41,7 +34,7 @@ class Provider(BaseHTTPRequestHandler):
         if mode == "die_after" and Provider.calls > Provider.die_after:
             mode = "503"
         if mode == "hang":
-            time.sleep(2)
+            Provider.stop.wait(2)
             return self._send(200, {"choices": [{"message": {"content": "{}"}}]})
         if mode in ("503", "429"):
             return self._send(int(mode), {"error": "unavailable"})
@@ -64,10 +57,9 @@ class Provider(BaseHTTPRequestHandler):
 @pytest.fixture
 def provider():
     Provider.calls, Provider.mode, Provider.die_after = 0, "ok", 0
-    srv = ThreadingHTTPServer(("127.0.0.1", 0), Provider)
-    threading.Thread(target=srv.serve_forever, daemon=True).start()
-    yield f"http://127.0.0.1:{srv.server_address[1]}/v1"
-    srv.shutdown()
+    Provider.stop = threading.Event()
+    with serve(Provider, stop=Provider.stop) as url:
+        yield url
 
 
 def closed_port_url():

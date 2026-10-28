@@ -2,31 +2,22 @@
 
 import json
 import random
-import threading
-from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 
 import pytest
 
 from knock.game import Game
 from knock.models import OpenAICompatModel, SpendCapReached, SpendLedger
+from tests._fakehttp import QuietHandler, serve
 
 KEY = "test-key-never-logged"
 
 
-class FakeProvider(BaseHTTPRequestHandler):
+class FakeProvider(QuietHandler):
     calls = []
     deny = False
 
-    def log_message(self, *a):
-        pass
-
     def _send(self, code, obj):
-        body = json.dumps(obj).encode()
-        self.send_response(code)
-        self.send_header("Content-Type", "application/json")
-        self.send_header("Content-Length", str(len(body)))
-        self.end_headers()
-        self.wfile.write(body)
+        self.reply(code, json.dumps(obj).encode())
 
     def do_GET(self):
         self._send(200, {"data": [{"id": "gemma-test"}]})
@@ -64,10 +55,8 @@ class FakeProvider(BaseHTTPRequestHandler):
 def provider():
     FakeProvider.calls = []
     FakeProvider.deny = False
-    srv = ThreadingHTTPServer(("127.0.0.1", 0), FakeProvider)
-    threading.Thread(target=srv.serve_forever, daemon=True).start()
-    yield f"http://127.0.0.1:{srv.server_address[1]}/v1"
-    srv.shutdown()
+    with serve(FakeProvider) as url:
+        yield url
 
 
 def test_hosted_playthrough_records_spend(provider, tmp_path):
