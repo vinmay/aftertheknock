@@ -197,6 +197,22 @@ const cases = {
     assert.strictEqual(knocks, 0);
     Sound.knock = k;
   },
+  "just before the central line the room is near silence"() {
+    fresh();
+    Sound.hush("deep"); Sound.hush("silent");
+    assert.ok(Math.abs(room() - Sound.ROOM * 0.04) < 1e-9);
+    Sound.hush(false);
+    assert.strictEqual(room(), Sound.ROOM);
+  },
+  "crossing 1 is discovered (no pen); crossing 2 is written (pen)"() {
+    fresh();
+    let pens = 0; const p = Sound.pen; Sound.pen = function (...a) { pens++; return p.apply(this, a); };
+    Sound.crossing(1, "pocket", 0, 0);
+    assert.strictEqual(pens, 0);
+    Sound.crossing(2, "key07", 1.0, 2.2);
+    assert.strictEqual(pens, 1);
+    Sound.pen = p;
+  },
 };
 let failed = 0;
 for (const [name, fn] of Object.entries(cases)) {

@@ -75,20 +75,28 @@ setup_summary = "You climb past the last landing and shoulder the roof door open
 setup = [["set", "chars.player.location", "stairwell"], ["set", "chars.player.location", "roof"]]
 
   [[D.lock.roof.steps]]
-  hint = "Someone comes up from below."
+  hint = "Mara climbs up from the basement into the stairwell."
   actions = ["move", "speak"]
   fallback = [{ actor = "mara", action = "move", target = "stairwell" }]
 
   [[D.lock.roof.steps]]
-  hint = "The storm, the roof, and what is said there."
-  actions = ["move", "speak", "take", "give", "harm"]
+  hint = "Mara comes out onto the roof, into the storm, to you."
+  actions = ["move"]
+  goal = "together mara player"
   fallback = [{ actor = "mara", action = "move", target = "roof" }]
 
   [[D.lock.roof.steps]]
-  hint = "Whoever holds the paper tag of the brass key writes a few words on it, in capitals."
+  hint = "Mara gives you the brass key."
+  actions = ["give"]
+  goal = "holds player key07"
+  fallback = [{ actor = "mara", action = "give", target = "key07", to = "player" }]
+
+  [[D.lock.roof.steps]]
+  hint = "You write a message of one to three words, in capitals, to the version of you who chose differently tonight."
   mark = "words"
   prefer = "key07"
   fallback = [
+    { actor = "player", action = "mark", target = "key07", text = "$mark" },
     { actor = "$holder:key07", action = "mark", target = "key07", text = "$mark" },
     { actor = "$holder:pocket", action = "mark", target = "pocket", text = "$mark" },
   ]
@@ -104,15 +112,17 @@ setup = [["set", "chars.player.location", "stairwell"], ["set", "chars.player.lo
   fallback = [{ actor = "mara", action = "speak", target = "player", text = "Open it with me. That's all I wanted." }]
 
   [[D.lock.basement.steps]]
-  hint = "Storage unit 07 is opened, or someone refuses."
-  actions = ["open", "move", "give", "take", "harm", "speak"]
-  fallback = [{ actor = "mara", action = "open", target = "unit07" }]
+  hint = "Mara gives you the brass key."
+  actions = ["give"]
+  goal = "holds player key07"
+  fallback = [{ actor = "mara", action = "give", target = "key07", to = "player" }]
 
   [[D.lock.basement.steps]]
-  hint = "Whoever holds the paper tag of the brass key writes a few words on it, in capitals."
+  hint = "You write a message of one to three words, in capitals, to the version of you who chose differently tonight."
   mark = "words"
   prefer = "key07"
   fallback = [
+    { actor = "player", action = "mark", target = "key07", text = "$mark" },
     { actor = "$holder:key07", action = "mark", target = "key07", text = "$mark" },
     { actor = "$holder:pocket", action = "mark", target = "pocket", text = "$mark" },
   ]
@@ -134,10 +144,11 @@ setup = [["set", "chars.player.location", "stairwell"], ["set", "chars.mara.loca
   fallback = [{ actor = "mara", action = "give", target = "key07", to = "player" }]
 
   [[D.open.roof.steps]]
-  hint = "Whoever holds the pocket object writes a few words on it, in capitals."
+  hint = "You write a message of one to three words, in capitals, to the version of you who chose differently tonight."
   mark = "words"
   prefer = "pocket"
   fallback = [
+    { actor = "player", action = "mark", target = "pocket", text = "$mark" },
     { actor = "$holder:pocket", action = "mark", target = "pocket", text = "$mark" },
     { actor = "$holder:key07", action = "mark", target = "key07", text = "$mark" },
   ]
@@ -159,10 +170,11 @@ setup = [["set", "chars.player.location", "stairwell"], ["set", "chars.mara.loca
   fallback = [{ actor = "mara", action = "move", target = "unit07" }]
 
   [[D.open.basement.steps]]
-  hint = "Whoever holds the pocket object writes a few words on it, in capitals."
+  hint = "You write a message of one to three words, in capitals, to the version of you who chose differently tonight."
   mark = "words"
   prefer = "pocket"
   fallback = [
+    { actor = "player", action = "mark", target = "pocket", text = "$mark" },
     { actor = "$holder:pocket", action = "mark", target = "pocket", text = "$mark" },
     { actor = "$holder:key07", action = "mark", target = "key07", text = "$mark" },
   ]

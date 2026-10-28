@@ -310,6 +310,8 @@ async function show(v) {
   // has had time to land; lowest through the confrontation.
   if (v.door && !instantText()) setTimeout(() => { if (S.view === v) Sound.hush(v.hush); }, 4500);
   else Sound.hush(v.hush);
+  // The central line: the room falls to near silence just before it arrives.
+  if (v.climax) setTimeout(() => { if (S.view === v) Sound.hush("silent"); }, instantText() ? 0 : 1000);
   if (v.sound === "knock") Sound.knock();
   S.view = v;
   $("#title").hidden = true;
@@ -381,6 +383,7 @@ async function show(v) {
       b.innerHTML = `<span class="num">${i + 1}</span>${esc(label)}`;
       b.dataset.index = i;
       b.addEventListener("click", fn); ch.appendChild(b);
+      if (i === 0) ch.insertAdjacentHTML("beforeend", `<p class="afterword-note">Every impossible detail came from somewhere. Follow the evidence.</p>`);
     });
     const how = document.createElement("button");             // low emphasis, unnumbered: not a story choice
     how.className = "linkish afterword-how";
@@ -678,11 +681,15 @@ function paperSvg(c) {
 
 function stageCrossing(c, second = false) {
   const el = $("#crossing-stage");
-  el.classList.remove("ready", "instant");
+  el.classList.remove("ready", "instant", "discovered", "written");
+  // Escalation by order: the first mark is discovered (already there, it settles into view); the second
+  // is written while you watch, after a beat of near-silence.
+  el.classList.add(second ? "written" : "discovered");
   el.innerHTML = `
     <div class="stage-inner">
       <p class="stage-before">${esc(c.before)}</p>
       <div class="prop-wrap${c.object === "key07" ? " keytag" : ""}">${propSvg(c)}</div>
+      <p class="sr-only">${second ? "Writing appears on it as you watch." : "The writing is already there."}</p>
       <p class="stage-after">${esc(`${c.after} ${c.who}`.trim())}</p>
       ${c.echo ? `<p class="stage-after stage-echo">${esc(c.echo)}</p>` : ""}
       ${c.color ? `<p class="stage-color">${esc(c.color)}</p>` : ""}
@@ -695,16 +702,17 @@ function stageCrossing(c, second = false) {
     document.body.classList.add("flicker");
     setTimeout(() => document.body.classList.remove("flicker"), 1000);
   }
-  // The second crossing escalates: a low swell under the pen, not the pen alone.
-  // The mark is drawn from 0.4 s to 2.6 s; the scratches follow it (and still play, faster, without animation).
-  if (instantText()) Sound.crossing(second ? 2 : 1, c.object, 0.05, 0.8);
-  else Sound.crossing(second ? 2 : 1, c.object, 0.4, 2.2);
+  // Crossing 1: no pen (the mark was already made). Crossing 2: ~0.6 s of near-silence and a faint metallic
+  // resonance, then the pen follows the stroke-writing from 1.0 s to 3.2 s (faster without animation).
+  if (!second) Sound.crossing(1, c.object, 0, 0);
+  else if (instantText()) Sound.crossing(2, c.object, 0.05, 0.8);
+  else Sound.crossing(2, c.object, 1.0, 2.2);
   const close = () => { Sound.stopPen(); el.hidden = true; document.body.classList.remove("staged"); $("#current .ink")?.focus({ preventScroll: true }); };
   $("#stage-go").addEventListener("click", close);
   const ready = () => { el.classList.add("ready"); $("#stage-go")?.focus({ preventScroll: true }); };
   if (instantText()) ready();
   else {
-    const t = setTimeout(ready, 3100);              // the mark has finished writing itself
+    const t = setTimeout(ready, second ? 3700 : 1600);   // written: the stroke has finished; discovered: it has settled
     el.addEventListener("click", (ev) => {           // click anywhere: finish now
       if (ev.target.closest("#stage-go")) return;
       clearTimeout(t); el.classList.add("instant"); Sound.stopPen(); ready();
@@ -1128,8 +1136,11 @@ async function loadEvidence() {
     ? `<p class="small muted ev-verify">This recorded night was re-run through the engine when this site was built, and the final state of every timeline matched the recording.</p>`
     : `<div class="ev-verify"><button class="linkish" id="ev-verify">Re-run this night through the engine</button>
        <p class="small muted">Feeds every recorded model output back through the validator and compares the final state of every timeline.</p></div>`;
-  const changed = (S.view?.changed || []).length
-    ? `<div class="ev-changed"><p><b>What changed</b></p>${S.view.changed.map((l) => `<p class="small">${esc(l)}</p>`).join("")}</div>` : "";
+  const rows = S.view?.diverged || [];
+  const changed = rows.length
+    ? `<div class="ev-changed"><p><b>Where the two nights diverged</b></p><p class="small muted">Recorded just before your final choice.</p>
+       <table class="ev-diverged"><thead><tr><th scope="col"></th><th scope="col">Your night</th><th scope="col">The night you rejected</th></tr></thead>
+       <tbody>${rows.map((r) => `<tr><th scope="row">${esc(r.label)}</th><td>${esc(r.yours)}</td><td>${esc(r.rejected)}</td></tr>`).join("")}</tbody></table></div>` : "";
   const authored = (d.authored || []).length
     ? `<p class="small ev-authored">Behind the door: ${esc(d.authored[0].label)}</p>` : "";
   $("#evidence-body").innerHTML = summary + changed + authored + `<p class="small muted">model ${esc(d.model.model)} ${esc(d.model.quantization || "")} · seed ${esc(d.seed)} · ${d.log.length} records</p>` + body + verify;

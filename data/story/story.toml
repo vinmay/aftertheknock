@@ -143,11 +143,17 @@ The roof door sticks, then gives, and the storm takes the breath out of you. The
 
 You are alone up here. You are sure of that for almost a minute.
 
-Below the parapet, one window on the sixth floor is open to the storm. 6D. Teo is leaning out of it, looking up at you, rain in his face.
+Below the parapet, one window on the sixth floor is open to the storm. 6D. Teo is leaning out of it, rain in his face, looking up at you as if he has been waiting.
 
-"I wasn't asking you to save me," he calls. "In March. I just needed somebody else to hear it."
+"You came up," he calls. "Nobody ever does what I say."
 
-"Four numbers," he calls. "I heard her say them, through the wall. In the other night. They open 07." The window closes.
+Then he tells you, the way people tell things they have rehearsed for months.
+
+"In March I heard someone in my kitchen. Talking. My voice. I was sitting on the bed, and I was in the kitchen, talking. I knocked on your door so somebody else would hear it too. That's all I wanted. Somebody else to hear it."
+
+A pause. "Four numbers. I heard her say them tonight, through the wall. In the other night. They open 07. Don't go down there."
+
+The window closes.
 
 Then the stairwell door bangs shut behind you, though nobody came through it.
 """
@@ -245,11 +251,17 @@ You leave her at your table. She doesn't argue. "I'll be here," she says. "I'm v
 
 The roof door sticks, then gives. The storm, the black city, water standing on the tar. You stand in it until you are as wet as she was.
 
-Below the parapet, one window on the sixth floor is open to the storm. 6D. Teo is leaning out of it, looking up at you, rain in his face.
+Below the parapet, one window on the sixth floor is open to the storm. 6D. Teo is leaning out of it, rain in his face, looking up at you as if he has been waiting.
 
-"I wasn't asking you to save me," he calls. "In March. I just needed somebody else to hear it."
+"You came up," he calls. "Nobody ever does what I say."
 
-"Four numbers," he calls. "I heard her say them, through the wall. In the other night. They open 07." The window closes.
+Then he tells you, the way people tell things they have rehearsed for months.
+
+"In March I heard someone in my kitchen. Talking. My voice. I was sitting on the bed, and I was in the kitchen, talking. I knocked on your door so somebody else would hear it too. That's all I wanted. Somebody else to hear it."
+
+A pause. "Four numbers. I heard her say them tonight, through the wall. In the other night. They open 07. Don't go down there."
+
+The window closes.
 
 Behind you, the stairwell door bangs shut, though nobody came through it.
 """
@@ -355,7 +367,7 @@ choices = [
 [endings.erase]
 clock = "12:30"
 text = """
-You turn the deadbolt. It is loud in the narrow entry, louder than it should be.
+You turn the deadbolt. It is loud, louder than it should be.
 
 Through the peephole, the other you goes still. You know that expression. It's the face you make when you know no one is coming.
 
@@ -363,7 +375,9 @@ Through the peephole, the other you goes still. You know that expression. It's t
 
 {erase_mara}
 
-At 12:30 every light in the building comes back at once, and the fridge begins to hum as if nothing happened.
+{fork2_echo}
+
+At 12:30 every light in the building comes back at once. Somewhere below, a fridge begins to hum as if nothing happened.
 
 Then, three knocks. Slow. Patient.
 
@@ -377,11 +391,13 @@ clock = "12:31"
 text = """
 You open the door.
 
-They don't come in at once. They look past you, at your life, the way you'd look at a room you used to live in.
+They don't come in at once. They look past you, at the night you kept, the way you'd look at a room you used to live in.
 
 You look down at what the night left you. {open_marks}
 
 You understand now who it was meant for.
+
+{fork2_echo}
 
 {open_teo}
 
@@ -391,7 +407,7 @@ They step inside. You step back. There are two of you in the doorway, and the do
 [endings.slots]
 erase_marks = "\"{b_text}\" fades from {b_on}, and \"{d_text}\" from {d_on}, like breath off a mirror, and then there is nothing left to read."
 erase_mara_present = "When you look up, Mara is gone. Where she stood, the floor is dry."
-erase_mara_absent = "Far below, a metal door closes, gently, and does not open again."
+erase_mara_absent = "Somewhere in the building, a metal door closes, gently, and does not open again."
 
 # What changed, shown in the evidence view after the ending (not in the ending text): each object's
 # committed final holder in both nights (same or different), and Mara's position in both.
@@ -402,9 +418,15 @@ object_split = "{Obj} {is} {here}. And {it} {is} {there}. You can feel both, lik
 mara_same = "Mara is {here}. She looks relieved, and very tired, like someone who has been holding a door shut for a long time."
 mara_split = "Mara is {here}. She is also {there}; you can hear her, and she can hear herself. She doesn't look surprised."
 
-open_teo_hurt = "Across the hall, Teo is on his kitchen floor, holding his arm. In March, you didn't answer. Now there are two of you, and you both turn toward his door at the same time."
-open_teo_dead = "Across the hall, 6D is silent. In March he knocked and you didn't answer. Tonight there are two of you, and it's still too late."
-open_teo_fine = "Across the hall, Teo's chain slides back. He opens his door, sees the two of you, and doesn't look surprised. \"Finally,\" he says."
+open_teo_hurt = "In 6D, Teo is on his kitchen floor, holding his arm. In March, you didn't answer. Now there are two of you, and you both turn toward the stairs at the same time."
+open_teo_dead = "In 6D, there is no sound at all. In March he knocked and you didn't answer. Tonight there are two of you, and it's still too late."
+open_teo_fine = "In 6D, Teo's chain slides back. He opens his door to the empty hall and listens, and whatever he hears, he isn't afraid of it. \"Finally,\" he says."
+
+# The second choice, echoed at the end (C state decides Mara's line).
+fork2_echo_erase_roof = "Below you, in 6D, a chain slides back, and stops. Teo heard you lock it. He always hears you."
+fork2_echo_erase_basement = "Behind you, the folding chair in 07 still faces the door. Mara wanted someone to see. You saw. You locked it anyway."
+fork2_echo_open_roof = "Teo was right. Up was just weather. The worst of it was always going to be at your own door."
+fork2_echo_open_basement = "Mara watches the two of you in the doorway. She has her witness now. For the first time tonight, she sits down."
 
 # ---- the other you (scene "confrontation"). Each slot is filled only from the player's own choices,
 # committed events of shadow B, or the March backstory; a slot with no supported variant is left out.
@@ -433,6 +455,9 @@ other_verb_unknown = "marked {obj} with {b_text}"
 # After crossing 1, one line from the player's own first choice (never a shadow fact).
 echo_lock = "You locked the door. Somewhere, you didn't."
 echo_open = "You opened the door. Somewhere, you didn't."
+# After crossing 2, one line from the player's own second choice.
+echo2_roof = "You trusted Teo. Somewhere, you followed her down."
+echo2_basement = "You followed Mara. Somewhere, you trusted Teo."
 
 open_marks = "{b_line} {d_line} Both made in a night you never lived."
 mark_line_paper = "\"{text}\" on {on}, in {writing}."

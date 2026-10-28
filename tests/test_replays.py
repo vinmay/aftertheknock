@@ -7,7 +7,8 @@ import pytest
 
 from knock.game import replay, verify_replay
 
-REPLAYS = sorted((Path(__file__).resolve().parent.parent / "data" / "runs" / "replays").glob("*.json"))
+ROOT = Path(__file__).resolve().parent.parent
+REPLAYS = sorted((ROOT / "data" / "runs" / "replays").glob("*.json"))
 
 
 @pytest.mark.parametrize("path", REPLAYS, ids=[p.stem for p in REPLAYS])
@@ -35,3 +36,18 @@ def test_nothing_is_left_invisible_when_animations_are_off():
     css = (Path(__file__).resolve().parent.parent / "web" / "style.css").read_text()
     for sel in (".choices", ".text p", ".stage-after", ".stage-color", ".trace-hint"):
         assert re.search(r"body\.instant-text[^{]*" + re.escape(sel) + r"[^{]*\{[^}]*opacity:\s*1", css), sel
+
+
+def test_crossing_two_is_written_by_the_player_in_every_recorded_run():
+    """Shadow D's mark (crossing 2) is the other you's message, in the player's own hand."""
+    from knock.game import Game
+    from knock.models import ReplayModel
+    runs = sorted((ROOT / "data" / "runs" / "replays").glob("*.json")) + sorted((ROOT / "eval" / "results" / "runs").glob("*.json"))
+    assert runs
+    for p in runs:
+        rec = json.loads(p.read_text())
+        g = Game(rec["pocket_raw"], rec["seed"], ReplayModel(rec), background=False, run_id=rec["run_id"])
+        for c in rec["choices"]:
+            g.choose(c["index"])
+        d = g.timeline.event(g.crossings["D"]["intrusion"]["origin_event_id"])
+        assert d.actor == "player", (p.name, d.actor)

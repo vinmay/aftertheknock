@@ -136,13 +136,17 @@ def _patched_states(g, edit):
     g.timeline.state = state
 
 
-TEO = {"present": "Teo's chain slides back", "hurt": "you both turn toward his door", "dead": "it's still too late"}
+TEO = {"present": "Teo's chain slides back", "hurt": "you both turn toward the stairs", "dead": "it's still too late"}
+ECHO = {("erase", "roof"): "Teo heard you lock it.", ("erase", "basement"): "You saw. You locked it anyway.",
+        ("open", "roof"): "Teo was right. Up was just weather.", ("open", "basement"): "She has her witness now."}
+HOME_ONLY = re.compile(r"across the hall|narrow entry|\bentry\b|your table|your kitchen|the fridge begins", re.I)
 
 
 @pytest.mark.parametrize("f1,f2", [(a, b) for a in ("lock", "open") for b in ("basement", "roof")])
 @pytest.mark.parametrize("status", list(TEO))
 @pytest.mark.parametrize("beside", [True, False])
 def test_routes_by_teo_and_mara(f1, f2, status, beside):
+    """Every route x both endings x Teo fine/hurt/dead x Mara beside you or not."""
     """Every route x Teo fine/hurt/dead x Mara beside you or not: no unfilled slot, the right Teo line in
     the open ending, and Mara's witness line exactly when she is beside the player in this night."""
     g, views = play("ticket stub", f1, f2, "open")
@@ -160,12 +164,18 @@ def test_routes_by_teo_and_mara(f1, f2, status, beside):
                 s["chars"]["mara"]["location"] = next(p for p in s["places"] if p != here)
         return s
     g.timeline.state = state
-    conf, ending = g.fmt(g.story["scenes"]["confrontation"]["text"]), g.ending_text("open")
-    for t in (conf, ending, g.ending_text("erase")):
+    conf, ending, erased = g.fmt(g.story["scenes"]["confrontation"]["text"]), g.ending_text("open"), g.ending_text("erase")
+    for t in (conf, ending, erased):
         assert not re.search(r"\{\w+\}", t), t
+        assert not HOME_ONLY.search(t), HOME_ONLY.search(t).group(0)     # the ending is on the roof or in the basement
     assert ("Mara has gone very still" in conf) == beside
     assert TEO[status] in ending
     assert sum(line in ending for line in TEO.values()) == 1
+    # The second choice echoes in both endings; Mara's witness line only when she is beside you.
+    assert ECHO[("erase", f2)] in erased
+    assert (ECHO[("open", f2)] in ending) == (f2 == "roof" or beside)
+    other = "basement" if f2 == "roof" else "roof"
+    assert ECHO[("erase", other)] not in erased and ECHO[("open", other)] not in ending
 
 
 @pytest.mark.parametrize("split", [False, True])
@@ -250,12 +260,29 @@ def test_authored_scenes_add_no_events_and_are_labelled(f1):
 def test_first_crossing_echoes_the_first_choice(f1, line):
     g, views = play("ticket stub", f1, "basement", "open")
     assert g.crossings["B"]["parts"]["echo"] == line and line in g.crossings["B"]["narration"]
-    assert "echo" not in g.crossings["D"]["parts"] and "Somewhere, you didn't" not in g.crossings["D"]["narration"]
+    assert "Somewhere, you didn't" not in g.crossings["D"]["narration"]
 
 
 @pytest.mark.parametrize("f1", ["lock", "open"])
-def test_teo_on_the_roof_tells_what_the_numbers_open(f1):
+def test_teo_confesses_on_the_roof(f1):
     g, views = play("ticket stub", f1, "roof", "erase")
     roof = next(v for v in views if v["scene"] == f"{f1}_roof")["text"]
-    assert '"Four numbers," he calls. "I heard her say them, through the wall. In the other night. They open 07."' in roof
-    assert "He looks at your hands." not in roof and "I wasn't asking you to save me" in roof
+    assert '"You came up," he calls. "Nobody ever does what I say."' in roof
+    assert "I was sitting on the bed, and I was in the kitchen, talking." in roof
+    assert '"Four numbers. I heard her say them tonight, through the wall. In the other night. They open 07. Don\'t go down there."' in roof
+    assert roof.rstrip().endswith("though nobody came through it.")
+    scenes = [v["scene"] for v in views]
+    assert scenes.index("crossing1") < scenes.index(f"{f1}_roof")          # the numbers line comes after crossing 1
+
+
+@pytest.mark.parametrize("f1,f2", [(a, b) for a in ("lock", "open") for b in ("basement", "roof")])
+def test_crossing_two_is_in_your_own_hand_and_echoes_fork_two(f1, f2):
+    g, views = play("ticket stub", f1, f2, "open")
+    d = g.timeline.event(g.crossings["D"]["intrusion"]["origin_event_id"])
+    b = g.timeline.event(g.crossings["B"]["intrusion"]["origin_event_id"])
+    assert d.actor == "player" and d.target != b.target                     # your hand; a different object
+    line = {"roof": "You trusted Teo. Somewhere, you followed her down.",
+            "basement": "You followed Mara. Somewhere, you trusted Teo."}[f2]
+    assert g.crossings["D"]["parts"]["echo"] == line and line in g.crossings["D"]["narration"]
+    if f1 == "lock":                                                         # Mara handed you the key first
+        assert any(e.action == "give" and e.target == "key07" and e.to == "player" for e in g.timeline.branch("D").events)

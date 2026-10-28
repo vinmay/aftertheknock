@@ -262,9 +262,11 @@ class Game:
                                      self.story["crossings"], style=self.style_for(oid),
                                      avoid=next((c["parts"].get("color") for c in self.crossings.values()), None))
         narration["parts"]["material"] = self.material_for(oid)
-        if shadow == "B":                       # the player's own first choice, mirrored; no shadow fact
-            narration["parts"]["echo"] = self.story["endings"]["slots"][f"echo_{self.f1}"]
-            narration["text"] = compose(narration["parts"], narration["color"])
+        # One line from the player's own choice (fork 1 after crossing 1, fork 2 after crossing 2), mirrored;
+        # never a shadow fact.
+        echo = f"echo_{self.f1}" if shadow == "B" else f"echo2_{self.f2}"
+        narration["parts"]["echo"] = self.story["endings"]["slots"][echo]
+        narration["text"] = compose(narration["parts"], narration["color"])
         for k in ("before", "after", "who"):
             narration["parts"][k] = owned(narration["parts"][k], self.pocket)
         narration["text"] = owned(narration["text"], self.pocket)
@@ -314,6 +316,7 @@ class Game:
         self.scene = f"ending_{which}"
         self.ending = {"which": which, "text": self.ending_text(which)}
         self.ending["changed"] = self.changed
+        self.ending["diverged"] = self.diverged
 
     def material_for(self, oid: str) -> str:
         """The key's tag is paper; the pocket object is whatever the player said it was."""
@@ -383,7 +386,22 @@ class Game:
             lines.append(line)
         mh, mt = self._char_where(c, "mara"), self._char_where(d, "mara")
         lines.append((slots["mara_same"] if mh == mt else slots["mara_split"]).replace("{here}", mh).replace("{there}", mt))
-        self.changed = [owned(x, self.pocket) for x in lines]      # for the evidence view ("What changed")
+        self.changed = [owned(x, self.pocket) for x in lines]
+        # For the evidence view ("Where the two nights diverged"): two columns, past tense; the rejected
+        # night speaks of "your other self", never "you".
+        other = lambda w: re.sub(r"\byou\b", "your other self", re.sub(r"\byour\b", "your other self's", w))  # noqa: E731
+        rows = []
+        for oid in ("key07", "pocket"):
+            plural = oid == "pocket" and self.plural
+            it, was = ("They", "were") if plural else ("It", "was")
+            rows.append({"label": owned(display_name(oid, self.pocket, "subject"), self.pocket),
+                         "yours": f"{it} {was} {self._where(c, oid)}.", "rejected": f"{it} {was} {other(self._where(d, oid))}."})
+        rows.append({"label": "Mara", "yours": f"She was {mh}.", "rejected": f"She was {other(mt)}."})
+        self.diverged = rows
+        # The second choice, echoed: Mara's line only when she is beside the player in this night.
+        mara_here = c["chars"]["mara"]["location"] == here
+        echo = slots[f"fork2_echo_{which}_{self.f2}"]
+        fill["fork2_echo"] = "" if (which == "open" and self.f2 == "basement" and not mara_here) else echo
         rank = {"present": 0, "hurt": 1, "dead": 2, "departed": 0}
         teo = max((b["chars"]["teo"]["status"], d["chars"]["teo"]["status"]), key=lambda s: rank.get(s, 0))
         fill["open_teo"] = slots["open_teo_" + {"hurt": "hurt", "dead": "dead"}.get(teo, "fine")]
@@ -398,6 +416,7 @@ class Game:
         if self.ending:
             return {"scene": self.scene, "kind": "ending", "text": self.ending["text"], "choices": [],
                     "ending": self.ending["which"], "changed": self.ending.get("changed", []),
+                    "diverged": self.ending.get("diverged", []),
                     "clock": self.story["endings"][self.ending["which"]].get("clock")}
         sc = self.story["scenes"][self.scene]
         v = {"scene": self.scene, "kind": sc.get("kind", "scene"),

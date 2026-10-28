@@ -605,7 +605,7 @@ body.instant-text .stage-color, body.instant-text .trace-hint { opacity: 1 !impo
 .ev-head .close-btn { top: 0.25rem; }       /* inside the panel, so none of it is clipped above the panel's edge */
 
 /* One way on: a quiet Continue, unnumbered, so it never reads as a choice. */
-.choices .continue { color: var(--muted); font-style: italic; letter-spacing: 0.02em; width: auto; justify-self: start;
+.choices .continue { color: #b9b1a4; font-style: italic; letter-spacing: 0.02em; width: auto; justify-self: start;
   min-height: 44px; min-width: 44px; padding: 0 0.6rem 0 0; }
 .choices .continue::after { content: "\2192"; font-style: normal; margin-left: 0.5rem; color: var(--faint); transition: color 0.2s, transform 0.2s; }
 .choices .continue:hover, .choices .continue:focus-visible { color: var(--ink); }
@@ -621,3 +621,31 @@ body.instant-text .stage-color, body.instant-text .trace-hint { opacity: 1 !impo
 body.instant-text .text p.climax { animation: none; opacity: 1; transform: none; }
 .ev-changed { border-top: 1px solid var(--faint); margin: 0.6rem 0; padding-top: 0.4rem; }
 .ev-changed p { margin: 0.2rem 0 0.5rem; }
+
+.choices .continue:disabled { visibility: hidden; }
+/* Crossing 1, discovered: the mark is already there; it settles into view, no stroke-writing. */
+.crossing-stage.discovered .prop .ink-hand { animation: none !important; fill: currentColor; stroke-dashoffset: 0; stroke-width: 0.4; }
+.crossing-stage.discovered .prop .engrave { animation: none !important; stroke-dashoffset: 0; fill: rgba(36, 25, 6, 0.55); }
+.crossing-stage.discovered .prop .scratch { animation: none !important; stroke-dashoffset: 0; }
+.crossing-stage.discovered .prop-wrap { animation: settle 0.9s ease both; }
+@keyframes settle { from { opacity: 0; transform: rotate(-1.5deg) translateY(6px); } }
+.crossing-stage.discovered .prop-wrap.keytag { animation-name: settle-tag; }
+@keyframes settle-tag { from { opacity: 0; transform: rotate(2deg) translateY(6px); } }
+.crossing-stage.discovered .stage-after { animation-delay: 1s; }
+.crossing-stage.discovered .stage-color { animation-delay: 1.5s; }
+.crossing-stage.discovered .stage-go { animation-delay: 1.6s; }
+/* Crossing 2, written while you watch: the stroke starts after the beat of near-silence. */
+.crossing-stage.written .prop .ink-hand { animation-delay: 1s, 3s; }
+.crossing-stage.written .prop .engrave { animation-delay: 1s, 3s; }
+.crossing-stage.written .prop .scratch, .crossing-stage.written .prop .etch-lip { animation-delay: 1s; }
+.crossing-stage.written .stage-after { animation-delay: 3.5s; }
+.crossing-stage.written .stage-color { animation-delay: 4.1s; }
+.crossing-stage.written .stage-go { animation-delay: 4.3s; }
+.crossing-stage.instant .prop-wrap { animation: none !important; }
+/* The central line, larger (clamped on narrow phones), with room around it. */
+.text p.climax { font-size: clamp(1.1em, 5.4vw, 1.3em); margin: 2.8rem 0 2.4rem; line-height: 1.4; }
+.afterword-note { margin: -0.2rem 0 0.6rem 2rem; font-size: 0.85rem; color: var(--muted); font-style: italic; }
+.ev-diverged { width: 100%; border-collapse: collapse; font-size: 0.85rem; margin: 0.4rem 0 0.6rem; }
+.ev-diverged th, .ev-diverged td { text-align: left; vertical-align: top; padding: 0.35rem 0.4rem 0.35rem 0; border-top: 1px solid var(--faint); }
+.ev-diverged thead th { font-family: var(--mono); font-size: 0.68rem; letter-spacing: 0.06em; text-transform: uppercase; color: var(--muted); font-weight: normal; }
+.ev-diverged tbody th { font-weight: normal; color: var(--muted); white-space: nowrap; padding-right: 0.8rem; }

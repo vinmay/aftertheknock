@@ -237,9 +237,9 @@ const Sound = {
   },
   /* The room's resting level: lower while the other night is in focus, and held low behind the
      other door (the confrontation); both are desired state, so mute and unmute keep them. */
-  roomLevel() { return this.ROOM * (this.want.focused ? 0.35 : 1) * ({ true: 0.3, deep: 0.12 }[this.want.hush] || 1); },
-  hush(level) {                                 // false, true (held low) or "deep" (lowest: the central line)
-    const want = level === "deep" ? "deep" : Boolean(level);
+  roomLevel() { return this.ROOM * (this.want.focused ? 0.35 : 1) * ({ true: 0.3, deep: 0.12, silent: 0.04 }[this.want.hush] || 1); },
+  hush(level) {                                 // false, true (held low), "deep", or "silent" (just before the central line)
+    const want = level === "deep" || level === "silent" ? level : Boolean(level);
     if (want === this.want.hush) return;
     this.want.hush = want;
     this.applyMix(want ? 2.5 : 1.5);
@@ -328,14 +328,17 @@ const Sound = {
         p.frequency.exponentialRampToValueAtTime(38, now + 1.2);
         this.bleed("B");
       } else {
-        [110, 117.3, 155.6].forEach((f) => this.tone(c, now, f, 0.05, 1.2, 0.8, 2));  // detuned, more dissonant
+        // A beat of near-silence, then a faint metallic resonance (inharmonic partials) before the pen.
+        this.duck({ gain: 0.04 }, 600, 0.8, 0.08);
+        [1318, 2093, 3371].forEach((f, i) => this.tone(c, now + 0.6, f, 0.012 / (i + 1), 0.01, 0, 2.2, "sine"));
+        [110, 117.3, 155.6].forEach((f) => this.tone(c, now + 0.6, f, 0.05, 1.2, 0.8, 2));  // detuned, more dissonant
         if (object === "key07") [0.15, 0.32, 0.41].forEach((d) => {                   // a small metal tag rattle
           this.burst(c, now + scratchDelay + d, 3800 + Math.random() * 1500, 8, 0.12, 0.04);
           this.tone(c, now + scratchDelay + d, 2900 + Math.random() * 400, 0.015, 0.002, 0, 0.12, "triangle");
         });
         this.bleed("D");
       }
-      this.pen(scratchDelay, scratchFor);
+      if (scratchFor > 0) this.pen(scratchDelay, scratchFor);   // crossing 1 is discovered, not written: no pen
     });
   },
   pen(delay = 0.4, dur = 2.2) {                  // scratches spread over the mark's reveal

@@ -13,4 +13,4 @@ ROOT = Path(__file__).resolve().parent.parent
 def test_sound_desired_state():
     r = subprocess.run(["node", str(ROOT / "tests" / "js" / "sound_state.js")], capture_output=True, text=True)
     assert r.returncode == 0, r.stdout + r.stderr
-    assert r.stdout.count("ok ") == 14
+    assert r.stdout.count("ok ") == 16

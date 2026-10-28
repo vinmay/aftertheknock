@@ -41,8 +41,11 @@ EIGHTH NINTH TENTH LAST NEXT
 THE A AN TO FOR OF ON IN UP DOWN AT BY FROM WITH AND OR NOT NO NEVER ALWAYS ONLY AGAIN TWICE ONCE
 NOW HERE THERE BACK UNLOCKED LOCKED SHUT LEFT RIGHT SAME OTHER ALONE INSIDE OUTSIDE BELOW ABOVE STILL
 DON'T IT HER HIM ME YOU US THEM SHE HE I WE IS WAS ARE MY YOUR
+HEARD STAYED SORRY I'M WRONG FINE WERE
 """.split()
 MARK_WORD_SET = set(MARK_WORDS)
+# A word mark is a message to the other you, not a place name.
+PLACE_WORDS = {"STAIRWELL", "STAIRS", "ROOF", "BASEMENT", "DOOR"}
 DANGLING = {"THE", "A", "AN", "TO", "FOR", "OF", "ON", "IN", "AT", "BY", "FROM", "WITH", "AND", "OR", "MY", "YOUR", "NOT"}
 
 
@@ -58,10 +61,13 @@ def words_problem(text: str) -> str | None:
         return f"{' '.join(unknown)} is not one of the allowed words; use only the listed words"
     if words[-1] in DANGLING:
         return f"the phrase cannot end on {words[-1]}"
+    places = [w for w in words if w in PLACE_WORDS]
+    if places:
+        return f"{' '.join(places)} is a place; write a message to the other you, not a location"
     return None
 
 
-FALLBACK_WORDS = ["ASK FOR ELENA", "SIXTH STEP DOWN", "LEAVE IT UNLOCKED", "ROOM SEVEN AGAIN", "COUNT THE STAIRS"]
+FALLBACK_WORDS = ["YOU WERE RIGHT", "DON'T OPEN IT", "WAIT FOR ME", "I HEARD HIM", "I STAYED"]
 # Shown to the model; the full list (knock.narrator.BANNED_PHRASES) is enforced at validation.
 BANNED_IN_PROMPT = ["HELP ME", "GET OUT", "YOU'RE NEXT", "RUN", "BEHIND YOU", "IT'S NOT OVER", "DON'T LOOK BACK"]
 
@@ -148,7 +154,8 @@ def build_messages(timeline: Timeline, bid: str, spec: dict, step: dict, feedbac
         "Rules: act only where you are; give, mark or hide only what you hold; move one step to an "
         "adjacent place; a locked place needs its key.",
         f"Next event: {step['hint']}" + (f" What is written is {flavor}." if flavor else ""),
-        *([f"Write it in one to three of these words only, in capitals: {' '.join(MARK_WORDS)}."]
+        *([f"Write it in one to three of these words only, in capitals: {' '.join(MARK_WORDS)}. "
+            f"It is a message, not a place: never {', '.join(sorted(PLACE_WORDS))}."]
           if step.get("mark") == "words" else []),
         "Never write these: " + ", ".join(BANNED_IN_PROMPT) + ". Write something specific to this night instead.",
         "Fields: summary (what happens), actor, action, target, recipient (person receiving, for give "
