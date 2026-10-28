@@ -73,7 +73,7 @@ async function boot() {
       $("#play-live").hidden = false;
       $("#static-note").hidden = false;
     } else if (!st.live) {
-      fallBackToReplays("The live model isn't available right now. These are replays of real recorded runs.");
+      fallBackToReplays("The live model isn't available right now. These nights were recorded earlier.");
     }
     // One line per night, named by what was in the pocket; the clearest night quietly leads the list.
     const list = (await api("/api/replays")).sort((a, b) => Number(Boolean(b.recommended)) - Number(Boolean(a.recommended)));
@@ -145,7 +145,7 @@ $("#start").addEventListener("submit", async (ev) => {
     show(d.view);
     if (!knocked) Sound.knock();
   } catch (e) {
-    if (e.fallback === "replay") fallBackToReplays(`${e.message} These are replays of real recorded runs; the model is not running live.`);
+    if (e.fallback === "replay") fallBackToReplays(`${e.message} These nights were recorded earlier; the model isn't running.`);
     else $("#status-line").textContent = e.message;
   } finally {
     S.busy = false; $("#begin").disabled = false; $("#begin").textContent = "Begin your night";
