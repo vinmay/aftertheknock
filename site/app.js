@@ -241,7 +241,7 @@ async function show(v) {
   $("#title").hidden = true;
   $("#scene").hidden = false;
   $("#scene").className = "screen kind-" + (v.kind || "scene");
-  setClock(v.clock);
+  stampFor(v);
   if (v.power === "out") {
     // The lights go: the hum cuts, the room drops for a breath, the screen darkens. Nothing appears.
     Sound.power(false); Sound.powerCut();
@@ -257,7 +257,7 @@ async function show(v) {
   const cur = $("#current");
   cur.classList.remove("fade-in"); void cur.offsetWidth; cur.classList.add("fade-in");
   const text = $("#text");
-  text.innerHTML = sceneHtml(v);
+  text.innerHTML = stampHtml(v) + sceneHtml(v);
   text.querySelectorAll(".ink, .trace-hint").forEach((b) => b.addEventListener("click", (ev) => { ev.stopPropagation(); openTrace(v.trace); }));
   const ch = $("#choices");
   ch.innerHTML = "";
@@ -323,7 +323,7 @@ function archive(chosen) {
   if (!v) return;
   const entry = document.createElement("div");
   entry.className = "past";
-  entry.innerHTML = sceneHtml(v);
+  entry.innerHTML = stampHtml(v) + sceneHtml(v);
   entry.querySelectorAll(".trace-hint").forEach((b) => b.parentElement.remove());
   entry.querySelectorAll(".ink").forEach((b) => b.addEventListener("click", () => openTrace(v.trace)));
   if (v.choices.length > 1) {
@@ -380,13 +380,15 @@ document.addEventListener("keydown", (ev) => {
   }
 });
 
-/* The story's clock, in the landing's style: 11:47 PM, then past midnight 12:01 AM. */
-function setClock(t) {
-  if (!t) return;
-  const h = parseInt(t, 10);
-  $("#clock").textContent = `${t} ${h === 11 ? "PM" : "AM"}`;
-  $("#clock").hidden = false;
+/* The time, written into the story: a small stamp over a scene whenever the night has moved on,
+   in the landing's style (11:58 PM, then 12:06 AM). None where the first sentence already says it. */
+function stampFor(v) {
+  const t = v.clock;
+  v.stamp = t && t !== S.lastClock && !(v.text || "").split(/[.!?]/)[0].includes(t)
+    ? `${t} ${parseInt(t, 10) === 11 ? "PM" : "AM"}` : "";
+  if (t) S.lastClock = t;
 }
+const stampHtml = (v) => (v.stamp ? `<p class="stamp"><time>${esc(v.stamp)}</time></p>` : "");
 
 /* ---------------------------------------------------------------- the crossing */
 const REDUCED = window.matchMedia("(prefers-reduced-motion: reduce)").matches;

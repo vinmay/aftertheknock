@@ -225,7 +225,8 @@ body.staged main { filter: blur(2px) brightness(0.5); }
   border-radius: 3px; width: 1.4rem; height: 1.4rem; display: inline-grid; place-items: center;
 }
 .choices button:hover .num, .choices button:focus-visible .num { color: var(--ink); border-color: var(--muted); }
-.clock { font-family: var(--mono); font-size: 0.72rem; color: var(--muted); letter-spacing: 0.12em; margin-left: auto; margin-right: 1.2rem; }
+/* The time over a scene, in the landing's style. */
+.stamp { font-family: var(--mono); font-size: 0.72rem; letter-spacing: 0.12em; color: var(--muted); margin: 0 0 0.7rem; }
 
 /* Grain and vignette (static; no motion) */
 body::after {
@@ -519,7 +520,7 @@ body.instant-text .stage-color, body.instant-text .trace-hint { opacity: 1 !impo
 .ev-head { top: 0; padding-top: 0.9rem; }
 
 /* Landing as a title card: the door, the name in spaced capitals and the tagline form one centred
-   mark; the hook below it is the first scene (the in-game clock, then the line); then the question. */
+   mark; the hook below it is the first scene (the time, then the line); then the question. */
 #title { text-align: center; }
 #title .door { margin: 0 auto -1.2rem; }
 #title h1 { text-transform: uppercase; letter-spacing: 0.32em; padding-left: 0.32em; font-size: 1.7rem; margin: 2.4rem 0 0.6rem; }
@@ -557,3 +558,14 @@ body.instant-text .stage-color, body.instant-text .trace-hint { opacity: 1 !impo
 .sound-icon .slash { display: none; }
 .sound-icon[aria-pressed="false"] .waves { display: none; }
 .sound-icon[aria-pressed="false"] .slash { display: inline; }
+
+/* "Knock" flickers once as the landing appears: ivory to dried-blood red and back, under half a
+   second, never repeated. Colour only: no movement, no glow. Off for reduced motion. */
+#title .knock-word { animation: knock-flicker 0.42s ease-out 0.9s 1 both; }
+@keyframes knock-flicker {
+  0% { color: var(--ink); }
+  14% { color: #b9675e; }
+  32% { color: #b9675e; }
+  100% { color: var(--ink); }
+}
+@media (prefers-reduced-motion: reduce) { #title .knock-word { animation: none; } }
