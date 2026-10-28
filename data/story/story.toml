@@ -261,7 +261,7 @@ The night comes apart in your hands, and for a moment you can see all of it: the
 
 Everything that crossed over came from somewhere. Touch a thread to see where.
 """
-choices = [{ label = "Close the map", next = "final" }]
+choices = [{ label = "Go on", next = "final" }]
 
 [scenes.final]
 clock = "12:20"

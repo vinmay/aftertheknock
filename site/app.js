@@ -572,7 +572,14 @@ async function show(v) {
     });
   } else ch.classList.remove("afterword");
   ch.hidden = false;
-  if (v.kind === "map") setTimeout(openMap, 900);
+  if (v.kind === "map") {
+    // The map waits for the player: read the scene first, then open it yourself.
+    const b = document.createElement("button");
+    b.className = "cta map-open";
+    b.textContent = "Look at the map";
+    b.addEventListener("click", () => openMap());
+    ch.prepend(b);
+  }
 }
 
 /* Move the finished scene into the history, keeping the option you didn't take. */

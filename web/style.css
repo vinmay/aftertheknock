@@ -503,3 +503,7 @@ body.instant-text .stage-color, body.instant-text .trace-hint { opacity: 1 !impo
 .crossing-stage.instant .prop .engrave, .crossing-stage.instant .prop .scratch { animation: none !important; stroke-dashoffset: 0; }
 
 .pocket-note { margin: -0.3rem 0 0; font-size: 0.85rem; color: #a39c90; }
+
+.choices .map-open { width: auto; justify-self: start; margin-bottom: 0.4rem; }
+.choices button.map-open { width: auto; padding: 0.6rem 1.4rem; color: var(--ink); display: inline-flex; justify-content: center; }
+.choices button.map-open:hover, .choices button.map-open:focus-visible { color: var(--ink); background: #3a1612; }
