@@ -47,6 +47,7 @@ main { max-width: 36rem; margin: 0 auto; padding: 5.5rem 1rem 6rem; }
 h1 { font-weight: normal; font-size: 2.4rem; letter-spacing: 0.01em; margin: 3rem 0 0.25rem; }
 h2 { font-weight: normal; font-size: 1.2rem; margin: 0; }
 .sub { color: var(--muted); margin-top: 0; }
+.tagline { font-family: var(--serif); font-style: italic; font-size: 1.15rem; color: var(--muted); margin: 0 0 1.1rem; }
 .small { font-size: 0.9rem; }
 .muted { color: var(--muted); }
 
