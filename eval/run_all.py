@@ -30,7 +30,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 
 from knock import audit
 from knock.engine import Timeline
-from knock.game import Game, replay, verify_replay
+from knock.game import OTHER, Game, replay, verify_replay
 from knock.models import DEFAULT_MODEL, OllamaModel, load_dotenv, model_from_env
 from knock.sim import RunLog, simulate_shadow
 
@@ -129,6 +129,8 @@ def compute() -> dict:
     narr_raw_fail = narr_final_model = narr_total = 0
     narr_raw_problem_kinds = Counter()
     chains = {}
+    freedom: dict = {}                     # (shadow spec, step) -> how each committed step came about
+    writer_player = writer_total = 0
     for rec in recs:
         t = replay(rec)
         reprod.append(verify_replay(t, rec))
@@ -168,6 +170,22 @@ def compute() -> dict:
             narr_final_model += c["narration_source"] in ("model", "template+model")
             for p in c["raw"]["problems"]:
                 narr_raw_problem_kinds[p.split(":")[0]] += 1
+        # Freedom vs. guarantees: per shadow spec and step, who made the committed event, and what it was.
+        specs = {"B": "B." + OTHER[rec["fork1"]], "D": f"D.{rec['fork1']}.{OTHER[rec['fork2']]}"}
+        events = {e["event_id"]: e for b in ("B", "D") for e in rec["timeline"]["branches"][b]["events"]}
+        for (bid, step), rs in sorted(by_step.items()):
+            f = freedom.setdefault((specs[bid], step), {"model": 0, "fallback": 0, "skipped": 0, "actions": Counter(), "texts": Counter()})
+            last = rs[-1]
+            src = {"proposal": "model", "fallback": "fallback", "skipped": "skipped"}[last["kind"]]
+            f[src] += 1
+            e = events.get(last.get("event_id"))
+            if e is not None:
+                f["actions"][e["action"]] += 1
+                if e["text"]:
+                    f["texts"][e["text"]] += 1
+        d_origin = events.get(rec["crossings"]["D"]["intrusion"]["origin_event_id"])
+        writer_total += 1
+        writer_player += bool(d_origin and d_origin["actor"] == "player")
         key = f"{rec['fork1']}/{rec['fork2']}"
         chain = [(e["actor"], e["action"], e["target"], e["text"]) for b in ("B", "D")
                  for e in rec["timeline"]["branches"][b]["events"] if e["source"] in ("model", "fallback")]
@@ -212,6 +230,12 @@ def compute() -> dict:
         var[key] = {"runs": len(cs), "distinct_chains": len(set(cs)),
                     "mean_pairwise_event_overlap_jaccard": round(statistics.mean(jaccard(a, b) for a, b in pairs), 2) if pairs else None}
     m["variation"] = var
+    m["freedom"] = {
+        "crossing2_written_by_player": pct(writer_player, writer_total),
+        "steps": [{"shadow": k[0], "step": k[1] + 1, "model": f["model"], "fallback": f["fallback"], "skipped": f["skipped"],
+                   "distinct_actions": sorted(f["actions"]), "distinct_texts": len(f["texts"]),
+                   "texts_with_counts": dict(f["texts"].most_common())}
+                  for k, f in sorted(freedom.items())]}
     m["performance"] = {
         "model_call_latency_p50_s": round(quantile(lat, 0.5), 2), "model_call_latency_p95_s": round(quantile(lat, 0.95), 2),
         "shadow_sim_p50_s": round(quantile(sim_s, 0.5), 2), "shadow_sim_p95_s": round(quantile(sim_s, 0.95), 2),
@@ -328,6 +352,14 @@ def markdown(m: dict) -> str:
     for k, x in m["variation"].items():
         lines.append(f"| {k} | {x['runs']} | {x['distinct_chains']} | {x['mean_pairwise_event_overlap_jaccard']} |")
     lines += ["", f"Rejections by rule: {', '.join(f'{k} {c}' for k, c in v['rejections_by_rule'].items())}."]
+    if "freedom" in m:
+        fr = m["freedom"]
+        lines += ["", "Freedom vs. guarantees, per shadow step (committed by the model or by a hand-written fallback; "
+                  f"distinct action types and distinct texts across runs). Crossing 2 written by the player: {fr['crossing2_written_by_player']}.", "",
+                  "| Shadow | Step | Model | Fallback | Skipped | Actions | Distinct texts |", "|---|---|---|---|---|---|---|"]
+        for x in fr["steps"]:
+            lines.append(f"| {x['shadow']} | {x['step']} | {x['model']} | {x['fallback']} | {x['skipped']} | "
+                         f"{', '.join(x['distinct_actions']) or '-'} | {x['distinct_texts']} |")
     return "\n".join(lines) + "\n"
 
 

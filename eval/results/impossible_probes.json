@@ -10,7 +10,7 @@
   "raw": "{\n  \"summary\": \"Mara passed the bus ticket to Teo.\",\n  \"actor\": \"mara\",\n  \"action\": \"give\",\n  \"target\": \"pocket\",\n  \"recipient\": \"teo\",\n  \"text\": \"\"\n}",
   "meta": {
    "text": "{\n  \"summary\": \"Mara passed the bus ticket to Teo.\",\n  \"actor\": \"mara\",\n  \"action\": \"give\",\n  \"target\": \"pocket\",\n  \"recipient\": \"teo\",\n  \"text\": \"\"\n}",
-   "latency_s": 1.712,
+   "latency_s": 1.052,
    "prompt_tokens": 565,
    "output_tokens": 58,
    "model": "gemma4:e2b"
@@ -42,16 +42,16 @@
   "request_id": "B:step0",
   "prompt_hash": "bd73e437da80",
   "call_seed": 1001,
-  "raw": "{\n  \"summary\": \"Mara hands the ticket to Teo.\",\n  \"actor\": \"mara\",\n  \"action\": \"give\",\n  \"target\": \"pocket\",\n  \"recipient\": \"teo\",\n  \"text\": \"\"\n}",
+  "raw": "{\"summary\": \"Mara gives the bus ticket to Teo.\", \"actor\": \"mara\", \"action\": \"give\", \"target\": \"pocket\", \"recipient\": \"teo\", \"text\": \"\"}",
   "meta": {
-   "text": "{\n  \"summary\": \"Mara hands the ticket to Teo.\",\n  \"actor\": \"mara\",\n  \"action\": \"give\",\n  \"target\": \"pocket\",\n  \"recipient\": \"teo\",\n  \"text\": \"\"\n}",
-   "latency_s": 1.338,
+   "text": "{\"summary\": \"Mara gives the bus ticket to Teo.\", \"actor\": \"mara\", \"action\": \"give\", \"target\": \"pocket\", \"recipient\": \"teo\", \"text\": \"\"}",
+   "latency_s": 0.633,
    "prompt_tokens": 603,
-   "output_tokens": 57,
+   "output_tokens": 42,
    "model": "gemma4:e2b"
   },
   "proposal": {
-   "summary": "Mara hands the ticket to Teo.",
+   "summary": "Mara gives the bus ticket to Teo.",
    "actor": "mara",
    "action": "give",
    "target": "pocket",
@@ -77,16 +77,16 @@
   "request_id": "B:step0",
   "prompt_hash": "bd73e437da80",
   "call_seed": 1002,
-  "raw": "{\n  \"summary\": \"Mara transfers the ticket to Teo.\",\n  \"actor\": \"mara\",\n  \"action\": \"give\",\n  \"target\": \"pocket\",\n  \"recipient\": \"teo\",\n  \"text\": \"\"\n}",
+  "raw": "{\n  \"summary\": \"Mara transfers the bus ticket to Teo.\",\n  \"actor\": \"mara\",\n  \"action\": \"give\",\n  \"target\": \"pocket\",\n  \"recipient\": \"teo\",\n  \"text\": \"\"\n}",
   "meta": {
-   "text": "{\n  \"summary\": \"Mara transfers the ticket to Teo.\",\n  \"actor\": \"mara\",\n  \"action\": \"give\",\n  \"target\": \"pocket\",\n  \"recipient\": \"teo\",\n  \"text\": \"\"\n}",
-   "latency_s": 1.277,
+   "text": "{\n  \"summary\": \"Mara transfers the bus ticket to Teo.\",\n  \"actor\": \"mara\",\n  \"action\": \"give\",\n  \"target\": \"pocket\",\n  \"recipient\": \"teo\",\n  \"text\": \"\"\n}",
+   "latency_s": 0.611,
    "prompt_tokens": 603,
-   "output_tokens": 57,
+   "output_tokens": 58,
    "model": "gemma4:e2b"
   },
   "proposal": {
-   "summary": "Mara transfers the ticket to Teo.",
+   "summary": "Mara transfers the bus ticket to Teo.",
    "actor": "mara",
    "action": "give",
    "target": "pocket",
@@ -112,17 +112,17 @@
   "request_id": "B:step0",
   "prompt_hash": "db0cf6d833fa",
   "call_seed": 2000,
-  "raw": "{\"summary\": \"Mara gave the pocket object to Teo.\", \"actor\": \"mara\", \"action\": \"give\", \"target\": \"pocket\", \"recipient\": \"teo\", \"text\": \"\"}",
+  "raw": "{\"summary\": \"Mara gave the pocket to Teo.\", \"actor\": \"player\", \"action\": \"give\", \"target\": \"pocket\", \"recipient\": \"teo\", \"text\": \"\"}",
   "meta": {
-   "text": "{\"summary\": \"Mara gave the pocket object to Teo.\", \"actor\": \"mara\", \"action\": \"give\", \"target\": \"pocket\", \"recipient\": \"teo\", \"text\": \"\"}",
-   "latency_s": 0.522,
+   "text": "{\"summary\": \"Mara gave the pocket to Teo.\", \"actor\": \"player\", \"action\": \"give\", \"target\": \"pocket\", \"recipient\": \"teo\", \"text\": \"\"}",
+   "latency_s": 0.473,
    "prompt_tokens": 565,
-   "output_tokens": 42,
+   "output_tokens": 41,
    "model": "gemma4:e2b"
   },
   "proposal": {
-   "summary": "Mara gave the pocket object to Teo.",
-   "actor": "mara",
+   "summary": "Mara gave the pocket to Teo.",
+   "actor": "player",
    "action": "give",
    "target": "pocket",
    "text": "",
@@ -132,8 +132,8 @@
    "accepted": false,
    "violations": [
     {
-     "rule": "R_HOLDS",
-     "detail": "mara does not hold pocket (holder: player)"
+     "rule": "R_REACH",
+     "detail": "teo is in teo_apt, player is in apt"
     }
    ],
    "preconditions": []
@@ -145,18 +145,18 @@
   "step": 0,
   "attempt": 1,
   "request_id": "B:step0",
-  "prompt_hash": "bd73e437da80",
+  "prompt_hash": "1879915f3ceb",
   "call_seed": 2001,
-  "raw": "{\n  \"summary\": \"Mara passed the ticket to Teo.\",\n  \"actor\": \"mara\",\n  \"action\": \"give\",\n  \"target\": \"pocket\",\n  \"recipient\": \"teo\",\n  \"text\": \"\"\n}",
+  "raw": "{\n  \"summary\": \"Mara handed the player's pocket item to Teo.\",\n  \"actor\": \"mara\",\n  \"action\": \"give\",\n  \"target\": \"pocket\",\n  \"recipient\": \"teo\",\n  \"text\": \"\"\n}",
   "meta": {
-   "text": "{\n  \"summary\": \"Mara passed the ticket to Teo.\",\n  \"actor\": \"mara\",\n  \"action\": \"give\",\n  \"target\": \"pocket\",\n  \"recipient\": \"teo\",\n  \"text\": \"\"\n}",
-   "latency_s": 0.73,
-   "prompt_tokens": 603,
-   "output_tokens": 57,
+   "text": "{\n  \"summary\": \"Mara handed the player's pocket item to Teo.\",\n  \"actor\": \"mara\",\n  \"action\": \"give\",\n  \"target\": \"pocket\",\n  \"recipient\": \"teo\",\n  \"text\": \"\"\n}",
+   "latency_s": 0.718,
+   "prompt_tokens": 607,
+   "output_tokens": 61,
    "model": "gemma4:e2b"
   },
   "proposal": {
-   "summary": "Mara passed the ticket to Teo.",
+   "summary": "Mara handed the player's pocket item to Teo.",
    "actor": "mara",
    "action": "give",
    "target": "pocket",
@@ -185,7 +185,7 @@
   "raw": "{\n  \"summary\": \"Mara transfers the player's pocket item to Teo.\",\n  \"actor\": \"mara\",\n  \"action\": \"give\",\n  \"target\": \"pocket\",\n  \"recipient\": \"teo\",\n  \"text\": \"\"\n}",
   "meta": {
    "text": "{\n  \"summary\": \"Mara transfers the player's pocket item to Teo.\",\n  \"actor\": \"mara\",\n  \"action\": \"give\",\n  \"target\": \"pocket\",\n  \"recipient\": \"teo\",\n  \"text\": \"\"\n}",
-   "latency_s": 0.691,
+   "latency_s": 0.734,
    "prompt_tokens": 603,
    "output_tokens": 61,
    "model": "gemma4:e2b"
@@ -220,7 +220,7 @@
   "raw": "{\n  \"summary\": \"Mara gave the pocket object to Teo.\",\n  \"actor\": \"mara\",\n  \"action\": \"give\",\n  \"target\": \"pocket\",\n  \"recipient\": \"teo\",\n  \"text\": \"\"\n}",
   "meta": {
    "text": "{\n  \"summary\": \"Mara gave the pocket object to Teo.\",\n  \"actor\": \"mara\",\n  \"action\": \"give\",\n  \"target\": \"pocket\",\n  \"recipient\": \"teo\",\n  \"text\": \"\"\n}",
-   "latency_s": 0.639,
+   "latency_s": 0.617,
    "prompt_tokens": 565,
    "output_tokens": 58,
    "model": "gemma4:e2b"
@@ -252,16 +252,16 @@
   "request_id": "B:step0",
   "prompt_hash": "bd73e437da80",
   "call_seed": 3001,
-  "raw": "{\"summary\": \"Mara gives the bus ticket to Teo.\", \"actor\": \"mara\", \"action\": \"give\", \"target\": \"pocket\", \"recipient\": \"teo\", \"text\": \"\"}",
+  "raw": "{\n  \"summary\": \"Mara transfers the ticket to Teo.\",\n  \"actor\": \"mara\",\n  \"action\": \"give\",\n  \"target\": \"pocket\",\n  \"recipient\": \"teo\",\n  \"text\": \"\"\n}",
   "meta": {
-   "text": "{\"summary\": \"Mara gives the bus ticket to Teo.\", \"actor\": \"mara\", \"action\": \"give\", \"target\": \"pocket\", \"recipient\": \"teo\", \"text\": \"\"}",
-   "latency_s": 0.61,
+   "text": "{\n  \"summary\": \"Mara transfers the ticket to Teo.\",\n  \"actor\": \"mara\",\n  \"action\": \"give\",\n  \"target\": \"pocket\",\n  \"recipient\": \"teo\",\n  \"text\": \"\"\n}",
+   "latency_s": 0.697,
    "prompt_tokens": 603,
-   "output_tokens": 42,
+   "output_tokens": 57,
    "model": "gemma4:e2b"
   },
   "proposal": {
-   "summary": "Mara gives the bus ticket to Teo.",
+   "summary": "Mara transfers the ticket to Teo.",
    "actor": "mara",
    "action": "give",
    "target": "pocket",
@@ -290,7 +290,7 @@
   "raw": "{\n  \"summary\": \"Mara hands the bus ticket to Teo.\",\n  \"actor\": \"mara\",\n  \"action\": \"give\",\n  \"target\": \"pocket\",\n  \"recipient\": \"teo\",\n  \"text\": \"\"\n}",
   "meta": {
    "text": "{\n  \"summary\": \"Mara hands the bus ticket to Teo.\",\n  \"actor\": \"mara\",\n  \"action\": \"give\",\n  \"target\": \"pocket\",\n  \"recipient\": \"teo\",\n  \"text\": \"\"\n}",
-   "latency_s": 0.608,
+   "latency_s": 0.63,
    "prompt_tokens": 603,
    "output_tokens": 58,
    "model": "gemma4:e2b"
@@ -322,17 +322,17 @@
   "request_id": "B:step0",
   "prompt_hash": "db0cf6d833fa",
   "call_seed": 4000,
-  "raw": "{\"summary\": \"Mara gave the pocket to Teo.\", \"actor\": \"player\", \"action\": \"give\", \"target\": \"pocket\", \"recipient\": \"teo\", \"text\": \"\"}",
+  "raw": "{\n  \"summary\": \"Mara gave the pocket object to Teo.\",\n  \"actor\": \"mara\",\n  \"action\": \"give\",\n  \"target\": \"pocket\",\n  \"recipient\": \"teo\",\n  \"text\": \"\"\n}",
   "meta": {
-   "text": "{\"summary\": \"Mara gave the pocket to Teo.\", \"actor\": \"player\", \"action\": \"give\", \"target\": \"pocket\", \"recipient\": \"teo\", \"text\": \"\"}",
-   "latency_s": 0.484,
+   "text": "{\n  \"summary\": \"Mara gave the pocket object to Teo.\",\n  \"actor\": \"mara\",\n  \"action\": \"give\",\n  \"target\": \"pocket\",\n  \"recipient\": \"teo\",\n  \"text\": \"\"\n}",
+   "latency_s": 0.605,
    "prompt_tokens": 565,
-   "output_tokens": 41,
+   "output_tokens": 58,
    "model": "gemma4:e2b"
   },
   "proposal": {
-   "summary": "Mara gave the pocket to Teo.",
-   "actor": "player",
+   "summary": "Mara gave the pocket object to Teo.",
+   "actor": "mara",
    "action": "give",
    "target": "pocket",
    "text": "",
@@ -342,8 +342,8 @@
    "accepted": false,
    "violations": [
     {
-     "rule": "R_REACH",
-     "detail": "teo is in teo_apt, player is in apt"
+     "rule": "R_HOLDS",
+     "detail": "mara does not hold pocket (holder: player)"
     }
    ],
    "preconditions": []
@@ -355,18 +355,18 @@
   "step": 0,
   "attempt": 1,
   "request_id": "B:step0",
-  "prompt_hash": "1879915f3ceb",
+  "prompt_hash": "bd73e437da80",
   "call_seed": 4001,
-  "raw": "{\"summary\": \"Mara gives the pocket object to Teo.\", \"actor\": \"mara\", \"action\": \"give\", \"target\": \"pocket\", \"recipient\": \"teo\", \"text\": \"\"}",
+  "raw": "{\n  \"summary\": \"Mara transfers the bus ticket to Teo.\",\n  \"actor\": \"mara\",\n  \"action\": \"give\",\n  \"target\": \"pocket\",\n  \"recipient\": \"teo\",\n  \"text\": \"\"\n}",
   "meta": {
-   "text": "{\"summary\": \"Mara gives the pocket object to Teo.\", \"actor\": \"mara\", \"action\": \"give\", \"target\": \"pocket\", \"recipient\": \"teo\", \"text\": \"\"}",
-   "latency_s": 0.604,
-   "prompt_tokens": 607,
-   "output_tokens": 42,
+   "text": "{\n  \"summary\": \"Mara transfers the bus ticket to Teo.\",\n  \"actor\": \"mara\",\n  \"action\": \"give\",\n  \"target\": \"pocket\",\n  \"recipient\": \"teo\",\n  \"text\": \"\"\n}",
+   "latency_s": 0.703,
+   "prompt_tokens": 603,
+   "output_tokens": 58,
    "model": "gemma4:e2b"
   },
   "proposal": {
-   "summary": "Mara gives the pocket object to Teo.",
+   "summary": "Mara transfers the bus ticket to Teo.",
    "actor": "mara",
    "action": "give",
    "target": "pocket",
@@ -392,16 +392,16 @@
   "request_id": "B:step0",
   "prompt_hash": "bd73e437da80",
   "call_seed": 4002,
-  "raw": "{\n  \"summary\": \"Mara transfers the bus ticket to Teo.\",\n  \"actor\": \"mara\",\n  \"action\": \"give\",\n  \"target\": \"pocket\",\n  \"recipient\": \"teo\",\n  \"text\": \"\"\n}",
+  "raw": "{\"summary\": \"Mara gives the bus ticket to Teo.\", \"actor\": \"mara\", \"action\": \"give\", \"target\": \"pocket\", \"recipient\": \"teo\", \"text\": \"\"}",
   "meta": {
-   "text": "{\n  \"summary\": \"Mara transfers the bus ticket to Teo.\",\n  \"actor\": \"mara\",\n  \"action\": \"give\",\n  \"target\": \"pocket\",\n  \"recipient\": \"teo\",\n  \"text\": \"\"\n}",
-   "latency_s": 0.7,
+   "text": "{\"summary\": \"Mara gives the bus ticket to Teo.\", \"actor\": \"mara\", \"action\": \"give\", \"target\": \"pocket\", \"recipient\": \"teo\", \"text\": \"\"}",
+   "latency_s": 0.491,
    "prompt_tokens": 603,
-   "output_tokens": 58,
+   "output_tokens": 42,
    "model": "gemma4:e2b"
   },
   "proposal": {
-   "summary": "Mara transfers the bus ticket to Teo.",
+   "summary": "Mara gives the bus ticket to Teo.",
    "actor": "mara",
    "action": "give",
    "target": "pocket",
@@ -430,7 +430,7 @@
   "raw": "{\n  \"summary\": \"Mara gave the bus ticket to Teo.\",\n  \"actor\": \"mara\",\n  \"action\": \"give\",\n  \"target\": \"pocket\",\n  \"recipient\": \"teo\",\n  \"text\": \"\"\n}",
   "meta": {
    "text": "{\n  \"summary\": \"Mara gave the bus ticket to Teo.\",\n  \"actor\": \"mara\",\n  \"action\": \"give\",\n  \"target\": \"pocket\",\n  \"recipient\": \"teo\",\n  \"text\": \"\"\n}",
-   "latency_s": 0.608,
+   "latency_s": 0.619,
    "prompt_tokens": 565,
    "output_tokens": 58,
    "model": "gemma4:e2b"
@@ -462,16 +462,16 @@
   "request_id": "B:step0",
   "prompt_hash": "bd73e437da80",
   "call_seed": 5001,
-  "raw": "{\n  \"summary\": \"Mara hands the ticket to Teo.\",\n  \"actor\": \"mara\",\n  \"action\": \"give\",\n  \"target\": \"pocket\",\n  \"recipient\": \"teo\",\n  \"text\": \"\"\n}",
+  "raw": "{\"summary\": \"Mara hands the bus ticket to Teo.\", \"actor\": \"mara\", \"action\": \"give\", \"target\": \"pocket\", \"recipient\": \"teo\", \"text\": \"\"}",
   "meta": {
-   "text": "{\n  \"summary\": \"Mara hands the ticket to Teo.\",\n  \"actor\": \"mara\",\n  \"action\": \"give\",\n  \"target\": \"pocket\",\n  \"recipient\": \"teo\",\n  \"text\": \"\"\n}",
-   "latency_s": 0.711,
+   "text": "{\"summary\": \"Mara hands the bus ticket to Teo.\", \"actor\": \"mara\", \"action\": \"give\", \"target\": \"pocket\", \"recipient\": \"teo\", \"text\": \"\"}",
+   "latency_s": 0.613,
    "prompt_tokens": 603,
-   "output_tokens": 57,
+   "output_tokens": 42,
    "model": "gemma4:e2b"
   },
   "proposal": {
-   "summary": "Mara hands the ticket to Teo.",
+   "summary": "Mara hands the bus ticket to Teo.",
    "actor": "mara",
    "action": "give",
    "target": "pocket",
@@ -497,12 +497,12 @@
   "request_id": "B:step0",
   "prompt_hash": "bd73e437da80",
   "call_seed": 5002,
-  "raw": "{\n  \"summary\": \"Mara transfers the bus ticket to Teo.\",\n  \"actor\": \"mara\",\n  \"action\": \"give\",\n  \"target\": \"pocket\",\n  \"recipient\": \"teo\",\n  \"text\": \"\"\n}",
+  "raw": "{\"summary\": \"Mara transfers the bus ticket to Teo.\", \"actor\": \"mara\", \"action\": \"give\", \"target\": \"pocket\", \"recipient\": \"teo\", \"text\": \"\"}",
   "meta": {
-   "text": "{\n  \"summary\": \"Mara transfers the bus ticket to Teo.\",\n  \"actor\": \"mara\",\n  \"action\": \"give\",\n  \"target\": \"pocket\",\n  \"recipient\": \"teo\",\n  \"text\": \"\"\n}",
-   "latency_s": 0.607,
+   "text": "{\"summary\": \"Mara transfers the bus ticket to Teo.\", \"actor\": \"mara\", \"action\": \"give\", \"target\": \"pocket\", \"recipient\": \"teo\", \"text\": \"\"}",
+   "latency_s": 0.524,
    "prompt_tokens": 603,
-   "output_tokens": 58,
+   "output_tokens": 42,
    "model": "gemma4:e2b"
   },
   "proposal": {
@@ -535,7 +535,7 @@
   "raw": "{\"summary\": \"Mara gave the bus ticket to Teo.\", \"actor\": \"mara\", \"action\": \"give\", \"target\": \"pocket\", \"recipient\": \"teo\", \"text\": \"\"}",
   "meta": {
    "text": "{\"summary\": \"Mara gave the bus ticket to Teo.\", \"actor\": \"mara\", \"action\": \"give\", \"target\": \"pocket\", \"recipient\": \"teo\", \"text\": \"\"}",
-   "latency_s": 0.516,
+   "latency_s": 0.525,
    "prompt_tokens": 565,
    "output_tokens": 42,
    "model": "gemma4:e2b"
@@ -567,16 +567,16 @@
   "request_id": "B:step0",
   "prompt_hash": "bd73e437da80",
   "call_seed": 6001,
-  "raw": "{\"summary\": \"Mara gives the bus ticket to Teo.\", \"actor\": \"mara\", \"action\": \"give\", \"target\": \"pocket\", \"recipient\": \"teo\", \"text\": \"\"}",
+  "raw": "{\n  \"summary\": \"Mara hands the bus ticket to Teo.\",\n  \"actor\": \"mara\",\n  \"action\": \"give\",\n  \"target\": \"pocket\",\n  \"recipient\": \"teo\",\n  \"text\": \"\"\n}",
   "meta": {
-   "text": "{\"summary\": \"Mara gives the bus ticket to Teo.\", \"actor\": \"mara\", \"action\": \"give\", \"target\": \"pocket\", \"recipient\": \"teo\", \"text\": \"\"}",
-   "latency_s": 0.591,
+   "text": "{\n  \"summary\": \"Mara hands the bus ticket to Teo.\",\n  \"actor\": \"mara\",\n  \"action\": \"give\",\n  \"target\": \"pocket\",\n  \"recipient\": \"teo\",\n  \"text\": \"\"\n}",
+   "latency_s": 0.731,
    "prompt_tokens": 603,
-   "output_tokens": 42,
+   "output_tokens": 58,
    "model": "gemma4:e2b"
   },
   "proposal": {
-   "summary": "Mara gives the bus ticket to Teo.",
+   "summary": "Mara hands the bus ticket to Teo.",
    "actor": "mara",
    "action": "give",
    "target": "pocket",
@@ -602,16 +602,16 @@
   "request_id": "B:step0",
   "prompt_hash": "bd73e437da80",
   "call_seed": 6002,
-  "raw": "{\"summary\": \"Mara gives the bus ticket to Teo.\", \"actor\": \"mara\", \"action\": \"give\", \"target\": \"pocket\", \"recipient\": \"teo\", \"text\": \"\"}",
+  "raw": "{\n  \"summary\": \"Mara transfers the bus ticket to Teo.\",\n  \"actor\": \"mara\",\n  \"action\": \"give\",\n  \"target\": \"pocket\",\n  \"recipient\": \"teo\",\n  \"text\": \"\"\n}",
   "meta": {
-   "text": "{\"summary\": \"Mara gives the bus ticket to Teo.\", \"actor\": \"mara\", \"action\": \"give\", \"target\": \"pocket\", \"recipient\": \"teo\", \"text\": \"\"}",
-   "latency_s": 0.485,
+   "text": "{\n  \"summary\": \"Mara transfers the bus ticket to Teo.\",\n  \"actor\": \"mara\",\n  \"action\": \"give\",\n  \"target\": \"pocket\",\n  \"recipient\": \"teo\",\n  \"text\": \"\"\n}",
+   "latency_s": 0.654,
    "prompt_tokens": 603,
-   "output_tokens": 42,
+   "output_tokens": 58,
    "model": "gemma4:e2b"
   },
   "proposal": {
-   "summary": "Mara gives the bus ticket to Teo.",
+   "summary": "Mara transfers the bus ticket to Teo.",
    "actor": "mara",
    "action": "give",
    "target": "pocket",
@@ -640,7 +640,7 @@
   "raw": "{\n  \"summary\": \"Mara passed the bus ticket to Teo.\",\n  \"actor\": \"mara\",\n  \"action\": \"give\",\n  \"target\": \"pocket\",\n  \"recipient\": \"teo\",\n  \"text\": \"\"\n}",
   "meta": {
    "text": "{\n  \"summary\": \"Mara passed the bus ticket to Teo.\",\n  \"actor\": \"mara\",\n  \"action\": \"give\",\n  \"target\": \"pocket\",\n  \"recipient\": \"teo\",\n  \"text\": \"\"\n}",
-   "latency_s": 0.608,
+   "latency_s": 0.66,
    "prompt_tokens": 565,
    "output_tokens": 58,
    "model": "gemma4:e2b"
@@ -672,12 +672,12 @@
   "request_id": "B:step0",
   "prompt_hash": "bd73e437da80",
   "call_seed": 7001,
-  "raw": "{\n  \"summary\": \"Mara transfers the bus ticket to Teo.\",\n  \"actor\": \"mara\",\n  \"action\": \"give\",\n  \"target\": \"pocket\",\n  \"recipient\": \"teo\",\n  \"text\": \"\"\n}",
+  "raw": "{\"summary\": \"Mara transfers the bus ticket to Teo.\", \"actor\": \"mara\", \"action\": \"give\", \"target\": \"pocket\", \"recipient\": \"teo\", \"text\": \"\"}",
   "meta": {
-   "text": "{\n  \"summary\": \"Mara transfers the bus ticket to Teo.\",\n  \"actor\": \"mara\",\n  \"action\": \"give\",\n  \"target\": \"pocket\",\n  \"recipient\": \"teo\",\n  \"text\": \"\"\n}",
-   "latency_s": 0.699,
+   "text": "{\"summary\": \"Mara transfers the bus ticket to Teo.\", \"actor\": \"mara\", \"action\": \"give\", \"target\": \"pocket\", \"recipient\": \"teo\", \"text\": \"\"}",
+   "latency_s": 0.613,
    "prompt_tokens": 603,
-   "output_tokens": 58,
+   "output_tokens": 42,
    "model": "gemma4:e2b"
   },
   "proposal": {
@@ -710,7 +710,7 @@
   "raw": "{\"summary\": \"Mara gives the bus ticket to Teo.\", \"actor\": \"mara\", \"action\": \"give\", \"target\": \"pocket\", \"recipient\": \"teo\", \"text\": \"\"}",
   "meta": {
    "text": "{\"summary\": \"Mara gives the bus ticket to Teo.\", \"actor\": \"mara\", \"action\": \"give\", \"target\": \"pocket\", \"recipient\": \"teo\", \"text\": \"\"}",
-   "latency_s": 0.509,
+   "latency_s": 0.543,
    "prompt_tokens": 603,
    "output_tokens": 42,
    "model": "gemma4:e2b"
@@ -745,7 +745,7 @@
   "raw": "{\n  \"summary\": \"Mara gave the pocket to Teo.\",\n  \"actor\": \"mara\",\n  \"action\": \"give\",\n  \"target\": \"pocket\",\n  \"recipient\": \"teo\",\n  \"text\": \"\"\n}",
   "meta": {
    "text": "{\n  \"summary\": \"Mara gave the pocket to Teo.\",\n  \"actor\": \"mara\",\n  \"action\": \"give\",\n  \"target\": \"pocket\",\n  \"recipient\": \"teo\",\n  \"text\": \"\"\n}",
-   "latency_s": 0.613,
+   "latency_s": 1.501,
    "prompt_tokens": 565,
    "output_tokens": 57,
    "model": "gemma4:e2b"
@@ -777,16 +777,16 @@
   "request_id": "B:step0",
   "prompt_hash": "bd73e437da80",
   "call_seed": 8001,
-  "raw": "{\n  \"summary\": \"Mara transfers the bus ticket to Teo.\",\n  \"actor\": \"mara\",\n  \"action\": \"give\",\n  \"target\": \"pocket\",\n  \"recipient\": \"teo\",\n  \"text\": \"\"\n}",
+  "raw": "{\"summary\": \"Mara gives the bus ticket to Teo.\", \"actor\": \"mara\", \"action\": \"give\", \"target\": \"pocket\", \"recipient\": \"teo\", \"text\": \"\"}",
   "meta": {
-   "text": "{\n  \"summary\": \"Mara transfers the bus ticket to Teo.\",\n  \"actor\": \"mara\",\n  \"action\": \"give\",\n  \"target\": \"pocket\",\n  \"recipient\": \"teo\",\n  \"text\": \"\"\n}",
-   "latency_s": 0.742,
+   "text": "{\"summary\": \"Mara gives the bus ticket to Teo.\", \"actor\": \"mara\", \"action\": \"give\", \"target\": \"pocket\", \"recipient\": \"teo\", \"text\": \"\"}",
+   "latency_s": 0.708,
    "prompt_tokens": 603,
-   "output_tokens": 58,
+   "output_tokens": 42,
    "model": "gemma4:e2b"
   },
   "proposal": {
-   "summary": "Mara transfers the bus ticket to Teo.",
+   "summary": "Mara gives the bus ticket to Teo.",
    "actor": "mara",
    "action": "give",
    "target": "pocket",
@@ -815,7 +815,7 @@
   "raw": "{\"summary\": \"Mara hands the bus ticket to Teo.\", \"actor\": \"mara\", \"action\": \"give\", \"target\": \"pocket\", \"recipient\": \"teo\", \"text\": \"\"}",
   "meta": {
    "text": "{\"summary\": \"Mara hands the bus ticket to Teo.\", \"actor\": \"mara\", \"action\": \"give\", \"target\": \"pocket\", \"recipient\": \"teo\", \"text\": \"\"}",
-   "latency_s": 0.539,
+   "latency_s": 0.513,
    "prompt_tokens": 603,
    "output_tokens": 42,
    "model": "gemma4:e2b"
@@ -850,7 +850,7 @@
   "raw": "{\n  \"summary\": \"Mara passed the ticket to Teo.\",\n  \"actor\": \"mara\",\n  \"action\": \"give\",\n  \"target\": \"pocket\",\n  \"recipient\": \"teo\",\n  \"text\": \"\"\n}",
   "meta": {
    "text": "{\n  \"summary\": \"Mara passed the ticket to Teo.\",\n  \"actor\": \"mara\",\n  \"action\": \"give\",\n  \"target\": \"pocket\",\n  \"recipient\": \"teo\",\n  \"text\": \"\"\n}",
-   "latency_s": 0.619,
+   "latency_s": 0.642,
    "prompt_tokens": 565,
    "output_tokens": 57,
    "model": "gemma4:e2b"
@@ -882,16 +882,16 @@
   "request_id": "B:step0",
   "prompt_hash": "bd73e437da80",
   "call_seed": 9001,
-  "raw": "{\"summary\": \"Mara hands the ticket to Teo.\", \"actor\": \"mara\", \"action\": \"give\", \"target\": \"pocket\", \"recipient\": \"teo\", \"text\": \"\"}",
+  "raw": "{\n  \"summary\": \"Mara transfers the ticket to Teo.\",\n  \"actor\": \"mara\",\n  \"action\": \"give\",\n  \"target\": \"pocket\",\n  \"recipient\": \"teo\",\n  \"text\": \"\"\n}",
   "meta": {
-   "text": "{\"summary\": \"Mara hands the ticket to Teo.\", \"actor\": \"mara\", \"action\": \"give\", \"target\": \"pocket\", \"recipient\": \"teo\", \"text\": \"\"}",
-   "latency_s": 0.612,
+   "text": "{\n  \"summary\": \"Mara transfers the ticket to Teo.\",\n  \"actor\": \"mara\",\n  \"action\": \"give\",\n  \"target\": \"pocket\",\n  \"recipient\": \"teo\",\n  \"text\": \"\"\n}",
+   "latency_s": 0.757,
    "prompt_tokens": 603,
-   "output_tokens": 41,
+   "output_tokens": 57,
    "model": "gemma4:e2b"
   },
   "proposal": {
-   "summary": "Mara hands the ticket to Teo.",
+   "summary": "Mara transfers the ticket to Teo.",
    "actor": "mara",
    "action": "give",
    "target": "pocket",
@@ -917,16 +917,16 @@
   "request_id": "B:step0",
   "prompt_hash": "bd73e437da80",
   "call_seed": 9002,
-  "raw": "{\"summary\": \"Mara passes the bus ticket to Teo.\", \"actor\": \"mara\", \"action\": \"give\", \"target\": \"pocket\", \"recipient\": \"teo\", \"text\": \"\"}",
+  "raw": "{\n  \"summary\": \"Mara transfers the ticket to Teo.\",\n  \"actor\": \"mara\",\n  \"action\": \"give\",\n  \"target\": \"pocket\",\n  \"recipient\": \"teo\",\n  \"text\": \"\"\n}",
   "meta": {
-   "text": "{\"summary\": \"Mara passes the bus ticket to Teo.\", \"actor\": \"mara\", \"action\": \"give\", \"target\": \"pocket\", \"recipient\": \"teo\", \"text\": \"\"}",
-   "latency_s": 0.542,
+   "text": "{\n  \"summary\": \"Mara transfers the ticket to Teo.\",\n  \"actor\": \"mara\",\n  \"action\": \"give\",\n  \"target\": \"pocket\",\n  \"recipient\": \"teo\",\n  \"text\": \"\"\n}",
+   "latency_s": 0.626,
    "prompt_tokens": 603,
-   "output_tokens": 42,
+   "output_tokens": 57,
    "model": "gemma4:e2b"
   },
   "proposal": {
-   "summary": "Mara passes the bus ticket to Teo.",
+   "summary": "Mara transfers the ticket to Teo.",
    "actor": "mara",
    "action": "give",
    "target": "pocket",
@@ -955,7 +955,7 @@
   "raw": "{\n  \"summary\": \"Mara gave the pocket to Teo.\",\n  \"actor\": \"mara\",\n  \"action\": \"give\",\n  \"target\": \"pocket\",\n  \"recipient\": \"teo\",\n  \"text\": \"\"\n}",
   "meta": {
    "text": "{\n  \"summary\": \"Mara gave the pocket to Teo.\",\n  \"actor\": \"mara\",\n  \"action\": \"give\",\n  \"target\": \"pocket\",\n  \"recipient\": \"teo\",\n  \"text\": \"\"\n}",
-   "latency_s": 0.64,
+   "latency_s": 0.632,
    "prompt_tokens": 565,
    "output_tokens": 57,
    "model": "gemma4:e2b"
@@ -987,16 +987,16 @@
   "request_id": "B:step0",
   "prompt_hash": "bd73e437da80",
   "call_seed": 10001,
-  "raw": "{\n  \"summary\": \"Mara transfers the pocket item to Teo.\",\n  \"actor\": \"mara\",\n  \"action\": \"give\",\n  \"target\": \"pocket\",\n  \"recipient\": \"teo\",\n  \"text\": \"\"\n}",
+  "raw": "{\"summary\": \"Mara transfers the bus ticket to Teo.\", \"actor\": \"mara\", \"action\": \"give\", \"target\": \"pocket\", \"recipient\": \"teo\", \"text\": \"\"}",
   "meta": {
-   "text": "{\n  \"summary\": \"Mara transfers the pocket item to Teo.\",\n  \"actor\": \"mara\",\n  \"action\": \"give\",\n  \"target\": \"pocket\",\n  \"recipient\": \"teo\",\n  \"text\": \"\"\n}",
-   "latency_s": 0.712,
+   "text": "{\"summary\": \"Mara transfers the bus ticket to Teo.\", \"actor\": \"mara\", \"action\": \"give\", \"target\": \"pocket\", \"recipient\": \"teo\", \"text\": \"\"}",
+   "latency_s": 0.621,
    "prompt_tokens": 603,
-   "output_tokens": 58,
+   "output_tokens": 42,
    "model": "gemma4:e2b"
   },
   "proposal": {
-   "summary": "Mara transfers the pocket item to Teo.",
+   "summary": "Mara transfers the bus ticket to Teo.",
    "actor": "mara",
    "action": "give",
    "target": "pocket",
@@ -1022,16 +1022,16 @@
   "request_id": "B:step0",
   "prompt_hash": "bd73e437da80",
   "call_seed": 10002,
-  "raw": "{\"summary\": \"Mara gives the bus ticket to Teo.\", \"actor\": \"mara\", \"action\": \"give\", \"target\": \"pocket\", \"recipient\": \"teo\", \"text\": \"\"}",
+  "raw": "{\n  \"summary\": \"Mara transfers the ticket to Teo.\",\n  \"actor\": \"mara\",\n  \"action\": \"give\",\n  \"target\": \"pocket\",\n  \"recipient\": \"teo\",\n  \"text\": \"\"\n}",
   "meta": {
-   "text": "{\"summary\": \"Mara gives the bus ticket to Teo.\", \"actor\": \"mara\", \"action\": \"give\", \"target\": \"pocket\", \"recipient\": \"teo\", \"text\": \"\"}",
-   "latency_s": 0.486,
+   "text": "{\n  \"summary\": \"Mara transfers the ticket to Teo.\",\n  \"actor\": \"mara\",\n  \"action\": \"give\",\n  \"target\": \"pocket\",\n  \"recipient\": \"teo\",\n  \"text\": \"\"\n}",
+   "latency_s": 0.616,
    "prompt_tokens": 603,
-   "output_tokens": 42,
+   "output_tokens": 57,
    "model": "gemma4:e2b"
   },
   "proposal": {
-   "summary": "Mara gives the bus ticket to Teo.",
+   "summary": "Mara transfers the ticket to Teo.",
    "actor": "mara",
    "action": "give",
    "target": "pocket",

@@ -71,23 +71,26 @@ setup = [["set", "places.apt.locked", true]]
 
 [D.lock.roof]
 premise = "You locked the door at 11:47. Later you climbed to the roof instead of going down."
-setup_summary = "You climb past the last landing and shoulder the roof door open."
-setup = [["set", "chars.player.location", "stairwell"], ["set", "chars.player.location", "roof"]]
+setup_summary = "You climb past the last landing and shoulder the roof door open. Someone is on the stairs below you."
+# Mara is on the stairs as the shadow begins: from the basement the roof is two moves away, and one step
+# (one event) can only make one, so "Mara comes up to the roof" would otherwise be unreachable.
+setup = [["set", "chars.player.location", "stairwell"], ["set", "chars.player.location", "roof"],
+         ["set", "chars.mara.location", "stairwell"]]
 
   [[D.lock.roof.steps]]
-  hint = "Mara climbs up from the basement into the stairwell."
+  hint = "Mara comes up to the roof, to you."
   actions = ["move", "speak"]
-  fallback = [{ actor = "mara", action = "move", target = "stairwell" }]
-
-  [[D.lock.roof.steps]]
-  hint = "Mara comes out onto the roof, into the storm, to you."
-  actions = ["move"]
   goal = "together mara player"
   fallback = [{ actor = "mara", action = "move", target = "roof" }]
 
   [[D.lock.roof.steps]]
-  hint = "Mara gives you the brass key."
-  actions = ["give"]
+  hint = "The storm, the roof, and what is said there."
+  actions = ["move", "speak", "take", "give", "harm", "hide"]
+  fallback = [{ actor = "mara", action = "speak", target = "player", text = "You came up. You always come up." }]
+
+  [[D.lock.roof.steps]]
+  hint = "The brass key ends up in your hand, however it happens."
+  actions = ["give", "take", "speak", "move", "hide"]
   goal = "holds player key07"
   fallback = [{ actor = "mara", action = "give", target = "key07", to = "player" }]
 
@@ -112,8 +115,8 @@ setup = [["set", "chars.player.location", "stairwell"], ["set", "chars.player.lo
   fallback = [{ actor = "mara", action = "speak", target = "player", text = "Open it with me. That's all I wanted." }]
 
   [[D.lock.basement.steps]]
-  hint = "Mara gives you the brass key."
-  actions = ["give"]
+  hint = "The brass key ends up in your hand, however it happens."
+  actions = ["give", "take", "speak", "move", "hide"]
   goal = "holds player key07"
   fallback = [{ actor = "mara", action = "give", target = "key07", to = "player" }]
 

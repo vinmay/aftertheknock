@@ -17,21 +17,21 @@
  "replay_reproduces": "24/24 (100%)",
  "shadow_steps": {
   "total": 162,
-  "first_try": "137/162 (85%)",
-  "model_committed": "152/162 (94%)",
-  "fallback": "10/162 (6%)",
+  "first_try": "135/162 (83%)",
+  "model_committed": "150/162 (93%)",
+  "fallback": "12/162 (7%)",
   "skipped": "0/162 (0%)"
  },
  "validator": {
-  "proposals": 198,
+  "proposals": 202,
   "rejections_by_rule": {
    "R_ADJACENT": 18,
-   "R_REACH": 9,
-   "R_TYPE": 8,
-   "R_BEAT": 6,
-   "R_NOOP": 6
+   "R_REACH": 11,
+   "R_TYPE": 9,
+   "R_NOOP": 9,
+   "R_BEAT": 5
   },
-  "rejected": "46/198 (23%)"
+  "rejected": "52/202 (26%)"
  },
  "impossible_give": {
   "probe_calls": 30,
@@ -58,33 +58,355 @@
   "lock/basement": {
    "runs": 6,
    "distinct_chains": 6,
-   "mean_pairwise_event_overlap_jaccard": 0.51
+   "mean_pairwise_event_overlap_jaccard": 0.35
   },
   "lock/roof": {
    "runs": 6,
    "distinct_chains": 6,
-   "mean_pairwise_event_overlap_jaccard": 0.3
+   "mean_pairwise_event_overlap_jaccard": 0.24
   },
   "open/basement": {
    "runs": 6,
    "distinct_chains": 6,
-   "mean_pairwise_event_overlap_jaccard": 0.41
+   "mean_pairwise_event_overlap_jaccard": 0.37
   },
   "open/roof": {
    "runs": 6,
    "distinct_chains": 6,
-   "mean_pairwise_event_overlap_jaccard": 0.5
+   "mean_pairwise_event_overlap_jaccard": 0.51
   }
  },
+ "freedom": {
+  "crossing2_written_by_player": "24/24 (100%)",
+  "steps": [
+   {
+    "shadow": "B.lock",
+    "step": 1,
+    "model": 12,
+    "fallback": 0,
+    "skipped": 0,
+    "distinct_actions": [
+     "open"
+    ],
+    "distinct_texts": 0,
+    "texts_with_counts": {}
+   },
+   {
+    "shadow": "B.lock",
+    "step": 2,
+    "model": 12,
+    "fallback": 0,
+    "skipped": 0,
+    "distinct_actions": [
+     "move"
+    ],
+    "distinct_texts": 0,
+    "texts_with_counts": {}
+   },
+   {
+    "shadow": "B.lock",
+    "step": 3,
+    "model": 6,
+    "fallback": 6,
+    "skipped": 0,
+    "distinct_actions": [
+     "give",
+     "speak"
+    ],
+    "distinct_texts": 6,
+    "texts_with_counts": {
+     "Did you see anything strange?": 1,
+     "Do you know the way down?": 1,
+     "This feels wrong tonight.": 1,
+     "Can you let me in now?": 1,
+     "The basement is cold tonight.": 1,
+     "The storm sounds loud now.": 1
+    }
+   },
+   {
+    "shadow": "B.lock",
+    "step": 4,
+    "model": 12,
+    "fallback": 0,
+    "skipped": 0,
+    "distinct_actions": [
+     "mark"
+    ],
+    "distinct_texts": 11,
+    "texts_with_counts": {
+     "4113": 2,
+     "4819": 1,
+     "7118": 1,
+     "0315": 1,
+     "8192": 1,
+     "1148": 1,
+     "1987": 1,
+     "4815": 1,
+     "8842": 1,
+     "8112": 1,
+     "1028": 1
+    }
+   },
+   {
+    "shadow": "B.open",
+    "step": 1,
+    "model": 12,
+    "fallback": 0,
+    "skipped": 0,
+    "distinct_actions": [
+     "speak"
+    ],
+    "distinct_texts": 12,
+    "texts_with_counts": {
+     "The shadows here have teeth.": 1,
+     "The silence here feels wrong.": 1,
+     "The shadows here taste like rust.": 1,
+     "The shadows taste like rust tonight.": 1,
+     "The shadows here have eyes.": 1,
+     "The shadows here hold secrets.": 1,
+     "The shadows here feel very old.": 1,
+     "The air feels terribly thin tonight.": 1,
+     "The shadows here watch us all.": 1,
+     "The damp air tastes like old secrets.": 1,
+     "The shadows here taste of rust.": 1,
+     "The shadows here hold old things.": 1
+    }
+   },
+   {
+    "shadow": "B.open",
+    "step": 2,
+    "model": 12,
+    "fallback": 0,
+    "skipped": 0,
+    "distinct_actions": [
+     "take"
+    ],
+    "distinct_texts": 0,
+    "texts_with_counts": {}
+   },
+   {
+    "shadow": "B.open",
+    "step": 3,
+    "model": 12,
+    "fallback": 0,
+    "skipped": 0,
+    "distinct_actions": [
+     "mark"
+    ],
+    "distinct_texts": 11,
+    "texts_with_counts": {
+     "8811": 2,
+     "1988": 1,
+     "8842": 1,
+     "4581": 1,
+     "8821": 1,
+     "4112": 1,
+     "8831": 1,
+     "8112": 1,
+     "1987": 1,
+     "8109": 1,
+     "4192": 1
+    }
+   },
+   {
+    "shadow": "D.lock.basement",
+    "step": 1,
+    "model": 6,
+    "fallback": 0,
+    "skipped": 0,
+    "distinct_actions": [
+     "speak"
+    ],
+    "distinct_texts": 3,
+    "texts_with_counts": {
+     "Let's open unit 07 now.": 4,
+     "Can you open this unit?": 1,
+     "Can we open unit 07 now?": 1
+    }
+   },
+   {
+    "shadow": "D.lock.basement",
+    "step": 2,
+    "model": 6,
+    "fallback": 0,
+    "skipped": 0,
+    "distinct_actions": [
+     "give",
+     "take"
+    ],
+    "distinct_texts": 0,
+    "texts_with_counts": {}
+   },
+   {
+    "shadow": "D.lock.basement",
+    "step": 3,
+    "model": 6,
+    "fallback": 0,
+    "skipped": 0,
+    "distinct_actions": [
+     "mark"
+    ],
+    "distinct_texts": 4,
+    "texts_with_counts": {
+     "MARA": 3,
+     "WAIT": 1,
+     "STAY HERE": 1,
+     "STAY NOW": 1
+    }
+   },
+   {
+    "shadow": "D.lock.roof",
+    "step": 1,
+    "model": 6,
+    "fallback": 0,
+    "skipped": 0,
+    "distinct_actions": [
+     "move"
+    ],
+    "distinct_texts": 0,
+    "texts_with_counts": {}
+   },
+   {
+    "shadow": "D.lock.roof",
+    "step": 2,
+    "model": 6,
+    "fallback": 0,
+    "skipped": 0,
+    "distinct_actions": [
+     "speak"
+    ],
+    "distinct_texts": 4,
+    "texts_with_counts": {
+     "The wind howls tonight.": 3,
+     "The wind howls like a hungry beast.": 1,
+     "The wind howls like a hungry thing.": 1,
+     "The storm sounds heavy tonight.": 1
+    }
+   },
+   {
+    "shadow": "D.lock.roof",
+    "step": 3,
+    "model": 6,
+    "fallback": 0,
+    "skipped": 0,
+    "distinct_actions": [
+     "take"
+    ],
+    "distinct_texts": 0,
+    "texts_with_counts": {}
+   },
+   {
+    "shadow": "D.lock.roof",
+    "step": 4,
+    "model": 6,
+    "fallback": 0,
+    "skipped": 0,
+    "distinct_actions": [
+     "mark"
+    ],
+    "distinct_texts": 3,
+    "texts_with_counts": {
+     "STAY HERE": 4,
+     "NIGHT STORM": 1,
+     "STORM NIGHT": 1
+    }
+   },
+   {
+    "shadow": "D.open.basement",
+    "step": 1,
+    "model": 6,
+    "fallback": 0,
+    "skipped": 0,
+    "distinct_actions": [
+     "open"
+    ],
+    "distinct_texts": 0,
+    "texts_with_counts": {}
+   },
+   {
+    "shadow": "D.open.basement",
+    "step": 2,
+    "model": 0,
+    "fallback": 6,
+    "skipped": 0,
+    "distinct_actions": [
+     "move"
+    ],
+    "distinct_texts": 0,
+    "texts_with_counts": {}
+   },
+   {
+    "shadow": "D.open.basement",
+    "step": 3,
+    "model": 6,
+    "fallback": 0,
+    "skipped": 0,
+    "distinct_actions": [
+     "mark"
+    ],
+    "distinct_texts": 3,
+    "texts_with_counts": {
+     "STORM NIGHT": 3,
+     "STAY HERE": 2,
+     "MARA": 1
+    }
+   },
+   {
+    "shadow": "D.open.roof",
+    "step": 1,
+    "model": 6,
+    "fallback": 0,
+    "skipped": 0,
+    "distinct_actions": [
+     "speak"
+    ],
+    "distinct_texts": 4,
+    "texts_with_counts": {
+     "Unit 07 holds old boxes.": 2,
+     "It holds old photographs.": 2,
+     "It holds old film reels.": 1,
+     "It holds things you should not see.": 1
+    }
+   },
+   {
+    "shadow": "D.open.roof",
+    "step": 2,
+    "model": 6,
+    "fallback": 0,
+    "skipped": 0,
+    "distinct_actions": [
+     "give"
+    ],
+    "distinct_texts": 0,
+    "texts_with_counts": {}
+   },
+   {
+    "shadow": "D.open.roof",
+    "step": 3,
+    "model": 6,
+    "fallback": 0,
+    "skipped": 0,
+    "distinct_actions": [
+     "mark"
+    ],
+    "distinct_texts": 3,
+    "texts_with_counts": {
+     "MARA": 4,
+     "NIGHT": 1,
+     "STORM NIGHT": 1
+    }
+   }
+  ]
+ },
  "performance": {
-  "model_call_latency_p50_s": 1.62,
-  "model_call_latency_p95_s": 2.46,
+  "model_call_latency_p50_s": 1.63,
+  "model_call_latency_p95_s": 2.66,
   "shadow_sim_p50_s": 6.77,
-  "shadow_sim_p95_s": 8.95,
-  "crossing_scene_p50_s": 7.36,
-  "crossing_scene_p95_s": 9.55,
+  "shadow_sim_p95_s": 9.02,
+  "crossing_scene_p50_s": 7.42,
+  "crossing_scene_p95_s": 9.69,
   "crossing_note": "time from click to crossing text with no reading pause; includes waiting for the shadow",
-  "model_calls_per_playthrough_mean": 10.3,
-  "tokens_per_playthrough_mean": 6260
+  "model_calls_per_playthrough_mean": 10.5,
+  "tokens_per_playthrough_mean": 6387
  }
 }

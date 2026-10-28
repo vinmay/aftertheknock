@@ -99,37 +99,68 @@ Model: gemma4:e2b Q4_K_M, 24 live playthroughs (every fork path), raw logs in `e
 | Intrusions revealing a post-fork fact | 48/48 (100%) |
 | Intrusions with valid origin event | 48/48 (100%) |
 | Replays reproducing every state hash | 24/24 (100%) |
-| Shadow events accepted on the model's first proposal | 137/162 (85%) |
-| Shadow events committed from the model | 152/162 (94%) |
-| Shadow events from hand-written fallback | 10/162 (6%) |
-| Proposals rejected by the validator | 46/198 (23%) |
+| Shadow events accepted on the model's first proposal | 135/162 (83%) |
+| Shadow events committed from the model | 150/162 (93%) |
+| Shadow events from hand-written fallback | 12/162 (7%) |
+| Proposals rejected by the validator | 52/202 (26%) |
 | Deliberate impossible give rejected | 30/30 (100%) |
 | Model's atmosphere sentence failing rule checks (first attempt) | 1/48 (2%) |
 | Crossings that kept a model sentence (rest: hand-written lines only) | 48/48 (100%) |
 | Narration contradictions, hand-labeled | not labeled |
 | Intrusion accuracy, hand-labeled | not labeled |
-| Model call latency p50 / p95 | 1.62 s / 2.46 s |
-| Whole shadow timeline p50 / p95 | 6.77 s / 8.95 s |
-| Model calls per playthrough (mean) | 10.3 |
-| Tokens per playthrough (mean) | 6260 |
+| Model call latency p50 / p95 | 1.63 s / 2.66 s |
+| Whole shadow timeline p50 / p95 | 6.77 s / 9.02 s |
+| Model calls per playthrough (mean) | 10.5 |
+| Tokens per playthrough (mean) | 6387 |
 
 Variation (same choices, different seeds):
 
 | Path | Runs | Distinct event chains | Mean pairwise overlap (Jaccard) |
 |---|---|---|---|
-| lock/basement | 6 | 6 | 0.51 |
-| lock/roof | 6 | 6 | 0.3 |
-| open/basement | 6 | 6 | 0.41 |
-| open/roof | 6 | 6 | 0.5 |
+| lock/basement | 6 | 6 | 0.35 |
+| lock/roof | 6 | 6 | 0.24 |
+| open/basement | 6 | 6 | 0.37 |
+| open/roof | 6 | 6 | 0.51 |
 
-Rejections by rule: R_ADJACENT 18, R_REACH 9, R_TYPE 8, R_BEAT 6, R_NOOP 6.
+Rejections by rule: R_ADJACENT 18, R_REACH 11, R_TYPE 9, R_NOOP 9, R_BEAT 5.
+
+Freedom vs. guarantees, per shadow step (committed by the model or by a hand-written fallback; distinct action types and distinct texts across runs). Crossing 2 written by the player: 24/24 (100%).
+
+| Shadow | Step | Model | Fallback | Skipped | Actions | Distinct texts |
+|---|---|---|---|---|---|---|
+| B.lock | 1 | 12 | 0 | 0 | open | 0 |
+| B.lock | 2 | 12 | 0 | 0 | move | 0 |
+| B.lock | 3 | 6 | 6 | 0 | give, speak | 6 |
+| B.lock | 4 | 12 | 0 | 0 | mark | 11 |
+| B.open | 1 | 12 | 0 | 0 | speak | 12 |
+| B.open | 2 | 12 | 0 | 0 | take | 0 |
+| B.open | 3 | 12 | 0 | 0 | mark | 11 |
+| D.lock.basement | 1 | 6 | 0 | 0 | speak | 3 |
+| D.lock.basement | 2 | 6 | 0 | 0 | give, take | 0 |
+| D.lock.basement | 3 | 6 | 0 | 0 | mark | 4 |
+| D.lock.roof | 1 | 6 | 0 | 0 | move | 0 |
+| D.lock.roof | 2 | 6 | 0 | 0 | speak | 4 |
+| D.lock.roof | 3 | 6 | 0 | 0 | take | 0 |
+| D.lock.roof | 4 | 6 | 0 | 0 | mark | 3 |
+| D.open.basement | 1 | 6 | 0 | 0 | open | 0 |
+| D.open.basement | 2 | 0 | 6 | 0 | move | 0 |
+| D.open.basement | 3 | 6 | 0 | 0 | mark | 3 |
+| D.open.roof | 1 | 6 | 0 | 0 | speak | 4 |
+| D.open.roof | 2 | 6 | 0 | 0 | give | 0 |
+| D.open.roof | 3 | 6 | 0 | 0 | mark | 3 |
 
 Notes on these numbers:
 
 - A *shadow step* is one shadow event: up to three model proposals, then a hand-written fallback. 0 of 162 steps were skipped (the model failed and no fallback fitted the state). Every shadow still ended with its committed crossing.
 - "Rejected" counts proposals stopped by the validator or by a story-beat check (`R_BEAT`, which includes banned phrases). A rejected proposal never changes state.
 - The crossing text is hand-written around the committed facts. The atmosphere-sentence rows measure only the model's optional extra sentence, which is rule-checked. That doesn't prove the sentence never contradicts anything; hand labels go in `eval/labels/` and show as "not labeled" until a person fills them in.
-- Time from the click to the crossing, with no reading pause at all: p50 7.36 s, p95 9.55 s. In real play the shadow runs while you read the scenes before it.
+- Time from the click to the crossing, with no reading pause at all: p50 7.42 s, p95 9.69 s. In real play the shadow runs while you read the scenes before it.
+
+### Freedom vs. guarantees
+
+Each other night has fixed beats (who must end up holding what, and that a message gets written); the model decides how it happens and every word that's said or written.
+
+Measured over these runs: 150 of 162 shadow steps were committed from the model's own proposal; counted step by step, it produced 64 distinct spoken or written texts; crossing 2 was written in the player's own hand in 24/24 (100%) runs. The per-step table above (Freedom vs. guarantees) gives model/fallback counts, the action types the model chose, and how many different texts it produced for each step.
 <!-- RESULTS:END -->
 
 ### Hosted model, reported separately

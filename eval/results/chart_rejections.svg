@@ -1,19 +1,19 @@
 <svg xmlns="http://www.w3.org/2000/svg" width="640" height="220" font-family="ui-monospace, monospace" font-size="12">
 <rect width="100%" height="100%" fill="#0e0d0c"/>
-<text x="16" y="24" fill="#e6dfd2" font-size="14">Validator rejections by rule (198 proposals)</text>
+<text x="16" y="24" fill="#e6dfd2" font-size="14">Validator rejections by rule (202 proposals)</text>
 <text x="16" y="59" fill="#8d867b">R_ADJACENT</text>
 <rect x="230" y="44" width="360.0" height="20" fill="#b23a2f"/>
 <text x="596.0" y="59" fill="#e6dfd2">18</text>
 <text x="16" y="93" fill="#8d867b">R_REACH</text>
-<rect x="230" y="78" width="180.0" height="20" fill="#b23a2f"/>
-<text x="416.0" y="93" fill="#e6dfd2">9</text>
+<rect x="230" y="78" width="220.0" height="20" fill="#b23a2f"/>
+<text x="456.0" y="93" fill="#e6dfd2">11</text>
 <text x="16" y="127" fill="#8d867b">R_TYPE</text>
-<rect x="230" y="112" width="160.0" height="20" fill="#b23a2f"/>
-<text x="396.0" y="127" fill="#e6dfd2">8</text>
-<text x="16" y="161" fill="#8d867b">R_BEAT</text>
-<rect x="230" y="146" width="120.0" height="20" fill="#b23a2f"/>
-<text x="356.0" y="161" fill="#e6dfd2">6</text>
-<text x="16" y="195" fill="#8d867b">R_NOOP</text>
-<rect x="230" y="180" width="120.0" height="20" fill="#b23a2f"/>
-<text x="356.0" y="195" fill="#e6dfd2">6</text>
+<rect x="230" y="112" width="180.0" height="20" fill="#b23a2f"/>
+<text x="416.0" y="127" fill="#e6dfd2">9</text>
+<text x="16" y="161" fill="#8d867b">R_NOOP</text>
+<rect x="230" y="146" width="180.0" height="20" fill="#b23a2f"/>
+<text x="416.0" y="161" fill="#e6dfd2">9</text>
+<text x="16" y="195" fill="#8d867b">R_BEAT</text>
+<rect x="230" y="180" width="100.0" height="20" fill="#b23a2f"/>
+<text x="336.0" y="195" fill="#e6dfd2">5</text>
 </svg>

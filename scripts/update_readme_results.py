@@ -28,6 +28,18 @@ Notes on these numbers:
 - "Rejected" counts proposals stopped by the validator or by a story-beat check (`R_BEAT`, which includes banned phrases). A rejected proposal never changes state.
 - The crossing text is hand-written around the committed facts. The atmosphere-sentence rows measure only the model's optional extra sentence, which is rule-checked. That doesn't prove the sentence never contradicts anything; hand labels go in `eval/labels/` and show as "not labeled" until a person fills them in.
 - Time from the click to the crossing, with no reading pause at all: p50 {p['crossing_scene_p50_s']} s, p95 {p['crossing_scene_p95_s']} s. In real play the shadow runs while you read the scenes before it."""
+    if "freedom" in m:
+        fr = m["freedom"]
+        model = sum(x["model"] for x in fr["steps"])
+        total = sum(x["model"] + x["fallback"] + x["skipped"] for x in fr["steps"])
+        texts = sum(x["distinct_texts"] for x in fr["steps"])
+        local += f"""
+
+### Freedom vs. guarantees
+
+Each other night has fixed beats (who must end up holding what, and that a message gets written); the model decides how it happens and every word that's said or written.
+
+Measured over these runs: {model} of {total} shadow steps were committed from the model's own proposal; counted step by step, it produced {texts} distinct spoken or written texts; crossing 2 was written in the player's own hand in {fr['crossing2_written_by_player']} runs. The per-step table above (Freedom vs. guarantees) gives model/fallback counts, the action types the model chose, and how many different texts it produced for each step."""
     hosted_md = R / "hosted" / "summary.md"
     hosted = ""
     if hosted_md.exists():
