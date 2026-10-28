@@ -418,8 +418,6 @@ body.instant-text main { animation: none !important; }
 .flash-close { margin: 0.4rem 0 0.2rem; }
 
 .card-title { display: block; }
-.card-sub { display: block; font-size: 0.88rem; color: var(--muted); margin-top: 0.15rem; }
-.rec-badge { display: inline-block; font-family: var(--mono); font-size: 0.66rem; letter-spacing: 0.08em; text-transform: uppercase; color: var(--bg); background: #c9a96a; padding: 0.05rem 0.4rem; border-radius: 2px; vertical-align: 2px; margin-left: 0.4rem; }
 #drawer-body:focus { outline: none !important; }    /* a reading container, focused only so screen readers start at the memory */
 a.cta { display: inline-flex; align-items: center; text-decoration: none; }
 
@@ -559,13 +557,13 @@ body.instant-text .stage-color, body.instant-text .trace-hint { opacity: 1 !impo
 .sound-icon[aria-pressed="false"] .waves { display: none; }
 .sound-icon[aria-pressed="false"] .slash { display: inline; }
 
-/* "Knock" flickers once as the landing appears: ivory to dried-blood red and back, under half a
-   second, never repeated. Colour only: no movement, no glow. Off for reduced motion. */
-#title .knock-word { animation: knock-flicker 0.42s ease-out 0.9s 1 both; }
+/* "Knock" flickers once as the landing appears: a quick turn to dried-blood red, a beat, then a slow
+   fade back to ivory (about 1.2 s), never repeated. Colour only: no movement, no glow. Off for reduced motion. */
+#title .knock-word { animation: knock-flicker 1.2s ease-out 0.9s 1 both; }
 @keyframes knock-flicker {
   0% { color: var(--ink); }
-  14% { color: #b9675e; }
-  32% { color: #b9675e; }
+  12% { color: #b9675e; }
+  28% { color: #b9675e; }
   100% { color: var(--ink); }
 }
 @media (prefers-reduced-motion: reduce) { #title .knock-word { animation: none; } }

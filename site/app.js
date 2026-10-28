@@ -75,22 +75,25 @@ async function boot() {
     } else if (!st.live) {
       fallBackToReplays("The live model isn't available right now. These are replays of real recorded runs.");
     }
-    const list = await api("/api/replays");
+    // One line per night, named by what was in the pocket; the clearest night quietly leads the list.
+    const list = (await api("/api/replays")).sort((a, b) => Number(Boolean(b.recommended)) - Number(Boolean(a.recommended)));
     if (list.length) {
       $("#replays").hidden = false;
-      $("#replays-head").textContent = st.static || !st.live ? "Watch a night" : "Or watch a recorded night";
-      $("#replay-list").innerHTML = list.map((r, i) => `
+      $("#replays-head").textContent = st.static || !st.live ? "Watch someone else's night" : "Or watch someone else's night";
+      $("#replay-list").innerHTML = list.map((r, i) => {
+        const name = article(r.pocket);
+        return `
         <li class="card-night">
           <button class="card-head" aria-expanded="false" aria-controls="night-${i}">
-            <span class="card-title">${esc(r.title || `Night ${i + 1}`)}${r.recommended ? ` <span class="rec-badge">Recommended first watch</span>` : ""}
-              <span class="card-sub">${esc(article(r.pocket))} \u00b7 Recorded run</span></span>
+            <span class="card-title">${esc(name[0].toUpperCase() + name.slice(1))}</span>
           </button>
           <div class="card-body" id="night-${i}" hidden>
             <p>${esc(pathWords(r.path))}</p>
             <button class="primary watch" data-id="${esc(r.id)}">Watch this night</button>
             <details class="tech"><summary>Technical details</summary><p class="small muted">Seed ${esc(r.seed)} · recorded with ${esc(r.model)} · re-verified against its recorded state</p></details>
           </div>
-        </li>`).join("");
+        </li>`;
+      }).join("");
       $("#replay-list").querySelectorAll(".card-head").forEach((h) => h.addEventListener("click", () => {
         const body = h.nextElementSibling, open = body.hidden;
         body.hidden = !open; h.setAttribute("aria-expanded", String(open));
