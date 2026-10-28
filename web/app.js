@@ -306,6 +306,7 @@ const CLIMAX_HOLD_MS = 2700;          // the central line fades in at 1.2 s; Con
 
 async function show(v) {
   Sound.scene(v.scene || v.kind || "scene");        // a scene change never carries the pen with it
+  if (v.kind !== "crossing") { S.stageGate?.cancel(); S.stageGate = null; }
   // The room held low behind the other door (desired state): on the door scene only after "Your face."
   // has had time to land; lowest through the confrontation.
   if (v.door && !instantText()) setTimeout(() => { if (S.view === v) Sound.hush(v.hush); }, 4500);
@@ -693,7 +694,7 @@ function stageCrossing(c, second = false) {
       <p class="stage-after">${esc(`${c.after} ${c.who}`.trim())}</p>
       ${c.echo ? `<p class="stage-after stage-echo">${esc(c.echo)}</p>` : ""}
       ${c.color ? `<p class="stage-color">${esc(c.color)}</p>` : ""}
-      <button class="primary stage-go" id="stage-go">Go on</button>
+      <button class="primary stage-go" id="stage-go" disabled>Go on</button>
     </div>`;
   el.hidden = false;
   el.classList.toggle("instant", instantText());
@@ -707,17 +708,22 @@ function stageCrossing(c, second = false) {
   if (!second) Sound.crossing(1, c.object, 0, 0);
   else if (instantText()) Sound.crossing(2, c.object, 0.05, 0.8);
   else Sound.crossing(2, c.object, 1.0, 2.2);
-  const close = () => { Sound.stopPen(); el.hidden = true; document.body.classList.remove("staged"); $("#current .ink")?.focus({ preventScroll: true }); };
+  S.stageGate?.cancel();
+  const close = () => { S.stageGate?.cancel(); Sound.stopPen(); el.hidden = true; document.body.classList.remove("staged"); $("#current .ink")?.focus({ preventScroll: true }); };
   $("#stage-go").addEventListener("click", close);
-  const ready = () => { el.classList.add("ready"); $("#stage-go")?.focus({ preventScroll: true }); };
-  if (instantText()) ready();
-  else {
-    const t = setTimeout(ready, second ? 3700 : 1600);   // written: the stroke has finished; discovered: it has settled
-    el.addEventListener("click", (ev) => {           // click anywhere: finish now
-      if (ev.target.closest("#stage-go")) return;
-      clearTimeout(t); el.classList.add("instant"); Sound.stopPen(); ready();
-    }, { once: true });
-  }
+  // "Go on" stays disabled (so Tab + Enter can't skip the last line) and unfocused until the reveal is done.
+  const ready = () => { el.classList.add("ready"); const go = $("#stage-go"); if (go) { go.disabled = false; go.focus({ preventScroll: true }); } };
+  if (instantText()) { S.stageGate = null; ready(); return; }
+  // Ready when the last revealed element finishes its own reveal: the colour line, else the after line,
+  // else the mark itself. A fallback timer covers an animationend that never comes.
+  const last = el.querySelector(".stage-color") || el.querySelector(".stage-after");
+  const mark = last ? null : el.querySelector(".prop text.ink-hand, .prop text.engrave, .prop text.scratch:not(.etch-lip)");
+  const names = last ? ["in"] : mark?.classList.contains("ink-hand") ? ["ink-in"] : mark?.classList.contains("engrave") ? ["cut-in"] : ["write"];
+  S.stageGate = revealGate(last || mark, second ? 6500 : 3500, ready, names);
+  el.addEventListener("click", (ev) => {             // click anywhere: finish now
+    if (ev.target.closest("#stage-go")) return;
+    el.classList.add("instant"); Sound.stopPen(); S.stageGate?.fire();
+  }, { once: true });
 }
 
 /* ---------------------------------------------------------------- trace */
