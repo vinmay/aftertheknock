@@ -138,7 +138,7 @@ $("#start").addEventListener("submit", async (ev) => {
     const d = await api("/api/new", { pocket: $("#pocket").value });
     const knocked = await card;
     S.game = d.game; S.replay = null; S.pocket = d.pocket;
-    setMode(`<span class="tag live">live</span>`, d.seed, `${esc(d.model || "")} generating the other night now`);
+    $("#mode").innerHTML = "";                         // a live night needs no label; "about" explains what runs it
     show(d.view);
     if (!knocked) Sound.knock();
   } catch (e) {
@@ -185,7 +185,7 @@ async function startReplay(id) {
   const knocked = await card;
   S.game = d.game; S.replay = d.replay; S.step = 0; S.pocket = d.pocket;
   const liveHref = STATIC ? LINKS.live : location.pathname;
-  setMode(`<span class="tag replay">recorded night</span>`, d.seed,
+  setMode(`<span class="tag replay">recorded night</span>`,
     `following a path someone already took · ${esc(REPLAY_LABEL.split("— ")[1] || REPLAY_LABEL)} · <a href="${liveHref}">Start a live night</a>`);
   show(d.view);
   if (!knocked) Sound.knock();
@@ -198,9 +198,10 @@ function fallBackToReplays(why) {
   $("#replays").hidden = false;
 }
 
-function setMode(chip, seed, detail) {
-  $("#mode").innerHTML = `<button class="chip" id="chip" aria-expanded="false" title="What is running">${chip}</button>` +
-    `<span class="seed">seed ${esc(seed)}</span><span class="detail">${detail}</span>`;
+/* Replays only: one quiet tag that says this night is a recording; tap it for what that means. */
+function setMode(chip, detail) {
+  $("#mode").innerHTML = `<button class="chip" id="chip" aria-expanded="false" title="What is this?">${chip}</button>` +
+    `<span class="detail">${detail}</span>`;
   $("#chip").addEventListener("click", () => {
     const open = $("#mode").classList.toggle("open");
     $("#chip").setAttribute("aria-expanded", String(open));
@@ -379,8 +380,12 @@ document.addEventListener("keydown", (ev) => {
   }
 });
 
+/* The story's clock, in the landing's style: 11:47 PM, then past midnight 12:01 AM. */
 function setClock(t) {
-  if (t) { $("#clock").textContent = t; $("#clock").hidden = false; }
+  if (!t) return;
+  const h = parseInt(t, 10);
+  $("#clock").textContent = `${t} ${h === 11 ? "PM" : "AM"}`;
+  $("#clock").hidden = false;
 }
 
 /* ---------------------------------------------------------------- the crossing */
