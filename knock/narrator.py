@@ -26,6 +26,16 @@ BANNED_PHRASES = ("help me", "get out", "you're next", "youre next", "it's not o
                   "watch out", "too late", "behind you", "run while you can", "run", "you will die",
                   "die", "kill", "blood")
 MAX_COLOR = 160
+# Stock images the small model leans on, and body details: never in the atmosphere sentence.
+NARRATION_BANNED = ("ozone", "wet stone", "damp stone", "bare feet", "skin", "chill", "viscous")
+# Where you are, in plain words, and the surfaces that can't be there.
+LOCATION = {"apt": "your apartment", "stairwell": "the stairwell", "roof": "the roof, outdoors", "basement": "the basement",
+            "unit07": "the basement, at storage unit 07", "hall": "the hallway"}
+OUTDOORS = {"roof"}
+WRONG_SURFACES = {
+    "outdoors": ("concrete", "floor", "floorboards", "carpet", "ceiling", "linoleum", "tiles"),
+    "indoors": ("tar", "sky", "rooftop", "parapet"),
+}
 REPEAT_OVERLAP = 0.5        # share of content words two color sentences may have in common
 STOP = {"the", "a", "an", "and", "of", "to", "in", "on", "at", "your", "you", "it", "its", "is", "are", "as",
         "with", "from", "into", "then", "through", "against", "over", "by", "for", "like", "that", "this"}
@@ -133,17 +143,21 @@ def template_parts(m: dict, templates: dict, pocket: str, style: str = "paper") 
 
 def build_messages(m: dict, avoid: str | None = None) -> list[dict]:
     with_you = ", ".join(CHAR_NAMES[c] for c in m["with_you"] if c in CHAR_NAMES) or "no one"
-    user = (f"Where you are: {m['place']}. With you: {with_you}. The power is out; the only light is the "
+    where = LOCATION.get(m["here"], m["place"])
+    weather = " It is raining hard." if m["here"] in OUTDOORS else ""
+    user = (f"Where you are: {where}.{weather} With you: {with_you}. The power is out; the only light is the "
             f"storm's. Something impossible has just happened, and you have gone very still.\n"
-            f"Write ONE short sentence (under 20 words) about what you sense in the room. "
-            f"No names, no numbers, no quotes, no words in ALL CAPS, and don't explain anything.")
+            f"Write ONE short sentence (under 20 words) about what you sense around you. "
+            f"No names, no numbers, no quotes, no words in ALL CAPS, and don't explain anything. "
+            f"Nothing about your body, skin, hands or feet, and nothing about shoes. "
+            f"Never use these words: {', '.join(NARRATION_BANNED)}.")
     if avoid:
         user += f"\nDo not repeat the last one, or its images: {avoid}"
     return [{"role": "system", "content": SYSTEM}, {"role": "user", "content": user}]
 
 
-def check(text: str) -> list[str]:
-    """Rule checks on the color sentence. Returns the problems found."""
+def check(text: str, here: str | None = None) -> list[str]:
+    """Rule checks on the color sentence (`here`: where the player is). Returns the problems found."""
     problems = []
     t = text.strip()
     if not 10 <= len(t) <= MAX_COLOR:
@@ -163,15 +177,23 @@ def check(text: str) -> list[str]:
         problems.append("C_META: mentions the machinery")
     if banned_in(t):
         problems.append(f"C_BANNED: {banned_in(t)}")
+    low = normalize(t)
+    stock = [w for w in NARRATION_BANNED if re.search(rf"\b{re.escape(w)}", low)]
+    if stock:
+        problems.append(f"C_STOCK: {stock}")
+    if here:
+        wrong = [w for w in WRONG_SURFACES["outdoors" if here in OUTDOORS else "indoors"] if re.search(rf"\b{w}\b", low)]
+        if wrong:
+            problems.append(f"C_PLACE: {wrong} doesn't fit {LOCATION.get(here, here)}")
     return problems
 
 
 def compose(parts: dict, color: str | None) -> str:
     lines = [parts["before"], f"“{parts['inscription']}”", f"{parts['after']} {parts['who']}".strip()]
-    if parts.get("echo"):                   # a line about the player's own choice, never a shadow fact
-        lines.append(parts["echo"])
     if color:
         lines.append(color)
+    if parts.get("echo"):                   # last: a line about the player's own choice, never a shadow fact
+        lines.append(parts["echo"])
     return "\n\n".join(lines)
 
 
@@ -192,7 +214,7 @@ def narrate_crossing(timeline: Timeline, x: Intrusion, model, pocket: str, seed:
             model_text, meta, transport = "", {"error": exc.reason}, exc.reason
         except Exception as exc:
             model_text, meta = "", {"error": repr(exc)}
-        problems = check(model_text) if transport is None else [f"TRANSPORT: {transport}"]
+        problems = check(model_text, m["here"]) if transport is None else [f"TRANSPORT: {transport}"]
         repeat = transport is None and not problems and near_duplicate(model_text, avoid)
         if repeat:
             problems = ["C_REPEAT: too close to the last crossing's sentence"]

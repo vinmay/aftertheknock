@@ -45,6 +45,17 @@ def display_name(oid: str, pocket: str, form: str = "object") -> str:
     return oid.replace("_", " ")
 
 
+POSSESSIVE = {"teo": "his", "mara": "her"}
+
+
+def own_place(name: str, actor: str) -> str:
+    """A place the actor owns reads with a pronoun: "Teo unlocked his apartment, 6D." """
+    who = CHAR_NAMES.get(actor)
+    if who and actor in POSSESSIVE and name.startswith(f"{who}'s "):
+        return f"{POSSESSIVE[actor]} {name[len(who) + 3:]}"
+    return name
+
+
 def what(state: dict, eid: str, pocket: str) -> str:
     if eid in ("pocket", "key07"):
         return display_name(eid, pocket)
@@ -60,6 +71,8 @@ def describe(e: dict, state: dict, pocket: str, style_for=None) -> str:
     a = who(e["actor"], shadow)
     a = a[0].upper() + a[1:]
     t = what(state, e["target"], pocket)
+    if e["target"] in state["places"]:
+        t = own_place(t, e["actor"])
     if e["target"] == "player":
         t = who("player", shadow)
     act = e["action"]

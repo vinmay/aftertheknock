@@ -8,7 +8,7 @@ import time
 import tomllib
 import uuid
 
-from .describe import describe, display_name, display_speech, owned
+from .describe import describe, display_name, display_speech, own_place, owned
 from .engine import Timeline
 from .narrator import CHAR_NAMES, compose, narrate_crossing
 from .sim import RunLog, load_shadows, pick_origin, simulate_shadow
@@ -402,6 +402,8 @@ class Game:
         mara_here = c["chars"]["mara"]["location"] == here
         echo = slots[f"fork2_echo_{which}_{self.f2}"]
         fill["fork2_echo"] = "" if (which == "open" and self.f2 == "basement" and not mara_here) else echo
+        # "One of them is in your handwriting": only when crossing 2 was committed in the player's own hand.
+        fill["whose_hand"] = slots["whose_hand"] if d_o.actor == "player" else ""
         rank = {"present": 0, "hurt": 1, "dead": 2, "departed": 0}
         teo = max((b["chars"]["teo"]["status"], d["chars"]["teo"]["status"]), key=lambda s: rank.get(s, 0))
         fill["open_teo"] = slots["open_teo_" + {"hurt": "hurt", "dead": "dead"}.get(teo, "fine")]
@@ -537,7 +539,7 @@ class Game:
                      "obj": display_name(e.target, self.pocket) if is_obj else "",
                      "on": display_name(e.target, self.pocket, "on") if is_obj else "",
                      "it": ("them" if plural else "it") if is_obj else "",
-                     "place": places[e.target]["name"] if e.target in places else "",
+                     "place": own_place(places[e.target]["name"], e.actor) if e.target in places else "",
                      "text": display_speech(e.text) if e.action == "speak" else e.text,
                      "from": f" from {name(prev)}" if prev else ""}
             line = tmpl[key]

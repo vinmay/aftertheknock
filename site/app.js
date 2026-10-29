@@ -361,7 +361,7 @@ async function show(v) {
     // A replay follows its recording: show the decision that was made, and name the one that wasn't.
     const b = document.createElement("button");
     b.className = "recorded";
-    b.innerHTML = `<span class="num">${recorded + 1}</span><span><span class="rec-k">Recorded choice</span> ${esc(v.choices[recorded])}</span>`;
+    b.innerHTML = `<span><span class="rec-k">Recorded choice</span> ${esc(v.choices[recorded])}</span>`;
     b.dataset.index = recorded;
     b.addEventListener("click", () => choose(recorded));
     ch.appendChild(b);
@@ -692,8 +692,8 @@ function stageCrossing(c, second = false) {
       <div class="prop-wrap${c.object === "key07" ? " keytag" : ""}">${propSvg(c)}</div>
       <p class="sr-only">${second ? "Writing appears on it as you watch." : "The writing is already there."}</p>
       <p class="stage-after">${esc(`${c.after} ${c.who}`.trim())}</p>
-      ${c.echo ? `<p class="stage-after stage-echo">${esc(c.echo)}</p>` : ""}
       ${c.color ? `<p class="stage-color">${esc(c.color)}</p>` : ""}
+      ${c.echo ? `<p class="stage-after stage-echo">${esc(c.echo)}</p>` : ""}
       <button class="primary stage-go" id="stage-go" disabled>Go on</button>
     </div>`;
   el.hidden = false;
@@ -714,9 +714,10 @@ function stageCrossing(c, second = false) {
   // "Go on" stays disabled (so Tab + Enter can't skip the last line) and unfocused until the reveal is done.
   const ready = () => { el.classList.add("ready"); const go = $("#stage-go"); if (go) { go.disabled = false; go.focus({ preventScroll: true }); } };
   if (instantText()) { S.stageGate = null; ready(); return; }
-  // Ready when the last revealed element finishes its own reveal: the colour line, else the after line,
+  // Ready when the last revealed element finishes its own reveal: the line about your own choice, else the
+  // colour line, else the after line,
   // else the mark itself. A fallback timer covers an animationend that never comes.
-  const last = el.querySelector(".stage-color") || el.querySelector(".stage-after");
+  const last = el.querySelector(".stage-echo") || el.querySelector(".stage-color") || el.querySelector(".stage-after");
   const mark = last ? null : el.querySelector(".prop text.ink-hand, .prop text.engrave, .prop text.scratch:not(.etch-lip)");
   const names = last ? ["in"] : mark?.classList.contains("ink-hand") ? ["ink-in"] : mark?.classList.contains("engrave") ? ["cut-in"] : ["write"];
   S.stageGate = revealGate(last || mark, second ? 6500 : 3500, ready, names);
@@ -878,6 +879,7 @@ function reveal() {
   const map = $("#map");
   map.classList.add("revealing");
   map.querySelectorAll("[data-stage]").forEach((el) => el.classList.remove("on"));
+  $("#map-detail").innerHTML = ""; $("#map-detail").hidden = true;     // filled when the reveal lights the first crossing
   $("#map-intro").hidden = false;
   $("#map-skip").focus({ preventScroll: true });
   const at = (ms, fn) => Reveal.timers.push(setTimeout(fn, ms));
@@ -930,6 +932,7 @@ function crossingDetail(i, end = "source") {
 function setDetail(html, announce) {
   const card = $("#map-detail");
   card.innerHTML = html;
+  card.hidden = $("#map-svg").hasAttribute("hidden") || !html.trim();
   card.querySelectorAll("[data-open]").forEach((b) => b.addEventListener("click", () => openEvent(b.dataset.open)));
   if (announce) $("#map-announce").textContent = card.textContent.replace(/\s+/g, " ").trim();
 }
@@ -961,7 +964,7 @@ function drawMap(d) {
   const graph = !narrow || S.mapGraph;            // phones: the card list first; the graph on request
   svg.toggleAttribute("hidden", !graph);
   $("#map-list").hidden = graph;
-  $("#map-detail").hidden = !graph;
+  $("#map-detail").hidden = !graph || !$("#map-detail").innerHTML.trim();   // empty until something is selected
   $("#map-graph-toggle").hidden = !narrow;
   $("#map-graph-toggle").textContent = S.mapGraph ? "View as a list" : "View as a graph";
   $("#map .map-scroll").classList.toggle("wide", narrow && graph);
@@ -995,12 +998,18 @@ function drawMap(d) {
     const first = pos[evs[0].event_id], last = pos[evs[evs.length - 1].event_id];
     if (b.parent) out += `<path class="${cls}" d="${curve(P(forkCol[b.id], b.parent), first)}"/>`;
     out += `<path class="${cls}" d="M${first[0]},${first[1]} L${last[0]},${last[1]}"/>`;
-    const dy = b.id === "B" ? -30 : b.id === "D" ? 42 : b.id === "A" ? 64 : 42;
+    // Before the choice: below its lane. Your first night (A): above its segment, between the rising shadow curve
+    // and the first crossing's thread. The upper shadow: above its own lane. The rest: below.
+    const dy = b.id === "B" || b.id === "A" ? -18 : 42;
     out += `<text class="lane-label${br[b.id].kind === "shadow" ? " other" : ""}" x="${first[0] - 10}" y="${first[1] + dy}">${esc(laneTitle(d.labels[b.id]))}</text>`;
     const f = forkAt[b.id];
     if (f) {
+      // The choice not taken sits off the fork point's outer corner (the branch curve leaves to the right),
+      // with a short leader, so it never crosses a node or a line.
       const [fx, fy] = P(forkCol[b.id], b.parent);
-      out += `<text class="fork-label" x="${fx}" y="${fy + (b.id === "B" ? -18 : 26)}" text-anchor="middle">“${esc(f.not_taken)}”</text>`;
+      const up = b.id === "B", ly = up ? fy - 40 : fy + 50;
+      out += `<line class="fork-leader" x1="${fx - 3}" y1="${fy + (up ? -9 : 9)}" x2="${fx - 10}" y2="${ly + (up ? 4 : -13)}"/>` +
+        `<text class="fork-label" x="${fx - 12}" y="${ly}" text-anchor="end" data-leader-y="${up ? 4 : -13}">“${esc(f.not_taken)}”</text>`;
     }
     out += `</g>`;
   }
@@ -1026,6 +1035,7 @@ function drawMap(d) {
       (evidence ? `<text x="${x}" y="${y + 30}" text-anchor="middle" class="eid">${esc(e.event_id)}</text>` : "") + `</g>`;
   }
   svg.innerHTML = out;
+  separateLabels(svg);
   svg.querySelectorAll(".node").forEach((n) => {
     const id = n.dataset.id;
     n.addEventListener("mouseenter", () => { if (S.mapSelected !== id) setDetail(detailFor(id), false); });
@@ -1040,6 +1050,45 @@ function drawMap(d) {
     svg.querySelector(`.node[data-id="${CSS.escape(S.mapSelected)}"]`)?.classList.add("selected");
     const i = d.intrusions.findIndex((x) => x.origin_event_id === S.mapSelected || x.manifestation_event_id === S.mapSelected);
     if (i >= 0) svg.querySelectorAll(".thread")[i]?.classList.add("lit");
+  }
+}
+
+/* Labels that still overlap after placement are nudged apart, away from their lane; a fork label's
+   leader follows it. A few passes are enough for this map's handful of labels. */
+function separateLabels(svg) {
+  // A fork label at the graph's edge slides inward to stay fully visible; its leader follows.
+  const W = svg.viewBox.baseVal?.width || svg.clientWidth;
+  for (const f of svg.querySelectorAll(".fork-label")) {
+    const b = f.getBBox();
+    const dx = b.x < 4 ? 4 - b.x : b.x + b.width > W - 4 ? W - 4 - (b.x + b.width) : 0;
+    if (!dx) continue;
+    f.setAttribute("x", parseFloat(f.getAttribute("x")) + dx);
+    const line = f.previousElementSibling;
+    if (line?.classList.contains("fork-leader")) line.setAttribute("x2", parseFloat(line.getAttribute("x2")) + Math.min(dx, 6));
+  }
+  const labels = [...svg.querySelectorAll(".lane-label, .fork-label")];
+  const box = (t) => { const b = t.getBBox(); return { x: b.x - 4, y: b.y - 3, w: b.width + 8, h: b.height + 6 }; };
+  const hit = (a, b) => a.x < b.x + b.w && b.x < a.x + a.w && a.y < b.y + b.h && b.y < a.y + a.h;
+  for (let pass = 0; pass < 4; pass++) {
+    let moved = false;
+    labels.forEach((t, i) => labels.slice(0, i).forEach((o) => {
+      if (!hit(box(t), box(o))) return;
+      if (!t.dataset.leaderY && !o.dataset.leaderY && t.getAttribute("y") === o.getAttribute("y")) {
+        // Two lane labels on one row (before the choice, then your night): slide the later one along the row.
+        const ob = box(o), tb = box(t);
+        t.setAttribute("x", parseFloat(t.getAttribute("x")) + (ob.x + ob.w + 12 - tb.x));
+        moved = true;
+        return;
+      }
+      const away = (t.dataset.leaderY ? parseFloat(t.dataset.leaderY) > 0 : parseFloat(t.getAttribute("y")) < parseFloat(o.getAttribute("y"))) ? -16 : 16;
+      t.setAttribute("y", parseFloat(t.getAttribute("y")) + away);
+      if (t.dataset.leaderY) {
+        const line = t.previousElementSibling;
+        if (line?.classList.contains("fork-leader")) line.setAttribute("y2", parseFloat(t.getAttribute("y")) + parseFloat(t.dataset.leaderY));
+      }
+      moved = true;
+    }));
+    if (!moved) break;
   }
 }
 

@@ -86,7 +86,9 @@ def test_good_color_sentence_is_kept():
     while g.scene != "crossing1":
         g.choose(0)
     assert g.crossings["B"]["narration_source"] == "template+model"
-    assert g.crossings["B"]["narration"].endswith(good)
+    # Order: before, mark, after + writer, the atmosphere sentence, then the line about your own choice last.
+    paras = g.crossings["B"]["narration"].split("\n\n")
+    assert paras[-2] == good and paras[-1] == "You locked the door. Somewhere, you didn't."
 
 
 @pytest.mark.parametrize("text,ok", [
@@ -248,3 +250,30 @@ def test_second_color_sentence_never_repeats_the_first(second, kept):
     assert len(calls) == 1
     if not kept:
         assert calls[0]["problems"][0].startswith("C_REPEAT")
+
+
+@pytest.mark.parametrize("text,here,problem", [
+    ("The air smells of ozone and old rain.", "basement", "C_STOCK"),
+    ("Wet stone breathes out the cold.", "stairwell", "C_STOCK"),
+    ("Rain needles your bare feet.", "roof", "C_STOCK"),
+    ("A slow chill settles over the room.", "apt", "C_STOCK"),
+    ("Something viscous drips in the dark.", "basement", "C_STOCK"),
+    ("Water runs across the concrete floor toward the drain.", "roof", "C_PLACE"),
+    ("The tar is slick under the rain.", "basement", "C_PLACE"),
+    ("Rain drums on the tar and runs for the gutters.", "roof", None),
+    ("Somewhere in the walls, a pipe knocks twice.", "basement", None),
+])
+def test_atmosphere_sentence_rules(text, here, problem):
+    from knock.narrator import check
+    found = check(text, here)
+    assert (problem is None and not found) or any(p.startswith(problem) for p in found), found
+
+
+@pytest.mark.parametrize("here,outdoors", [("roof", True), ("basement", False), ("apt", False), ("stairwell", False)])
+def test_atmosphere_prompt_knows_where_you_are(here, outdoors):
+    from knock.narrator import LOCATION, build_messages
+    user = build_messages({"here": here, "place": here, "with_you": []})[-1]["content"]
+    assert f"Where you are: {LOCATION[here]}." in user
+    assert ("It is raining hard." in user) == outdoors
+    assert "Nothing about your body, skin, hands or feet, and nothing about shoes." in user
+    assert "Never use these words: ozone, wet stone, damp stone, bare feet, skin, chill, viscous." in user

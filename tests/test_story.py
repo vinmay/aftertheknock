@@ -286,3 +286,47 @@ def test_crossing_two_is_in_your_own_hand_and_echoes_fork_two(f1, f2):
     assert g.crossings["D"]["parts"]["echo"] == line and line in g.crossings["D"]["narration"]
     if f1 == "lock":                                                         # Mara handed you the key first
         assert any(e.action == "give" and e.target == "key07" and e.to == "player" for e in g.timeline.branch("D").events)
+
+
+@pytest.mark.parametrize("f1,f2", [(a, b) for a in ("lock", "open") for b in ("basement", "roof")])
+def test_crossing_lines_end_with_your_own_choice(f1, f2):
+    g, views = play("ticket stub", f1, f2, "open")
+    for shadow in ("B", "D"):
+        paras = g.crossings[shadow]["narration"].split("\n\n")
+        assert paras[-1] == g.crossings[shadow]["parts"]["echo"], paras
+        if g.crossings[shadow]["parts"]["color"]:
+            assert paras[-2] == g.crossings[shadow]["parts"]["color"]
+
+
+@pytest.mark.parametrize("f1,f2", [(a, b) for a in ("lock", "open") for b in ("basement", "roof")])
+def test_whose_handwriting_only_when_you_wrote_it(f1, f2):
+    g, _ = play("ticket stub", f1, f2, "open")
+    line = "One of them is in your handwriting. Now you know whose."
+    assert line in g.ending_text("open") and "You understand now who it was meant for." not in g.ending_text("open")
+    oid = g.crossings["D"]["intrusion"]["origin_event_id"]
+    real = g.timeline.event
+    g.timeline.event = lambda eid: dataclasses.replace(real(eid), actor="mara") if eid == oid else real(eid)
+    assert line not in g.ending_text("open")
+
+
+def test_script_lines():
+    g, views = play("ticket stub", "lock", "basement", "erase")
+    b2 = next(v for v in views if v["scene"] == "lock_basement_2")["text"]
+    paras = b2.split("\n\n")
+    assert paras[0].startswith('"A night," she says.') and paras[1].startswith('"I need someone else to see it,"')
+    erased = g.ending_text("erase")
+    assert "and down in the dark of it a fridge begins to hum as if nothing happened." in erased
+    assert g.story["endings"]["slots"]["erase_mara_absent"] == "Far below, a metal door closes, gently, and does not open again."
+    assert g.story["endings"]["slots"]["other_detail_took"].endswith("I didn't stop her.\"")
+
+
+def test_a_place_you_own_takes_your_pronoun():
+    from knock.describe import describe
+    g, _ = play("ticket stub", "open", "roof", "erase")         # shadow B: the door stayed locked; Teo opens 6D
+    teo = next(e for e in g.timeline.branch("B").events if e.action == "open" and e.target == "teo_apt")
+    m = g.map_data()
+    desc = next(x["desc"] for x in m["events"] if x["event_id"] == teo.event_id)
+    assert desc == "Teo unlocked his apartment, 6D.", desc
+    x = next(x for x in g.timeline.intrusions if x.origin_branch == "B")
+    lines = [l["line"] for l in g.memory(x.intrusion_id)["scene"]]
+    assert any("his apartment, 6D" in l for l in lines) and not any("Teo unlocks Teo's" in l for l in lines), lines

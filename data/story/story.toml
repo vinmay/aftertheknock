@@ -124,6 +124,8 @@ clock = "12:15"
 text = """
 "A night," she says. "Not this one. One somebody put away instead of living it."
 
+"I need someone else to see it," she says. "Someone who'll tell Teo he wasn't imagining things."
+
 She stands and steps aside. The cage door is held by a padlock you have never seen on anything in this building: no keyhole, just four brass dials, green at the edges.
 
 "The key was never for that," Mara says. "I never had the number."
@@ -131,8 +133,6 @@ She stands and steps aside. The cage door is held by a padlock you have never se
 She looks at your pocket.
 
 "You do."
-
-"I need someone else to see it," she says. "Someone who'll tell Teo he wasn't imagining things."
 """
 choices = [{ label = "Dial {digits}", next = "unit07_open" }]
 
@@ -377,7 +377,7 @@ Through the peephole, the other you goes still. You know that expression. It's t
 
 {fork2_echo}
 
-At 12:30 every light in the building comes back at once. Somewhere below, a fridge begins to hum as if nothing happened.
+At 12:30 every light in the building comes back at once, and down in the dark of it a fridge begins to hum as if nothing happened.
 
 Then, three knocks. Slow. Patient.
 
@@ -395,7 +395,7 @@ They don't come in at once. They look past you, at the night you kept, the way y
 
 You look down at what the night left you. {open_marks}
 
-You understand now who it was meant for.
+{whose_hand}
 
 {fork2_echo}
 
@@ -407,7 +407,7 @@ They step inside. You step back. There are two of you in the doorway, and the do
 [endings.slots]
 erase_marks = "\"{b_text}\" fades from {b_on}, and \"{d_text}\" from {d_on}, like breath off a mirror, and then there is nothing left to read."
 erase_mara_present = "When you look up, Mara is gone. Where she stood, the floor is dry."
-erase_mara_absent = "Somewhere in the building, a metal door closes, gently, and does not open again."
+erase_mara_absent = "Far below, a metal door closes, gently, and does not open again."
 
 # What changed, shown in the evidence view after the ending (not in the ending text): each object's
 # committed final holder in both nights (same or different), and Mara's position in both.
@@ -433,7 +433,7 @@ fork2_echo_open_basement = "Mara watches the two of you in the doorway. She has 
 other_choice_lock = "\"I opened it. I let her in.\""
 other_choice_open = "\"I kept it locked. I sat against the door and listened to everything.\""
 # Player locked: B is the night where the door was opened. {verb_on} is the material-aware act.
-other_detail_took = "\"She took the {pocket} out of my hand and {verb_it}. I let her.\""
+other_detail_took = "\"She took the {pocket} out of my hand and {verb_it}. I didn't stop her.\""
 other_detail_watched = "\"She {verb_the}. I watched her do it.\""
 other_detail_self = "\"I {verb_it} myself. I didn't know where {it_sub} would go.\""
 # Player opened: B is the night where the door stayed locked.
@@ -458,6 +458,8 @@ echo_open = "You opened the door. Somewhere, you didn't."
 # After crossing 2, one line from the player's own second choice.
 echo2_roof = "You trusted Teo. Somewhere, you followed her down."
 echo2_basement = "You followed Mara. Somewhere, you trusted Teo."
+# The open ending, only when crossing 2's committed writer is the player.
+whose_hand = "One of them is in your handwriting. Now you know whose."
 
 open_marks = "{b_line} {d_line} Both made in a night you never lived."
 mark_line_paper = "\"{text}\" on {on}, in {writing}."

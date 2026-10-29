@@ -5,11 +5,11 @@
 <rect x="230" y="44" width="311.1" height="20" fill="#e6dfd2"/>
 <text x="547.1" y="59" fill="#e6dfd2">140</text>
 <text x="16" y="93" fill="#8d867b">model, after retry</text>
-<rect x="230" y="78" width="37.8" height="20" fill="#8d867b"/>
-<text x="273.8" y="93" fill="#e6dfd2">17</text>
+<rect x="230" y="78" width="40.0" height="20" fill="#8d867b"/>
+<text x="276.0" y="93" fill="#e6dfd2">18</text>
 <text x="16" y="127" fill="#8d867b">hand-written fallback</text>
-<rect x="230" y="112" width="11.1" height="20" fill="#c7a55b"/>
-<text x="247.1" y="127" fill="#e6dfd2">5</text>
+<rect x="230" y="112" width="8.9" height="20" fill="#c7a55b"/>
+<text x="244.9" y="127" fill="#e6dfd2">4</text>
 <text x="16" y="161" fill="#8d867b">skipped</text>
 <rect x="230" y="146" width="0.0" height="20" fill="#b23a2f"/>
 <text x="236.0" y="161" fill="#e6dfd2">0</text>

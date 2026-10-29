@@ -672,3 +672,8 @@ body.instant-text .text p.climax { animation: none; opacity: 1; transform: none;
 .ev-diverged th, .ev-diverged td { text-align: left; vertical-align: top; padding: 0.35rem 0.4rem 0.35rem 0; border-top: 1px solid var(--faint); }
 .ev-diverged thead th { font-family: var(--mono); font-size: 0.68rem; letter-spacing: 0.06em; text-transform: uppercase; color: var(--muted); font-weight: normal; }
 .ev-diverged tbody th { font-weight: normal; color: var(--muted); white-space: nowrap; padding-right: 0.8rem; }
+
+/* The line about your own choice comes last on the stage, after the atmosphere sentence. */
+.crossing-stage.discovered .stage-echo { animation-delay: 2s; }
+.crossing-stage.written .stage-echo { animation-delay: 4.6s; }
+#map-svg .fork-leader { stroke: var(--faint); stroke-width: 1; }
