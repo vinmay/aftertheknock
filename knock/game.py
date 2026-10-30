@@ -10,8 +10,9 @@ import uuid
 
 from .describe import describe, display_name, display_speech, own_place, owned
 from .engine import Timeline
-from .narrator import CHAR_NAMES, compose, narrate_crossing
+from .narrator import CHAR_NAMES, banned_in, compose, narrate_crossing
 from .sim import RunLog, load_shadows, pick_origin, simulate_shadow
+from .validator import looks_truncated
 from .state import STORY_DIR, apply_delta, initial_state, is_plural, material_of, state_hash
 
 DEFAULT_POCKET = "ticket stub"
@@ -72,7 +73,9 @@ def load_story() -> dict:
         return tomllib.load(f)
 
 
-RECOMMENDED_REPLAY = "lock_roof_erase_4711"    # the signature moment: you lock the door, digits on your object
+RECOMMENDED_REPLAY = "lock_roof_erase_1001"    # the signature moment: you lock the door, digits on your object
+# How a replay card names the model that recorded it.
+RECORDED_WITH = {"gemma-4-31B-it": "Recorded with Gemma 4 31B (hosted)", "gemma4:e2b": "Recorded with Gemma 4 E2B (local)"}
 
 
 def replay_card(rec_id: str, rec: dict) -> dict:
@@ -85,7 +88,8 @@ def replay_card(rec_id: str, rec: dict) -> dict:
     title = f"The {name(first['target'])}, then the {name(second['target'])}"   # what crossed, in order
     return {"id": rec_id, "pocket": rec["pocket"], "title": title,
             "path": f"{rec['fork1']} / {rec['fork2']} / {rec['ending']['which']}", "seed": rec["seed"],
-            "model": rec["model"].get("model"), "recommended": rec_id == RECOMMENDED_REPLAY}
+            "model": rec["model"].get("model"), "recommended": rec_id == RECOMMENDED_REPLAY,
+            "recorded_with": RECORDED_WITH.get(rec["model"].get("model"), f"Recorded with {rec['model'].get('model')}")}
 
 
 def replay(record: dict) -> "Game":
@@ -196,7 +200,36 @@ class Game:
                 slots["other_detail"], claims = sl["other_detail_teo_open"], [teo_open.event_id]
             elif b_o.action == "mark" and b_o.target == "key07":
                 slots["other_detail"], claims = sl["other_detail_tag"].replace("{b_text}", b_o.text), [b_o.event_id]
+        heard = self.mara_heard()
+        slots["other_heard"] = ""
+        if heard:
+            said = re.sub(r"[\"\u201c\u201d]", "'", heard.text.strip())
+            said += "" if said[-1] in ".?!" else "."
+            key = "other_heard_asked" if said.endswith("?") else "other_heard_told"
+            slots["other_heard"] = sl[key].replace("{text}", said)
+            claims.append(heard.event_id)
         return {"slots": slots, "claims": claims}
+
+    HEARD_MAX = 80
+
+    def mara_heard(self):
+        """Mara's first line in shadow B that the other you heard, written by the model (never a fallback):
+        said to them, aloud where they were, or in the hall while they listened at their own door."""
+        if "B" not in self.timeline.branches:
+            return None
+        loc = initial_state(None, self.timeline.pocket_name)["chars"]["player"]["location"]
+        for e in self.timeline.branch("B").events:            # B forks at the door: the other you starts at home
+            for op in e.state_delta:
+                if op[1] == "chars.player.location":
+                    loc = op[2]
+            if e.branch != "B" or e.actor != "mara" or e.action != "speak" or e.source != "model":
+                continue
+            t = (e.text or "").strip()
+            if not t or len(t) > self.HEARD_MAX or banned_in(t) or looks_truncated(t):
+                continue
+            if e.target == "player" or e.target == loc or (e.target == "hall" and loc == "apt"):
+                return e
+        return None
 
     def canon(self) -> str:
         return self.timeline.canonical()
@@ -431,6 +464,7 @@ class Game:
              "door": bool(sc.get("door")), "climax": bool(sc.get("climax"))}
         if sc.get("authored"):
             v["authored"] = self.AUTHORED
+            v["heard"] = self.heard_source()
         if v["kind"] == "crossing":
             cr = self.crossings[sc["shadow"]]
             v["text"] = cr["narration"]
@@ -441,8 +475,13 @@ class Game:
     def authored_seen(self) -> list[dict]:
         """Authored scenes the player has reached, labelled for the evidence view. They add no events."""
         seen = [c["scene"] for c in self.choices] + [self.scene]
-        return [{"scene": sid, "label": self.AUTHORED} for sid in dict.fromkeys(seen)
+        return [{"scene": sid, "label": self.AUTHORED, "heard": self.heard_source()} for sid in dict.fromkeys(seen)
                 if self.story["scenes"].get(sid, {}).get("authored")]
+
+    def heard_source(self) -> dict | None:
+        """The one model-written line behind the door: its committed event, for the evidence view."""
+        e = self.mara_heard()
+        return {"event_id": e.event_id, "text": e.text, "source": e.source} if e else None
 
     BRANCH_PHRASE = {"open": "the night where you opened the door", "lock": "the night where you kept the door locked",
                      "basement": "the night where you went down to the basement", "roof": "the night where you went up to the roof"}
@@ -555,7 +594,7 @@ class Game:
         x = next(i for i in self.timeline.intrusions if i.intrusion_id == intrusion_id)
         origin = self.timeline.event(x.origin_event_id)
         od = origin.to_dict()
-        od["desc"] = describe(od, self.timeline.state(origin.branch), self.pocket, self.style_for)
+        od["desc"] = owned(describe(od, self.timeline.state(origin.branch), self.pocket, self.style_for), self.pocket)
         return {"intrusion": x.to_dict(), "origin": od, "memory": self.memory(intrusion_id),
                 "manifestation": self.timeline.event(x.manifestation_event_id).to_dict(),
                 "attempts": self.attempts(origin.request_id)}

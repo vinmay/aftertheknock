@@ -126,7 +126,7 @@ def compute() -> dict:
     calls = steps_model = steps_fb = steps_skip = 0
     first_try = steps_total = 0
     lat, sim_s, cross_s, tokens_per_run, calls_per_run = [], [], [], [], []
-    narr_raw_fail = narr_final_model = narr_total = 0
+    narr_raw_fail = narr_raw_transport = narr_final_model = narr_total = 0
     narr_raw_problem_kinds = Counter()
     chains = {}
     freedom: dict = {}                     # (shadow spec, step) -> how each committed step came about
@@ -166,7 +166,9 @@ def compute() -> dict:
         cross_s += [x["s"] for x in rec["choose_timings"] if x["to"].startswith("crossing")]
         for c in rec["crossings"].values():
             narr_total += 1
-            narr_raw_fail += bool(c["raw"]["problems"])
+            transport = any(p.startswith("TRANSPORT") for p in c["raw"]["problems"])
+            narr_raw_transport += transport                 # the provider failed; no sentence was checked
+            narr_raw_fail += bool(c["raw"]["problems"]) and not transport
             narr_final_model += c["narration_source"] in ("model", "template+model")
             for p in c["raw"]["problems"]:
                 narr_raw_problem_kinds[p.split(":")[0]] += 1
@@ -212,6 +214,7 @@ def compute() -> dict:
     m["narration"] = {"crossings": narr_total,
                       "note": "crossing text is hand-written templates with committed facts; the model adds at most one checked sentence of atmosphere",
                       "raw_first_attempt_failed_rule_checks": pct(narr_raw_fail, narr_total),
+                      "raw_first_attempt_provider_errors": pct(narr_raw_transport, narr_total),
                       "raw_failure_kinds": dict(narr_raw_problem_kinds),
                       "final_text_from_model": pct(narr_final_model, narr_total),
                       "final_text_fallback": pct(narr_total - narr_final_model, narr_total)}
@@ -338,8 +341,10 @@ def markdown(m: dict) -> str:
         ig = m["impossible_give"]
         lines.append(f"| Deliberate impossible give rejected | {ig['rejected']} |")
     nar = m["narration"]
-    lines += [f"| Model's atmosphere sentence failing rule checks (first attempt) | {nar['raw_first_attempt_failed_rule_checks']} |",
-              f"| Crossings that kept a model sentence (rest: hand-written lines only) | {nar['final_text_from_model']} |",
+    rej, err = nar["raw_first_attempt_failed_rule_checks"].split("/")[0], nar["raw_first_attempt_provider_errors"].split("/")[0]
+    kept = nar["final_text_from_model"].split(" ")[0]
+    lines += [f"| Model's atmosphere sentence, first attempt | {rej} rejected by checks, {err} provider errors; "
+              f"{kept} crossings kept a sentence |",
               f"| Narration contradictions, hand-labeled | {nar['hand_labeled'] if isinstance(nar['hand_labeled'], str) else nar['hand_labeled']} |",
               f"| Intrusion accuracy, hand-labeled | {m['intrusion_accuracy_hand_labeled']} |"]
     p = m["performance"]

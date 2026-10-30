@@ -14,8 +14,7 @@ Model: gemma4:e2b Q4_K_M, 24 live playthroughs (every fork path), raw logs in `e
 | Shadow events from hand-written fallback | 1/162 (1%) |
 | Proposals rejected by the validator | 21/182 (12%) |
 | Deliberate impossible give rejected | 30/30 (100%) |
-| Model's atmosphere sentence failing rule checks (first attempt) | 2/48 (4%) |
-| Crossings that kept a model sentence (rest: hand-written lines only) | 48/48 (100%) |
+| Model's atmosphere sentence, first attempt | 2 rejected by checks, 0 provider errors; 48/48 crossings kept a sentence |
 | Narration contradictions, hand-labeled | not labeled |
 | Intrusion accuracy, hand-labeled | not labeled |
 | Model call latency p50 / p95 | 1.85 s / 2.97 s |

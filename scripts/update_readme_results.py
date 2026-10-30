@@ -26,7 +26,7 @@ Notes on these numbers:
 
 - A *shadow step* is one shadow event: up to three model proposals, then a hand-written fallback. {skipped} of {s['total']} steps {"was" if skipped == 1 else "were"} skipped (the model failed and no fallback fitted the state). Every shadow still ended with its committed crossing.
 - "Rejected" counts proposals stopped by the validator or by a story-beat check (`R_BEAT`, which includes banned phrases). A rejected proposal never changes state.
-- The crossing text is hand-written around the committed facts. The atmosphere-sentence rows measure only the model's optional extra sentence, which is rule-checked. That doesn't prove the sentence never contradicts anything; hand labels go in `eval/labels/` and show as "not labeled" until a person fills them in.
+- The crossing text is hand-written around the committed facts. The atmosphere-sentence row measures only the model's optional extra sentence, which is rule-checked. That doesn't prove the sentence never contradicts anything; hand labels go in `eval/labels/` and show as "not labeled" until a person fills them in.
 - Time from the click to the crossing, with no reading pause at all: p50 {p['crossing_scene_p50_s']} s, p95 {p['crossing_scene_p95_s']} s. In real play the shadow runs while you read the scenes before it."""
     if "freedom" in m:
         fr = m["freedom"]
@@ -38,6 +38,14 @@ Notes on these numbers:
 ### Freedom vs. guarantees
 
 Each other night has fixed beats (who must end up holding what, and that a message gets written); the model decides how it happens and every word that's said or written.
+
+Some steps are narrower than others, on purpose:
+
+- **Teo's door.** The step where Teo opens his apartment for Mara accepts only his door as the target. (The hosted model kept "opening" the hall.)
+- **Word marks.** Each message the other you writes gets a seeded meaning (an apology, a warning, a promise, an admission, …), and the prompt asks for a verb. A phrase made only of names or things ("MARA", "KEY TAG") is rejected.
+- **The key.** In the other you's night, the step before the last mark guarantees only that you end up holding the brass key. Whether Mara gives it or you take it is the model's choice.
+
+The model-commit rate below is higher than in earlier runs partly because these steps are narrower: there are fewer wrong answers to make.
 
 Measured over these runs: {model} of {total} shadow steps were committed from the model's own proposal; counted step by step, it produced {texts} distinct spoken or written texts; crossing 2 was written in the player's own hand in {fr['crossing2_written_by_player']} runs. The per-step table above (Freedom vs. guarantees) gives model/fallback counts, the action types the model chose, and how many different texts it produced for each step."""
     hosted_md = R / "hosted" / "summary.md"

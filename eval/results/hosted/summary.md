@@ -14,8 +14,7 @@ Model: gemma-4-31B-it provider-managed, 8 live playthroughs (every fork path), r
 | Shadow events from hand-written fallback | 0/54 (0%) |
 | Proposals rejected by the validator | 1/55 (2%) |
 | Deliberate impossible give rejected | 30/30 (100%) |
-| Model's atmosphere sentence failing rule checks (first attempt) | 5/16 (31%) |
-| Crossings that kept a model sentence (rest: hand-written lines only) | 14/16 (88%) |
+| Model's atmosphere sentence, first attempt | 3 rejected by checks, 2 provider errors; 14/16 crossings kept a sentence |
 | Narration contradictions, hand-labeled | not labeled |
 | Intrusion accuracy, hand-labeled | not labeled |
 | Model call latency p50 / p95 | 1.42 s / 1.81 s |

@@ -51,3 +51,22 @@ def test_crossing_two_is_written_by_the_player_in_every_recorded_run():
             g.choose(c["index"])
         d = g.timeline.event(g.crossings["D"]["intrusion"]["origin_event_id"])
         assert d.actor == "player", (p.name, d.actor)
+
+
+def test_other_heard_in_recorded_runs_is_the_models_own_line():
+    """In real runs the climax line, when present, is a committed model speech by Mara in shadow B."""
+    runs = REPLAYS + sorted((ROOT / "eval" / "results" / "hosted" / "runs").glob("*.json"))
+    fired = 0
+    for p in runs:
+        rec = json.loads(p.read_text())
+        g = replay(rec)
+        e = g.mara_heard()
+        slot = g.other_you()["slots"]["other_heard"]
+        if e is None:
+            assert slot == "", p.name
+            continue
+        fired += 1
+        logged = [r for r in g.log.records if r.get("kind") == "proposal" and r.get("event_id") == e.event_id]
+        assert e.source == "model" and logged and logged[0]["decision"]["accepted"], p.name
+        assert e.text.strip().rstrip(".?!") in slot, p.name
+    assert fired

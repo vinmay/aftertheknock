@@ -358,3 +358,57 @@ def test_teo_opening_step_only_targets_his_door():
     assert step_schema(g.timeline.branch("S").state, step)["properties"]["target"]["enum"] == ["teo_apt"]
     rules = [r for r, _ in beat_violations(step, {"action": "open", "actor": "teo", "target": "hall", "text": ""})]
     assert "R_BEAT" in rules
+
+
+def _with_b_speech(g, **change):
+    """Rewrite shadow B's first Mara speech (or the first B event, as a speech) for the slot tests."""
+    real = g.timeline.__class__.branch.__get__(g.timeline)
+    b = real("B").events
+    first = next((e for e in b if e.actor == "mara" and e.action == "speak"), None)
+    target = first or next(e for e in b if e.source == "model")
+    base = {"actor": "mara", "action": "speak", "source": "model", "text": "You came back for it.", "target": "player"}
+    new = dataclasses.replace(target, **{**base, **change})
+    events = [new if e.event_id == target.event_id else e for e in b]
+    g.timeline.branch = lambda bid: SimpleNamespace(events=events) if bid == "B" else real(bid)
+    return new
+
+
+@pytest.mark.parametrize("f1,f2,end", PATHS)
+def test_other_heard_only_from_model_speech_the_other_you_heard(f1, f2, end):
+    g, views = play("ticket stub", f1, f2, end)
+    conf = next(v for v in views if v["scene"] == "confrontation")["text"]
+    heard, other = g.mara_heard(), g.other_you()
+    if heard:
+        assert heard.branch == "B" and heard.actor == "mara" and heard.action == "speak" and heard.source == "model"
+        assert other["slots"]["other_heard"] and other["slots"]["other_heard"] in conf
+        assert heard.event_id in other["claims"]
+        assert next(v for v in views if v["scene"] == "confrontation")["heard"]["event_id"] == heard.event_id
+    else:
+        assert other["slots"]["other_heard"] == "" and "I didn't know what she meant." not in conf
+    assert not re.search(r"\{\w+\}", conf) and "\n\n\n" not in conf
+
+
+@pytest.mark.parametrize("f1", ["lock", "open"])
+def test_other_heard_renders_asked_or_told_and_never_uses_fallback(f1):
+    g, _ = play("ticket stub", f1, "roof", "erase")
+    _with_b_speech(g, text='You said "later" last time?')
+    assert g.other_you()["slots"]["other_heard"] == "\"She asked me, 'You said 'later' last time?' I didn't know what she meant.\""
+    _with_b_speech(g, text="You came back for it")
+    assert g.other_you()["slots"]["other_heard"] == "\"She told me, 'You came back for it.' I didn't know what she meant.\""
+    for change in ({"source": "fallback"}, {"actor": "teo"}, {"target": "teo_apt"}, {"text": "x" * 81 + "."},
+                   {"text": "Help me, please."}, {"text": "I was going to tell you that the"}):
+        _with_b_speech(g, **change)
+        assert g.mara_heard() is None and g.other_you()["slots"]["other_heard"] == "", change
+    _with_b_speech(g, target="hall")                       # the other you listens at their own door
+    assert g.mara_heard() is not None
+
+
+@pytest.mark.parametrize("f1,f2,end", PATHS)
+def test_other_heard_fills_the_confrontation_on_every_route(f1, f2, end):
+    g, _ = play("ticket stub", f1, f2, end)
+    e = _with_b_speech(g, text="You kept the light on.")
+    conf = g.fmt(g.story["scenes"]["confrontation"]["text"])
+    line = "\"She told me, 'You kept the light on.' I didn't know what she meant.\""
+    assert line in conf and e.event_id in g.other_you()["claims"]
+    assert conf.index(line) > conf.index("I know what you chose") and conf.index(line) < conf.index("They try the handle.")
+    assert not re.search(r"\{\w+\}", conf) and "\n\n\n" not in conf

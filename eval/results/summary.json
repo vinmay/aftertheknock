@@ -43,6 +43,7 @@
   "crossings": 48,
   "note": "crossing text is hand-written templates with committed facts; the model adds at most one checked sentence of atmosphere",
   "raw_first_attempt_failed_rule_checks": "2/48 (4%)",
+  "raw_first_attempt_provider_errors": "0/48 (0%)",
   "raw_failure_kinds": {
    "C_PLACE": 2
   },

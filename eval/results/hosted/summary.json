@@ -40,7 +40,8 @@
  "narration": {
   "crossings": 16,
   "note": "crossing text is hand-written templates with committed facts; the model adds at most one checked sentence of atmosphere",
-  "raw_first_attempt_failed_rule_checks": "5/16 (31%)",
+  "raw_first_attempt_failed_rule_checks": "3/16 (19%)",
+  "raw_first_attempt_provider_errors": "2/16 (12%)",
   "raw_failure_kinds": {
    "C_SENSE": 2,
    "C_PLACE": 1,

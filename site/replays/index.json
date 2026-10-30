@@ -1,38 +1,42 @@
 [
  {
-  "id": "lock_roof_erase_4711",
-  "model": "gemma4:e2b",
+  "id": "lock_roof_erase_1001",
+  "model": "gemma-4-31B-it",
   "path": "lock / roof / erase",
-  "pocket": "folded receipt",
+  "pocket": "photo of my sister",
   "recommended": true,
-  "seed": 4711,
-  "title": "The folded receipt, then the key"
+  "recorded_with": "Recorded with Gemma 4 31B (hosted)",
+  "seed": 1001,
+  "title": "The photo of my sister, then the key"
  },
  {
-  "id": "lock_basement_open_4712",
-  "model": "gemma4:e2b",
+  "id": "lock_basement_open_1002",
+  "model": "gemma-4-31B-it",
   "path": "lock / basement / open",
-  "pocket": "bus ticket",
-  "recommended": false,
-  "seed": 4712,
-  "title": "The bus ticket, then the key"
- },
- {
-  "id": "open_basement_erase_4713",
-  "model": "gemma4:e2b",
-  "path": "open / basement / erase",
   "pocket": "guitar pick",
   "recommended": false,
-  "seed": 4713,
-  "title": "The key, then the guitar pick"
+  "recorded_with": "Recorded with Gemma 4 31B (hosted)",
+  "seed": 1002,
+  "title": "The guitar pick, then the key"
  },
  {
-  "id": "open_roof_open_4714",
-  "model": "gemma4:e2b",
-  "path": "open / roof / open",
-  "pocket": "old lighter",
+  "id": "open_basement_open_1001",
+  "model": "gemma-4-31B-it",
+  "path": "open / basement / open",
+  "pocket": "wedding ring",
   "recommended": false,
-  "seed": 4714,
-  "title": "The key, then the old lighter"
+  "recorded_with": "Recorded with Gemma 4 31B (hosted)",
+  "seed": 1001,
+  "title": "The key, then the wedding ring"
+ },
+ {
+  "id": "open_roof_open_1002",
+  "model": "gemma-4-31B-it",
+  "path": "open / roof / open",
+  "pocket": "house key",
+  "recommended": false,
+  "recorded_with": "Recorded with Gemma 4 31B (hosted)",
+  "seed": 1002,
+  "title": "The key, then the house key"
  }
 ]

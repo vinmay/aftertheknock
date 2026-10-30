@@ -3,10 +3,11 @@
 #   scripts/demo          serve the committed recording (no model; identical every take)
 #   scripts/demo --live   play live with a fixed seed in the terminal (needs Ollama)
 #
-# Recording the GIF (about 30-40 s), using the recommended recording "The folded receipt, then the key":
+# Recording the GIF (about 30-40 s), using the recommended recording "The photo of my sister, then the key"
+# (recorded with Gemma 4 31B, hosted):
 #   1. Open the URL printed below. It starts the recorded night directly.
 #   2. Opening: pause on "Please. You already let me in." Choose "Recorded choice: Lock it".
-#   3. Click through to the first crossing. Let the receipt card finish writing its four digits. Click "Go on".
+#   3. Click through to the first crossing. Let the photo card finish writing its four digits. Click "Go on".
 #   4. Click the digits in the story: the flashback of the other night opens. Hold 3 s. Close it.
 #   5. Continue through the second crossing to the door. Hold on "Why do you get to be the real one?"
 #   6. Choose the recorded ending. Click "Explore the nights you didn't live": let the reveal play; the
@@ -17,7 +18,7 @@
 set -euo pipefail
 cd "$(dirname "$0")/.."
 PORT="${PORT:-8047}"
-REPLAY="${REPLAY:-lock_roof_erase_4711}"
+REPLAY="${REPLAY:-lock_roof_erase_1001}"
 if [[ "${1:-}" == "--live" ]]; then
   echo "Live, fixed seed 4711. Pocket: folded receipt. Choices: lock, roof, erase."
   uv run knock auto lock roof erase --seed 4711 --pocket "a folded receipt"

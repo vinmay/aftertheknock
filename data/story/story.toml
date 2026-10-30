@@ -337,6 +337,8 @@ text = """
 
 {other_detail}
 
+{other_heard}
+
 They try the handle. It doesn't move. They put a palm flat against the door. You can hear them breathing. Exactly as you are.
 
 {other_turn}
@@ -438,6 +440,10 @@ other_detail_self = "\"I {verb_it} myself. I didn't know where {it_sub} would go
 # Player opened: B is the night where the door stayed locked.
 other_detail_teo_open = "\"Teo opened his door for her. I heard the chain. He never opens it for anyone.\""
 other_detail_tag = "\"Somebody wrote {b_text} on the key's tag out there. I heard it all through the wood.\""
+# Mara's own words from shadow B, as the model wrote them (a committed model event the other you heard; never
+# a fallback). Asked or told, by the line's last mark.
+other_heard_asked = "\"She asked me, '{text}' I didn't know what she meant.\""
+other_heard_told = "\"She told me, '{text}' I didn't know what she meant.\""
 other_turn_lock = "\"I would have opened it for Teo, too.\""
 other_turn_open = "\"I did what we always do. I kept it shut. You're the one who changed.\""
 # Only when Mara's committed position in your night is beside you.

@@ -523,6 +523,8 @@ body.instant-text .stage-color, body.instant-text .trace-hint { opacity: 1 !impo
 .night:last-child { border-bottom: 1px solid var(--faint); }
 #title .night button { width: 100%; justify-content: center; text-align: center; min-height: 48px; color: var(--ink); }
 #title .night button:hover { text-decoration: underline; text-underline-offset: 4px; }
+#title .night button { flex-direction: column; align-items: center; gap: 0.15rem; }
+#title .night .night-model { font-size: 0.78rem; color: var(--muted); text-decoration: none; display: block; }
 @media (max-width: 40rem) {
   #title h1 { font-size: 1.2rem; letter-spacing: 0.22em; padding-left: 0.22em; margin-top: 1.6rem; }
   #title .tagline { font-size: 0.95rem; margin-bottom: 2rem; }
@@ -677,3 +679,5 @@ body.instant-text .text p.climax { animation: none; opacity: 1; transform: none;
 .crossing-stage.discovered .stage-echo { animation-delay: 2s; }
 .crossing-stage.written .stage-echo { animation-delay: 4.6s; }
 #map-svg .fork-leader { stroke: var(--faint); stroke-width: 1; }
+
+.ev-target { outline: 1px solid var(--ink); outline-offset: 2px; }

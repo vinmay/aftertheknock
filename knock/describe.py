@@ -25,7 +25,10 @@ def who(cid: str, shadow: bool) -> str:
 
 def owned(text: str, pocket: str) -> str:
     """A possessive object ("father's watch", from "my father's watch") reads as "your father's watch",
-    never "the father's watch". Applied to every player-facing string that can name the object."""
+    never "the father's watch"; "photo of my sister" reads "photo of your sister". Applied to every
+    player-facing string that can name the object."""
+    if re.search(r"\bmy\b", pocket or ""):
+        text = text.replace(pocket, re.sub(r"\bmy\b", "your", pocket))
     if not re.match(r"^\w+'s\b", pocket or ""):
         return text
     p = re.escape(pocket)

@@ -117,7 +117,7 @@ def test_ending_matches_committed_state(name, g, views):
     for shadow in ("B", "D"):
         o = t.event(g.crossings[shadow]["intrusion"]["origin_event_id"])
         crossed[o.text] = o
-        assert g._mark_line(o.text, o.target, o.actor) in opened, name
+        assert owned(g._mark_line(o.text, o.target, o.actor), g.pocket) in opened, name
     for ending in (opened, g.ending_text("erase")):
         quoted = set(re.findall(r'"([^"]+)"', ending)) - {"Finally,"}
         assert quoted == set(crossed), (name, quoted)
