@@ -435,6 +435,7 @@ other_choice_lock = "\"I opened it. I let her in.\""
 other_choice_open = "\"I kept it locked. I sat against the door and listened to everything.\""
 # Player locked: B is the night where the door was opened. {verb_on} is the material-aware act.
 other_detail_took = "\"She took the {pocket} out of my hand and {verb_it}. I didn't stop her.\""
+other_detail_gave = "\"I gave her the {pocket}. She {verb_it}.\""
 other_detail_watched = "\"She {verb_the}. I watched her do it.\""
 other_detail_self = "\"I {verb_it} myself. I didn't know where {it_sub} would go.\""
 # Player opened: B is the night where the door stayed locked.

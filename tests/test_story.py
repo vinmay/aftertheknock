@@ -80,7 +80,10 @@ def test_the_other_you_states_only_committed_b_facts(pocket, f1, f2, end):
     if "Teo opened his door" in detail:
         assert any(b[i].action == "open" and b[i].target == "teo_apt" and b[i].actor == "teo" for i in other["claims"])
     if "out of my hand" in detail:
-        assert any(b[i].target == "pocket" and b[i].action in ("take", "give") for i in other["claims"])
+        assert any(b[i].target == "pocket" and b[i].action == "take" and b[i].actor == "mara" for i in other["claims"])
+        assert origin.actor == "mara"
+    if "I gave her the" in detail:
+        assert any(b[i].target == "pocket" and b[i].action == "give" and b[i].actor == "player" for i in other["claims"])
         assert origin.actor == "mara"
     if origin.text in detail:
         assert origin.event_id in other["claims"]
@@ -104,7 +107,9 @@ def _with_writer(g, actor, took):
     real_event, real_branch = g.timeline.event, g.timeline.branch
     mark = dataclasses.replace(real_event(oid), actor=actor)
     events = [e for e in real_branch("B").events if not (e.target == "pocket" and e.action in ("take", "give"))]
-    if took:
+    if took == "gave":
+        events.append(dataclasses.replace(mark, event_id="B.99", action="give", actor="player", to="mara", text=""))
+    elif took:
         events.append(dataclasses.replace(mark, event_id="B.99", action="take", actor="mara", text=""))
     g.timeline.event = lambda eid: mark if eid == oid else real_event(eid)
     g.timeline.branch = lambda bid: SimpleNamespace(events=events) if bid == "B" else real_branch(bid)
@@ -112,7 +117,8 @@ def _with_writer(g, actor, took):
 
 @pytest.mark.parametrize("pocket,verb", [("ticket stub", "wrote"), ("house key", "scratched"), ("a phone", "marked")])
 @pytest.mark.parametrize("actor,took,expect", [
-    ("mara", True, "out of my hand"), ("mara", False, "I watched her do it."), ("player", False, "myself"), ("teo", False, None)])
+    ("mara", True, "out of my hand"), ("mara", "gave", "I gave her the"), ("mara", False, "I watched her do it."),
+    ("player", False, "myself"), ("teo", False, None)])
 def test_other_detail_by_writer(pocket, verb, actor, took, expect):
     g, _ = play(pocket, "lock", "basement", "erase")
     if g.timeline.event(g.crossings["B"]["intrusion"]["origin_event_id"]).target != "pocket":
@@ -123,7 +129,9 @@ def test_other_detail_by_writer(pocket, verb, actor, took, expect):
         assert detail == ""
         return
     assert expect in detail and verb in detail, detail
-    assert ("B.99" in g.other_you()["claims"]) == took
+    assert ("B.99" in g.other_you()["claims"]) == bool(took)
+    if took == "gave":
+        assert "out of my hand" not in detail
 
 
 def _patched_states(g, edit):

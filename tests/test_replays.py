@@ -70,3 +70,17 @@ def test_other_heard_in_recorded_runs_is_the_models_own_line():
         assert e.source == "model" and logged and logged[0]["decision"]["accepted"], p.name
         assert e.text.strip().rstrip(".?!") in slot, p.name
     assert fired
+
+
+def test_other_detail_matches_how_the_object_changed_hands():
+    """'Out of my hand' only after Mara's own take; 'I gave her' only after the other you's give."""
+    runs = REPLAYS + sorted((ROOT / "eval" / "results" / "hosted" / "runs").glob("*.json")) + sorted((ROOT / "eval" / "results" / "runs").glob("*.json"))
+    for p in runs:
+        g = replay(json.loads(p.read_text()))
+        other = g.other_you()
+        detail, b = other["slots"]["other_detail"], {e.event_id: e for e in g.timeline.branch("B").events}
+        hands = [b[i] for i in other["claims"] if b[i].target == "pocket" and b[i].action in ("take", "give")]
+        if "out of my hand" in detail:
+            assert hands and hands[0].action == "take" and hands[0].actor == "mara", p.name
+        if "I gave her" in detail:
+            assert hands and hands[0].action == "give" and hands[0].actor == "player", p.name

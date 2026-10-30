@@ -187,8 +187,10 @@ class Game:
             verb_it, verb_the = verb.replace("{obj}", it), verb.replace("{obj}", f"the {self.pocket}")
             took = next((e for e in b_events if e.target == "pocket" and (
                 (e.action == "take" and e.actor == "mara") or (e.action == "give" and e.to == "mara"))), None)
-            if b_o.actor == "mara" and took:
+            if b_o.actor == "mara" and took and took.action == "take":
                 slots["other_detail"], claims = sl["other_detail_took"].replace("{verb_it}", verb_it), [took.event_id, b_o.event_id]
+            elif b_o.actor == "mara" and took and took.actor == "player":      # the other you handed it over
+                slots["other_detail"], claims = sl["other_detail_gave"].replace("{verb_it}", verb_it), [took.event_id, b_o.event_id]
             elif b_o.actor == "mara":
                 slots["other_detail"], claims = sl["other_detail_watched"].replace("{verb_the}", verb_the), [b_o.event_id]
             elif b_o.actor == "player":
