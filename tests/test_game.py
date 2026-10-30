@@ -276,4 +276,67 @@ def test_atmosphere_prompt_knows_where_you_are(here, outdoors):
     assert f"Where you are: {LOCATION[here]}." in user
     assert ("It is raining hard." in user) == outdoors
     assert "Nothing about your body, skin, hands or feet, and nothing about shoes." in user
-    assert "Never use these words: ozone, wet stone, damp stone, bare feet, skin, chill, viscous." in user
+    assert "Never use these words: ozone, wet stone, damp stone, bare feet, skin, chill, viscous, face," in user
+
+
+def test_body_words_are_rejected_as_whole_words_only():
+    from knock.narrator import check
+    assert any(x.startswith("C_STOCK") for x in check("The air presses against your face.", "apt"))
+    assert any(x.startswith("C_STOCK") for x in check("Rain runs through your hair.", "roof"))
+    assert not any(x.startswith("C_STOCK") for x in check("Water beads on every surface in the dark.", "apt"))
+    assert not any(x.startswith("C_STOCK") for x in check("Something shifts behind the handle of a door.", "apt"))
+
+
+def test_body_words_are_named_in_the_narrator_prompt():
+    from knock.narrator import build_messages, BODY_WORDS
+    m = {"with_you": [], "here": "apt", "place": "apt"}
+    user = build_messages(m)[-1]["content"]
+    assert all(w in user for w in BODY_WORDS)
+
+
+def test_a_name_alone_is_not_a_word_mark_and_meanings_vary():
+    from knock.sim import words_problem, MEANINGS
+    assert words_problem("MARA") and words_problem("TEO") and words_problem("KEY TAG") and words_problem("STORM")
+    assert words_problem("TRUST MARA") is None and words_problem("OPEN UNIT") is None
+    assert len(set(MEANINGS["words"])) >= 6
+
+
+AUDIT_REJECTED = [
+    "A flash of white light reveals the smell of rotting peaches.",
+    "A strobe of white light reveals the smell of rotting peaches.",
+    "A flash of white light reveals the smell of rotting lilies.",
+    "A sudden flash of white light reveals a single, heavy drop of oil hitting the floor.",
+    "A flash of lightning reveals the sound of something dripping below.",
+    "The shadows here have teeth.",
+    "Lightning shows a row of teeth along the parapet.",
+    "Thin fog is clinging to the shingles.",
+    "The wind is pulling at the shingles.",
+    "A tall shape waits at the end of the dark.",
+    "You hear someone breathing in the dark.",
+    "Two eyes catch the storm light.",
+]
+AUDIT_CLEAN = [
+    ("Rain drums on the tar, loud and close.", "roof"),
+    ("A flash of lightning shows the wet railing, then nothing.", "roof"),
+    ("The smell of old copper fills the air.", "basement"),
+    ("Water ticks somewhere inside the walls.", "stairwell"),
+    ("The radiator under the window has gone cold.", "apt"),
+]
+
+
+@pytest.mark.parametrize("text", AUDIT_REJECTED)
+def test_tone_audit_sentences_are_rejected(text):
+    from knock.narrator import check
+    here = "roof" if "shingle" in text or "parapet" in text else "basement"
+    assert check(text, here), text
+
+
+@pytest.mark.parametrize("text,here", AUDIT_CLEAN)
+def test_clean_atmosphere_sentences_pass(text, here):
+    from knock.narrator import check
+    assert check(text, here) == [], (text, check(text, here))
+
+
+def test_narrator_system_prompt_keeps_senses_literal():
+    from knock.narrator import SYSTEM
+    assert "never 'revealed' by light" in SYSTEM and "nothing that suggests someone else is present" in SYSTEM

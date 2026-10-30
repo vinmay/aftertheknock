@@ -143,7 +143,8 @@ def test_flashback_lines_come_from_committed_events(name, g, views):
             if e.source == "story":
                 assert line["line"] == e.summary
                 continue
-            found = [a for v, a in verbs.items() if re.search(rf"\b{v}\b", line["line"])]
+            narration = re.sub("\u201c[^\u201d]*\u201d", "", line["line"])   # quoted words are spoken or written, not actions
+            found = [a for v, a in verbs.items() if re.search(rf"\b{v}\b", narration)]
             assert found == [e.action], (name, line["line"], e.action)
             if e.action in ("speak", "mark"):
                 assert e.text in line["line"], name           # words and marks verbatim

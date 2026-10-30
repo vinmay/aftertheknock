@@ -17,20 +17,19 @@
  "replay_reproduces": "24/24 (100%)",
  "shadow_steps": {
   "total": 162,
-  "first_try": "140/162 (86%)",
-  "model_committed": "158/162 (98%)",
-  "fallback": "4/162 (2%)",
+  "first_try": "145/162 (90%)",
+  "model_committed": "161/162 (99%)",
+  "fallback": "1/162 (1%)",
   "skipped": "0/162 (0%)"
  },
  "validator": {
-  "proposals": 190,
+  "proposals": 182,
   "rejections_by_rule": {
-   "R_REACH": 15,
+   "R_REACH": 11,
    "R_TYPE": 7,
-   "R_BEAT": 7,
-   "R_NOOP": 4
+   "R_BEAT": 3
   },
-  "rejected": "32/190 (17%)"
+  "rejected": "21/182 (12%)"
  },
  "impossible_give": {
   "probe_calls": 30,
@@ -43,8 +42,10 @@
  "narration": {
   "crossings": 48,
   "note": "crossing text is hand-written templates with committed facts; the model adds at most one checked sentence of atmosphere",
-  "raw_first_attempt_failed_rule_checks": "0/48 (0%)",
-  "raw_failure_kinds": {},
+  "raw_first_attempt_failed_rule_checks": "2/48 (4%)",
+  "raw_failure_kinds": {
+   "C_PLACE": 2
+  },
   "final_text_from_model": "48/48 (100%)",
   "final_text_fallback": "0/48 (0%)",
   "hand_labeled": "not labeled"
@@ -54,22 +55,22 @@
   "lock/basement": {
    "runs": 6,
    "distinct_chains": 6,
-   "mean_pairwise_event_overlap_jaccard": 0.31
+   "mean_pairwise_event_overlap_jaccard": 0.29
   },
   "lock/roof": {
    "runs": 6,
    "distinct_chains": 6,
-   "mean_pairwise_event_overlap_jaccard": 0.27
+   "mean_pairwise_event_overlap_jaccard": 0.33
   },
   "open/basement": {
    "runs": 6,
    "distinct_chains": 6,
-   "mean_pairwise_event_overlap_jaccard": 0.44
+   "mean_pairwise_event_overlap_jaccard": 0.3
   },
   "open/roof": {
    "runs": 6,
    "distinct_chains": 6,
-   "mean_pairwise_event_overlap_jaccard": 0.43
+   "mean_pairwise_event_overlap_jaccard": 0.38
   }
  },
  "freedom": {
@@ -78,8 +79,8 @@
    {
     "shadow": "B.lock",
     "step": 1,
-    "model": 12,
-    "fallback": 0,
+    "model": 11,
+    "fallback": 1,
     "skipped": 0,
     "distinct_actions": [
      "open"
@@ -102,23 +103,25 @@
    {
     "shadow": "B.lock",
     "step": 3,
-    "model": 8,
-    "fallback": 4,
+    "model": 12,
+    "fallback": 0,
     "skipped": 0,
     "distinct_actions": [
-     "give",
      "speak"
     ],
-    "distinct_texts": 8,
+    "distinct_texts": 11,
     "texts_with_counts": {
-     "The storm sounds loud tonight.": 1,
-     "The storm is getting worse.": 1,
-     "Is the storm getting worse?": 1,
-     "The storm is growing strong.": 1,
-     "It is very dark here.": 1,
-     "This feels too quiet now.": 1,
-     "It is quite cold here.": 1,
-     "This feels wrong tonight.": 1
+     "The lock feels heavy now.": 2,
+     "The lock feels very tight.": 1,
+     "This dark feels heavy tonight.": 1,
+     "Is this safe tonight?": 1,
+     "The silence feels heavy now.": 1,
+     "This storm feels quite strange now.": 1,
+     "This building feels very cold.": 1,
+     "Is the basement accessible?": 1,
+     "We must find unit zero seven.": 1,
+     "This place feels strangely quiet now.": 1,
+     "Is the lock secure enough?": 1
     }
    },
    {
@@ -132,17 +135,17 @@
     ],
     "distinct_texts": 11,
     "texts_with_counts": {
-     "8192": 2,
-     "3145": 1,
-     "8719": 1,
-     "1028": 1,
-     "4123": 1,
-     "1148": 1,
-     "1147": 1,
-     "4815": 1,
-     "3105": 1,
-     "4420": 1,
-     "0315": 1
+     "1987": 2,
+     "4581": 1,
+     "8315": 1,
+     "0315": 1,
+     "8815": 1,
+     "4118": 1,
+     "8001": 1,
+     "8821": 1,
+     "8109": 1,
+     "4113": 1,
+     "0815": 1
     }
    },
    {
@@ -154,18 +157,20 @@
     "distinct_actions": [
      "speak"
     ],
-    "distinct_texts": 10,
+    "distinct_texts": 12,
     "texts_with_counts": {
-     "The shadows here feel very old.": 2,
-     "The shadows here hold secrets.": 2,
-     "The shadows remember everything now.": 1,
-     "The air feels terribly thin tonight.": 1,
-     "The shadows here know too much.": 1,
-     "The shadows here taste of rust.": 1,
-     "The damp air holds secrets now.": 1,
-     "The shadows here watch you closely.": 1,
-     "The silence here is deafening.": 1,
-     "The shadows here feel very familiar.": 1
+     "Tonight feels like a trap.": 1,
+     "Tonight the key feels wrong.": 1,
+     "This key feels wrong tonight.": 1,
+     "Tonight feels very wrong.": 1,
+     "This key feels very cold tonight.": 1,
+     "The key unlocks something dark tonight.": 1,
+     "This key feels like a promise.": 1,
+     "This key feels cursed tonight.": 1,
+     "The key feels like a promise.": 1,
+     "The brass key feels cold tonight.": 1,
+     "The key feels cold tonight.": 1,
+     "Tonight feels terribly thin.": 1
     }
    },
    {
@@ -189,19 +194,17 @@
     "distinct_actions": [
      "mark"
     ],
-    "distinct_texts": 11,
+    "distinct_texts": 9,
     "texts_with_counts": {
-     "8811": 2,
-     "1988": 1,
+     "4581": 3,
+     "1988": 2,
      "8842": 1,
-     "4581": 1,
      "8117": 1,
-     "4112": 1,
+     "9110": 1,
      "8831": 1,
-     "1984": 1,
-     "1987": 1,
-     "8821": 1,
-     "4192": 1
+     "8811": 1,
+     "9012": 1,
+     "4589": 1
     }
    },
    {
@@ -213,10 +216,9 @@
     "distinct_actions": [
      "speak"
     ],
-    "distinct_texts": 3,
+    "distinct_texts": 2,
     "texts_with_counts": {
-     "Let's open unit 07 now.": 4,
-     "Can you open this unit?": 1,
+     "Let's open unit 07 now.": 5,
      "Can you open unit 07?": 1
     }
    },
@@ -241,12 +243,11 @@
     "distinct_actions": [
      "mark"
     ],
-    "distinct_texts": 4,
+    "distinct_texts": 3,
     "texts_with_counts": {
-     "MARA": 2,
-     "STAY": 2,
-     "STAY HERE": 1,
-     "WAIT": 1
+     "TRUST HER": 3,
+     "KEEP KEY": 2,
+     "KEEP IT": 1
     }
    },
    {
@@ -272,10 +273,10 @@
     ],
     "distinct_texts": 4,
     "texts_with_counts": {
-     "The wind howls tonight.": 3,
-     "The wind howls like a hungry beast.": 1,
+     "The wind howls like a hungry beast.": 3,
+     "The wind howled fiercely now.": 1,
      "The wind howls like a hungry thing.": 1,
-     "The storm is getting worse.": 1
+     "The wind howls outside.": 1
     }
    },
    {
@@ -300,11 +301,12 @@
     "distinct_actions": [
      "mark"
     ],
-    "distinct_texts": 3,
+    "distinct_texts": 4,
     "texts_with_counts": {
-     "STAY HERE": 4,
-     "WAIT": 1,
-     "STORM NIGHT": 1
+     "TRUST HER": 3,
+     "KEEP KEY": 1,
+     "TRUST MARA": 1,
+     "SORRY I'M WRONG": 1
     }
    },
    {
@@ -314,10 +316,13 @@
     "fallback": 0,
     "skipped": 0,
     "distinct_actions": [
-     "open"
+     "open",
+     "speak"
     ],
-    "distinct_texts": 0,
-    "texts_with_counts": {}
+    "distinct_texts": 1,
+    "texts_with_counts": {
+     "Can you open unit 07?": 1
+    }
    },
    {
     "shadow": "D.open.basement",
@@ -342,10 +347,10 @@
     ],
     "distinct_texts": 4,
     "texts_with_counts": {
-     "STAY HERE": 2,
-     "STORM NIGHT": 2,
-     "MARA": 1,
-     "STAY": 1
+     "TRUST HER": 2,
+     "KEEP KEY": 2,
+     "SORRY I'M WRONG": 1,
+     "TRUST MARA": 1
     }
    },
    {
@@ -361,9 +366,9 @@
     "texts_with_counts": {
      "It holds old photographs.": 2,
      "It holds old film reels.": 1,
-     "Unit 07 holds shadows deep inside.": 1,
-     "It holds dusty old boxes.": 1,
-     "It holds old records.": 1
+     "It holds old boxes and shadows.": 1,
+     "Unit 07 holds old photographs.": 1,
+     "It holds things best left buried.": 1
     }
    },
    {
@@ -387,22 +392,25 @@
     "distinct_actions": [
      "mark"
     ],
-    "distinct_texts": 1,
+    "distinct_texts": 4,
     "texts_with_counts": {
-     "MARA": 6
+     "TRUST HER": 2,
+     "KEEP KEY": 2,
+     "TRUST MARA": 1,
+     "SORRY I'M WRONG": 1
     }
    }
   ]
  },
  "performance": {
-  "model_call_latency_p50_s": 1.61,
-  "model_call_latency_p95_s": 2.37,
-  "shadow_sim_p50_s": 6.13,
-  "shadow_sim_p95_s": 8.53,
-  "crossing_scene_p50_s": 6.67,
-  "crossing_scene_p95_s": 9.04,
+  "model_call_latency_p50_s": 1.85,
+  "model_call_latency_p95_s": 2.97,
+  "shadow_sim_p50_s": 7.19,
+  "shadow_sim_p95_s": 9.5,
+  "crossing_scene_p50_s": 8.21,
+  "crossing_scene_p95_s": 10.52,
   "crossing_note": "time from click to crossing text with no reading pause; includes waiting for the shadow",
-  "model_calls_per_playthrough_mean": 9.9,
-  "tokens_per_playthrough_mean": 6119
+  "model_calls_per_playthrough_mean": 9.7,
+  "tokens_per_playthrough_mean": 6177
  }
 }

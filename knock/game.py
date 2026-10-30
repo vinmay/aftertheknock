@@ -372,7 +372,7 @@ class Game:
                 "d_on": self._on(d_o.target), "b_line": self._mark_line(b_o.text, b_o.target, b_o.actor),
                 "d_line": self._mark_line(d_o.text, d_o.target, d_o.actor)}
         here = c["chars"]["player"]["location"]
-        fill["erase_mara"] = slots["erase_mara_present" if c["chars"]["mara"]["location"] == here else "erase_mara_absent"]
+        fill["erase_mara"] = slots["erase_mara_present" if c["chars"]["mara"]["location"] == here else f"erase_mara_absent_{self.f2}"]
         lines = []
         for oid in ("key07", "pocket"):
             h, th = self._where(c, oid), self._where(d, oid)
@@ -403,7 +403,6 @@ class Game:
         echo = slots[f"fork2_echo_{which}_{self.f2}"]
         fill["fork2_echo"] = "" if (which == "open" and self.f2 == "basement" and not mara_here) else echo
         # "One of them is in your handwriting": only when crossing 2 was committed in the player's own hand.
-        fill["whose_hand"] = slots["whose_hand"] if d_o.actor == "player" else ""
         rank = {"present": 0, "hurt": 1, "dead": 2, "departed": 0}
         teo = max((b["chars"]["teo"]["status"], d["chars"]["teo"]["status"]), key=lambda s: rank.get(s, 0))
         fill["open_teo"] = slots["open_teo_" + {"hurt": "hurt", "dead": "dead"}.get(teo, "fine")]

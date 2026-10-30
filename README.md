@@ -75,7 +75,7 @@ flowchart LR
 
 **The model proposes; the engine commits.** For each shadow event, Gemma gets the shadow's current state and a one-line story beat, and must answer in a JSON schema: actor, action (one of move, speak, give, take, mark, open, hide, discover, harm), target, recipient, text, summary. It never writes state. A deterministic validator checks the proposal against the shadow's state: people and things exist in that branch, you can only give, mark or hide what you hold, you must be in the same place, moves go one step to an adjacent place, locked places need their key, the dead and departed don't act. If the proposal passes, the engine derives the state change from the action's rules and commits it. If it fails, the model gets the reason and tries again, up to three times. After that a hand-written fallback event is committed. Every rule has a unit test.
 
-**Intrusions cite their origin.** An intrusion links one committed shadow event to a change in your timeline. The engine refuses an intrusion unless the origin is a committed, simulated event of that shadow and it reveals at least one fact that did not exist at the fork, such as the digits that were written on your object. Echoing your own input back does not count. Only marks manifest: a crossing is always something written on an object. The two crossings must land on different objects, and the engine refuses a later crossing that marks an object an earlier one already used. The first lands on your pocket object if you locked the door, or on the brass key's paper tag if you opened it; the second uses the other one. Click a crossing, during play or on the map, and you first get a flashback of the other night: a few lines rendered from hand-written templates over the events actually committed in that shadow, ending on the mark itself ("She takes the folded receipt from the other you. / She writes “1011” across it. / This is where the numbers came from."), then *written there → appeared here*. A test checks that every action in a flashback is a committed event of that shadow. A **View proof** disclosure underneath holds the event IDs, every rejected attempt, the validator's decisions and the raw proposals. After the ending, **Explore the nights you didn't live** opens the map: it reveals every branch at its actual choice, draws a thread from each crossing to its origin event, and walks you to the first crossing. **See how this haunting was generated and verified** opens the evidence view: the full audit, every proposal, rejection and commit, plus what changed between the nights. On the live server the map and the evidence return 403 until the night has ended, because the full log would give the other night away before it crosses; each crossing's own trace is available as soon as it appears. On the replay site the recordings are ordinary public files, so nothing there is hidden from someone who opens them; the page simply doesn't show the map or the log until the end.
+**Intrusions cite their origin.** An intrusion links one committed shadow event to a change in your timeline. The engine refuses an intrusion unless the origin is a committed, simulated event of that shadow and it reveals at least one fact that did not exist at the fork, such as the digits that were written on your object. Echoing your own input back does not count. Only marks manifest: a crossing is always something written on an object. The two crossings must land on different objects, and the engine refuses a later crossing that marks an object an earlier one already used. The first lands on your pocket object if you locked the door, or on the brass key's paper tag if you opened it; the second uses the other one. Click a crossing, during play or on the map, and you first get a flashback of the other night: a few lines rendered from hand-written templates over the events actually committed in that shadow, ending on the mark itself ("She takes the folded receipt from the other you. / She writes “1987” across it. / This is where the numbers came from."), then *written there → appeared here*. A test checks that every action in a flashback is a committed event of that shadow. A **View proof** disclosure underneath holds the event IDs, every rejected attempt, the validator's decisions and the raw proposals. After the ending, **Explore the nights you didn't live** opens the map: it reveals every branch at its actual choice, draws a thread from each crossing to its origin event, and walks you to the first crossing. **See how this haunting was generated and verified** opens the evidence view: the full audit, every proposal, rejection and commit, plus what changed between the nights. On the live server the map and the evidence return 403 until the night has ended, because the full log would give the other night away before it crosses; each crossing's own trace is available as soon as it appears. On the replay site the recordings are ordinary public files, so nothing there is hidden from someone who opens them; the page simply doesn't show the map or the log until the end.
 
 **Crossings are told with hand-written lines; the model adds at most one sentence.** The words around each crossing are hand-written templates with the committed facts slotted in: the inscription, the object, whose handwriting. The model may add one sentence of atmosphere. The prompt for that sentence is built only from your timeline (where you are, who is with you). It never sees the shadow log or the inscription, so it cannot contradict or leak either. The sentence is rule-checked (one sentence, no numbers, names, quotes, ALL-CAPS words or banned phrases), retried once, and dropped if it still fails.
 
@@ -99,68 +99,68 @@ Model: gemma4:e2b Q4_K_M, 24 live playthroughs (every fork path), raw logs in `e
 | Intrusions revealing a post-fork fact | 48/48 (100%) |
 | Intrusions with valid origin event | 48/48 (100%) |
 | Replays reproducing every state hash | 24/24 (100%) |
-| Shadow events accepted on the model's first proposal | 140/162 (86%) |
-| Shadow events committed from the model | 158/162 (98%) |
-| Shadow events from hand-written fallback | 4/162 (2%) |
-| Proposals rejected by the validator | 32/190 (17%) |
+| Shadow events accepted on the model's first proposal | 145/162 (90%) |
+| Shadow events committed from the model | 161/162 (99%) |
+| Shadow events from hand-written fallback | 1/162 (1%) |
+| Proposals rejected by the validator | 21/182 (12%) |
 | Deliberate impossible give rejected | 30/30 (100%) |
-| Model's atmosphere sentence failing rule checks (first attempt) | 0/48 (0%) |
+| Model's atmosphere sentence failing rule checks (first attempt) | 2/48 (4%) |
 | Crossings that kept a model sentence (rest: hand-written lines only) | 48/48 (100%) |
 | Narration contradictions, hand-labeled | not labeled |
 | Intrusion accuracy, hand-labeled | not labeled |
-| Model call latency p50 / p95 | 1.61 s / 2.37 s |
-| Whole shadow timeline p50 / p95 | 6.13 s / 8.53 s |
-| Model calls per playthrough (mean) | 9.9 |
-| Tokens per playthrough (mean) | 6119 |
+| Model call latency p50 / p95 | 1.85 s / 2.97 s |
+| Whole shadow timeline p50 / p95 | 7.19 s / 9.5 s |
+| Model calls per playthrough (mean) | 9.7 |
+| Tokens per playthrough (mean) | 6177 |
 
 Variation (same choices, different seeds):
 
 | Path | Runs | Distinct event chains | Mean pairwise overlap (Jaccard) |
 |---|---|---|---|
-| lock/basement | 6 | 6 | 0.31 |
-| lock/roof | 6 | 6 | 0.27 |
-| open/basement | 6 | 6 | 0.44 |
-| open/roof | 6 | 6 | 0.43 |
+| lock/basement | 6 | 6 | 0.29 |
+| lock/roof | 6 | 6 | 0.33 |
+| open/basement | 6 | 6 | 0.3 |
+| open/roof | 6 | 6 | 0.38 |
 
-Rejections by rule: R_REACH 15, R_TYPE 7, R_BEAT 7, R_NOOP 4.
+Rejections by rule: R_REACH 11, R_TYPE 7, R_BEAT 3.
 
 Freedom vs. guarantees, per shadow step (committed by the model or by a hand-written fallback; distinct action types and distinct texts across runs). Crossing 2 written by the player: 24/24 (100%).
 
 | Shadow | Step | Model | Fallback | Skipped | Actions | Distinct texts |
 |---|---|---|---|---|---|---|
-| B.lock | 1 | 12 | 0 | 0 | open | 0 |
+| B.lock | 1 | 11 | 1 | 0 | open | 0 |
 | B.lock | 2 | 12 | 0 | 0 | move | 0 |
-| B.lock | 3 | 8 | 4 | 0 | give, speak | 8 |
+| B.lock | 3 | 12 | 0 | 0 | speak | 11 |
 | B.lock | 4 | 12 | 0 | 0 | mark | 11 |
-| B.open | 1 | 12 | 0 | 0 | speak | 10 |
+| B.open | 1 | 12 | 0 | 0 | speak | 12 |
 | B.open | 2 | 12 | 0 | 0 | take | 0 |
-| B.open | 3 | 12 | 0 | 0 | mark | 11 |
-| D.lock.basement | 1 | 6 | 0 | 0 | speak | 3 |
+| B.open | 3 | 12 | 0 | 0 | mark | 9 |
+| D.lock.basement | 1 | 6 | 0 | 0 | speak | 2 |
 | D.lock.basement | 2 | 6 | 0 | 0 | take | 0 |
-| D.lock.basement | 3 | 6 | 0 | 0 | mark | 4 |
+| D.lock.basement | 3 | 6 | 0 | 0 | mark | 3 |
 | D.lock.roof | 1 | 6 | 0 | 0 | move | 0 |
 | D.lock.roof | 2 | 6 | 0 | 0 | speak | 4 |
 | D.lock.roof | 3 | 6 | 0 | 0 | give, take | 0 |
-| D.lock.roof | 4 | 6 | 0 | 0 | mark | 3 |
-| D.open.basement | 1 | 6 | 0 | 0 | open | 0 |
+| D.lock.roof | 4 | 6 | 0 | 0 | mark | 4 |
+| D.open.basement | 1 | 6 | 0 | 0 | open, speak | 1 |
 | D.open.basement | 2 | 6 | 0 | 0 | move | 0 |
 | D.open.basement | 3 | 6 | 0 | 0 | mark | 4 |
 | D.open.roof | 1 | 6 | 0 | 0 | speak | 5 |
 | D.open.roof | 2 | 6 | 0 | 0 | give | 0 |
-| D.open.roof | 3 | 6 | 0 | 0 | mark | 1 |
+| D.open.roof | 3 | 6 | 0 | 0 | mark | 4 |
 
 Notes on these numbers:
 
 - A *shadow step* is one shadow event: up to three model proposals, then a hand-written fallback. 0 of 162 steps were skipped (the model failed and no fallback fitted the state). Every shadow still ended with its committed crossing.
 - "Rejected" counts proposals stopped by the validator or by a story-beat check (`R_BEAT`, which includes banned phrases). A rejected proposal never changes state.
 - The crossing text is hand-written around the committed facts. The atmosphere-sentence rows measure only the model's optional extra sentence, which is rule-checked. That doesn't prove the sentence never contradicts anything; hand labels go in `eval/labels/` and show as "not labeled" until a person fills them in.
-- Time from the click to the crossing, with no reading pause at all: p50 6.67 s, p95 9.04 s. In real play the shadow runs while you read the scenes before it.
+- Time from the click to the crossing, with no reading pause at all: p50 8.21 s, p95 10.52 s. In real play the shadow runs while you read the scenes before it.
 
 ### Freedom vs. guarantees
 
 Each other night has fixed beats (who must end up holding what, and that a message gets written); the model decides how it happens and every word that's said or written.
 
-Measured over these runs: 158 of 162 shadow steps were committed from the model's own proposal; counted step by step, it produced 64 distinct spoken or written texts; crossing 2 was written in the player's own hand in 24/24 (100%) runs. The per-step table above (Freedom vs. guarantees) gives model/fallback counts, the action types the model chose, and how many different texts it produced for each step.
+Measured over these runs: 161 of 162 shadow steps were committed from the model's own proposal; counted step by step, it produced 70 distinct spoken or written texts; crossing 2 was written in the player's own hand in 24/24 (100%) runs. The per-step table above (Freedom vs. guarantees) gives model/fallback counts, the action types the model chose, and how many different texts it produced for each step.
 <!-- RESULTS:END -->
 
 ### Hosted model, reported separately
@@ -176,45 +176,45 @@ Model: gemma-4-31B-it provider-managed, 8 live playthroughs (every fork path), r
 | Intrusions revealing a post-fork fact | 16/16 (100%) |
 | Intrusions with valid origin event | 16/16 (100%) |
 | Replays reproducing every state hash | 8/8 (100%) |
-| Shadow events accepted on the model's first proposal | 47/54 (87%) |
-| Shadow events committed from the model | 50/54 (93%) |
-| Shadow events from hand-written fallback | 4/54 (7%) |
-| Proposals rejected by the validator | 15/65 (23%) |
+| Shadow events accepted on the model's first proposal | 53/54 (98%) |
+| Shadow events committed from the model | 54/54 (100%) |
+| Shadow events from hand-written fallback | 0/54 (0%) |
+| Proposals rejected by the validator | 1/55 (2%) |
 | Deliberate impossible give rejected | 30/30 (100%) |
-| Model's atmosphere sentence failing rule checks (first attempt) | 0/16 (0%) |
-| Crossings that kept a model sentence (rest: hand-written lines only) | 16/16 (100%) |
+| Model's atmosphere sentence failing rule checks (first attempt) | 5/16 (31%) |
+| Crossings that kept a model sentence (rest: hand-written lines only) | 14/16 (88%) |
 | Narration contradictions, hand-labeled | not labeled |
 | Intrusion accuracy, hand-labeled | not labeled |
-| Model call latency p50 / p95 | 1.41 s / 2.22 s |
-| Whole shadow timeline p50 / p95 | 5.63 s / 8.84 s |
-| Model calls per playthrough (mean) | 10.1 |
-| Tokens per playthrough (mean) | 6128 |
+| Model call latency p50 / p95 | 1.42 s / 1.81 s |
+| Whole shadow timeline p50 / p95 | 5.1 s / 6.22 s |
+| Model calls per playthrough (mean) | 9.2 |
+| Tokens per playthrough (mean) | 5636 |
 
 Variation (same choices, different seeds):
 
 | Path | Runs | Distinct event chains | Mean pairwise overlap (Jaccard) |
 |---|---|---|---|
-| lock/basement | 2 | 2 | 0.17 |
-| lock/roof | 2 | 2 | 0.2 |
-| open/basement | 2 | 2 | 0.27 |
+| lock/basement | 2 | 2 | 0.08 |
+| lock/roof | 2 | 2 | 0.0 |
+| open/basement | 2 | 2 | 0.08 |
 | open/roof | 2 | 2 | 0.27 |
 
-Rejections by rule: R_NOOP 12, R_BEAT 3.
+Rejections by rule: R_BEAT 1.
 
 Freedom vs. guarantees, per shadow step (committed by the model or by a hand-written fallback; distinct action types and distinct texts across runs). Crossing 2 written by the player: 8/8 (100%).
 
 | Shadow | Step | Model | Fallback | Skipped | Actions | Distinct texts |
 |---|---|---|---|---|---|---|
-| B.lock | 1 | 0 | 4 | 0 | open | 0 |
+| B.lock | 1 | 4 | 0 | 0 | open | 2 |
 | B.lock | 2 | 4 | 0 | 0 | move | 0 |
-| B.lock | 3 | 4 | 0 | 0 | speak | 3 |
-| B.lock | 4 | 4 | 0 | 0 | mark | 3 |
+| B.lock | 3 | 4 | 0 | 0 | speak | 2 |
+| B.lock | 4 | 4 | 0 | 0 | mark | 4 |
 | B.open | 1 | 4 | 0 | 0 | speak | 4 |
-| B.open | 2 | 4 | 0 | 0 | take | 3 |
-| B.open | 3 | 4 | 0 | 0 | mark | 3 |
+| B.open | 2 | 4 | 0 | 0 | give, take | 4 |
+| B.open | 3 | 4 | 0 | 0 | mark | 4 |
 | D.lock.basement | 1 | 2 | 0 | 0 | speak | 2 |
 | D.lock.basement | 2 | 2 | 0 | 0 | give | 2 |
-| D.lock.basement | 3 | 2 | 0 | 0 | mark | 1 |
+| D.lock.basement | 3 | 2 | 0 | 0 | mark | 2 |
 | D.lock.roof | 1 | 2 | 0 | 0 | move | 0 |
 | D.lock.roof | 2 | 2 | 0 | 0 | speak | 2 |
 | D.lock.roof | 3 | 2 | 0 | 0 | give | 2 |
@@ -224,13 +224,11 @@ Freedom vs. guarantees, per shadow step (committed by the model or by a hand-wri
 | D.open.basement | 3 | 2 | 0 | 0 | mark | 2 |
 | D.open.roof | 1 | 2 | 0 | 0 | speak | 2 |
 | D.open.roof | 2 | 2 | 0 | 0 | give | 2 |
-| D.open.roof | 3 | 2 | 0 | 0 | mark | 1 |
+| D.open.roof | 3 | 2 | 0 | 0 | mark | 2 |
 
-Spend: $0.00989 over 8 playthroughs (mean $0.00124 each) at $0.18/$0.5 per 1M input/output tokens.
+Spend: $0.00906 over 8 playthroughs (mean $0.00113 each) at $0.18/$0.5 per 1M input/output tokens.
 
 The ledger in `spend.json` also covers health checks, probes and earlier runs. Two seeds per path is too few to compare models; this run shows only that hosted mode works end to end and holds the same invariants.
-
-Steps the hosted model never committed itself in this run: B.lock step 1 (0/4). Each still happened, through its hand-written fallback; the per-step table shows the counts, and the raw proposals and rejection reasons are in the run logs.
 
 Every number above comes from `uv run python eval/run_all.py` (or `--from-results` to recompute from the committed raw logs). Charts: `eval/results/chart_*.svg`. Model choice and the day-one benchmark: [MODELS.md](MODELS.md).
 

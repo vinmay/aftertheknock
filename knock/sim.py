@@ -25,15 +25,19 @@ MEANINGS = {
     "digits": ["the year someone disappeared", "a date written as month and day", "an apartment number in another building",
                "the age someone will never reach", "the last four digits of a phone number nobody answers",
                "a bus route that stopped running", "the number of days someone waited", "a locker combination"],
-    "words": ["a message of one to three words, written to the other you"],
+    "words": ["a warning about the brass key", "an apology", "an admission of what you did tonight",
+              "what you want the other you to do next", "who you trusted tonight", "a promise",
+              "something you heard that they did not", "what you wish you had done at 11:47"],
 }
 # A words mark is composed only from these: the building, its people, plain instructions. The shape
 # check alone let a small model write word salad ("FLOOR COOKIE C", "BASSMENT STATIC").
-MARK_WORDS = """
+NOUN_LINES = """
 MARA TEO ELENA ELIAS NORA RUTH VICTOR
 ROOF ROOFTOP BASEMENT STAIRWELL STAIRS STAIR STEP STEPS HALL DOOR DOORS ROOM UNIT CAGE FLOOR LANDING
 WINDOW LIGHT LIGHTS KEY TAG LOCK PADLOCK STORM RAIN WATER PIPES COLD SPOT DARK NIGHT NAME BELL CLOCK
 CHAIR APARTMENT BUILDING ELEVATOR LOBBY
+"""
+MARK_WORDS = NOUN_LINES.split() + """
 COUNT FIND LEAVE ASK OPEN CLOSE KEEP WAIT STAY TRUST LISTEN GO COME TURN HIDE TAKE GIVE BRING KNOCK
 ANSWER CALL REMEMBER FORGET WATCH LOOK SAY TELL LET SIT SLEEP
 ONE TWO THREE FOUR FIVE SIX SEVEN EIGHT NINE TEN FIRST SECOND THIRD FOURTH FIFTH SIXTH SEVENTH
@@ -46,6 +50,8 @@ HEARD STAYED SORRY I'M WRONG FINE WERE
 MARK_WORD_SET = set(MARK_WORDS)
 # A word mark is a message to the other you, not a place name.
 PLACE_WORDS = {"STAIRWELL", "STAIRS", "ROOF", "BASEMENT", "DOOR"}
+# Names of people and things only ("MARA", "KEY TAG") label something; they say nothing to the other you.
+NOUN_WORDS = set(NOUN_LINES.split()) | {"THE", "A", "AN"}
 DANGLING = {"THE", "A", "AN", "TO", "FOR", "OF", "ON", "IN", "AT", "BY", "FROM", "WITH", "AND", "OR", "MY", "YOUR", "NOT"}
 
 
@@ -64,6 +70,8 @@ def words_problem(text: str) -> str | None:
     places = [w for w in words if w in PLACE_WORDS]
     if places:
         return f"{' '.join(places)} is a place; write a message to the other you, not a location"
+    if all(w in NOUN_WORDS for w in words):
+        return "names of people or things alone are not a message; say something to the other you"
     return None
 
 
@@ -155,7 +163,8 @@ def build_messages(timeline: Timeline, bid: str, spec: dict, step: dict, feedbac
         "adjacent place; a locked place needs its key.",
         f"Next event: {step['hint']}" + (f" What is written is {flavor}." if flavor else ""),
         *([f"Write it in one to three of these words only, in capitals: {' '.join(MARK_WORDS)}. "
-            f"It is a message, not a place: never {', '.join(sorted(PLACE_WORDS))}."]
+            f"It is a message, not a place: never {', '.join(sorted(PLACE_WORDS))}. "
+            "Say something to them, with a verb (TRUST HER, I STAYED, DON'T WAIT), not just names of things."]
           if step.get("mark") == "words" else []),
         "Never write these: " + ", ".join(BANNED_IN_PROMPT) + ". Write something specific to this night instead.",
         "Fields: summary (what happens), actor, action, target, recipient (person receiving, for give "
@@ -174,7 +183,7 @@ def step_schema(state: dict, step: dict, crossed: set[str] = frozenset()) -> dic
         "summary": {"type": "string", "maxLength": 160},
         "actor": {"enum": chars},
         "action": {"enum": list(step.get("actions", ACTIONS))},
-        "target": {"enum": ids},
+        "target": {"enum": list(step.get("targets", ids))},
         "recipient": {"enum": [""] + list(state["chars"])},
         "text": {"type": "string", "maxLength": SPEECH_SCHEMA_MAX},
     }
@@ -229,6 +238,8 @@ def beat_violations(step: dict, p: dict, decision=None, state: dict | None = Non
             out.append(("R_BEAT", "someone must still be holding an object that can be written on"))
     if p.get("action") not in step.get("actions", ACTIONS) and not step.get("mark"):
         out.append(("R_BEAT", f"action {p.get('action')!r} not allowed for this step"))
+    if step.get("targets") and p.get("target") not in step["targets"]:
+        out.append(("R_BEAT", f"the target must be {' or '.join(step['targets'])}"))
     banned = banned_in(p.get("text") or "")
     if banned:
         out.append(("R_BEAT", f"banned phrase {banned[0]!r}; write something specific to this night"))

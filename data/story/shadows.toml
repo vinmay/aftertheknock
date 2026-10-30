@@ -5,7 +5,7 @@
 #
 # setup:     hand-authored effect of the rejected choice (committed, not simulated)
 # steps:     one model call each (plus retries). `hint` guides the model;
-#            `actions` limits the action enum; `mark` forces a mark event
+#            `actions` limits the action enum; `targets` limits the target ids; `mark` forces a mark event
 #            ("digits" = four digits, "words" = a short phrase in capitals).
 #            `prefer` picks the object to mark. D prefers the object crossing 1 did NOT use
 #            (crossing 1 marks the pocket object on the lock path, the key's tag on the open
@@ -19,7 +19,7 @@ setup_summary = "You open the door. Mara steps in, dripping, and closes it behin
 setup = [["set", "chars.mara.location", "apt"]]
 
   [[B.open.steps]]
-  hint = "Mara says something to you that she should not know."
+  hint = "Mara says something to you that she should not know: about tonight, the brass key, or the thing in your pocket."
   actions = ["speak", "move", "discover", "hide"]
   fallback = [{ actor = "mara", action = "speak", target = "player", text = "You already let me in. You just don't remember it yet." }]
 
@@ -44,8 +44,9 @@ setup_summary = "You turn the deadbolt. Mara does not knock again."
 setup = [["set", "places.apt.locked", true]]
 
   [[B.lock.steps]]
-  hint = "Teo opens his apartment, 6D, for Mara. He never opens it for anyone."
+  hint = "Teo unlocks his own door, teo_apt (6D), for Mara. He never opens it for anyone."
   actions = ["open"]
+  targets = ["teo_apt"]
   goal = "unlocked teo_apt"
   fallback = [{ actor = "teo", action = "open", target = "teo_apt" }]
 
@@ -59,7 +60,7 @@ setup = [["set", "places.apt.locked", true]]
   ]
 
   [[B.lock.steps]]
-  hint = "Something happens between Mara and Teo."
+  hint = "Mara and Teo are together inside teo_apt (6D). One says something to the other, or one hands the other something they hold."
   actions = ["speak", "give", "take", "harm"]
   fallback = [{ actor = "mara", action = "give", target = "key07", to = "teo" }]
 

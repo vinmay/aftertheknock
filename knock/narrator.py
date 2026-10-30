@@ -16,7 +16,10 @@ from .models import TransportError, prompt_hash
 from .state import apply_delta, initial_state, is_plural, location_of
 
 SYSTEM = ("You add one sentence of atmosphere to a quiet, literary horror story, in second person, "
-          "present tense. Concrete senses only: sound, cold, light, smell, touch. No dialogue.")
+          "present tense. Concrete senses only: sound, cold, light, smell, touch. No dialogue. "
+          "Keep each sense literal: light shows only what can be seen; smells and sounds are sensed directly, "
+          "never 'revealed' by light. Stay on the surfaces of where you are. No people, figures, faces or body "
+          "parts, and nothing that suggests someone else is present.")
 
 CHAR_NAMES = {"mara": "Mara", "teo": "Teo"}
 FORBIDDEN_WORDS = ("timeline", "shadow", "branch", "json", "simulation")
@@ -28,12 +31,23 @@ BANNED_PHRASES = ("help me", "get out", "you're next", "youre next", "it's not o
 MAX_COLOR = 160
 # Stock images the small model leans on, and body details: never in the atmosphere sentence.
 NARRATION_BANNED = ("ozone", "wet stone", "damp stone", "bare feet", "skin", "chill", "viscous")
+# Body parts, footwear, and anything that implies someone else is there, matched as whole words (a plural
+# too): "face" never catches "surface".
+BODY_WORDS = ("face", "hair", "neck", "cheek", "lip", "mouth", "chest", "spine", "shoulder", "arm",
+              "hand", "finger", "palm", "wrist", "foot", "feet", "toe", "ankle", "shoe", "sock",
+              "teeth", "tooth", "eye", "figure", "someone", "somebody", "silhouette", "shape", "breath", "breathing")
+# Light that "reveals" a smell or a sound mixes the senses ("a flash of white light reveals the smell of ...").
+LIGHT_WORDS = r"\b(light|lights|flash|flashes|lightning|glow|glows|glowing)\b"
+REVEAL = r"\breveal(s|ed|ing)?\b"
+UNSEEN = (r"\b(smell|smells|scent|scents|odou?r|odou?rs|stench|sound|sounds|drumming|noise|noises|hum|hums|humming|"
+          r"whisper|whispers|whispering|hitting|dripping|tapping|scraping|clicking)\b")
 # Where you are, in plain words, and the surfaces that can't be there.
 LOCATION = {"apt": "your apartment", "stairwell": "the stairwell", "roof": "the roof, outdoors", "basement": "the basement",
             "unit07": "the basement, at storage unit 07", "hall": "the hallway"}
 OUTDOORS = {"roof"}
 WRONG_SURFACES = {
-    "outdoors": ("concrete", "floor", "floorboards", "carpet", "ceiling", "linoleum", "tiles"),
+    "outdoors": ("concrete", "floor", "floorboards", "carpet", "ceiling", "linoleum", "tiles",
+                 "shingles", "shingle", "slates"),           # the roof is tar
     "indoors": ("tar", "sky", "rooftop", "parapet"),
 }
 REPEAT_OVERLAP = 0.5        # share of content words two color sentences may have in common
@@ -150,7 +164,7 @@ def build_messages(m: dict, avoid: str | None = None) -> list[dict]:
             f"Write ONE short sentence (under 20 words) about what you sense around you. "
             f"No names, no numbers, no quotes, no words in ALL CAPS, and don't explain anything. "
             f"Nothing about your body, skin, hands or feet, and nothing about shoes. "
-            f"Never use these words: {', '.join(NARRATION_BANNED)}.")
+            f"Never use these words: {', '.join(NARRATION_BANNED + BODY_WORDS)}.")
     if avoid:
         user += f"\nDo not repeat the last one, or its images: {avoid}"
     return [{"role": "system", "content": SYSTEM}, {"role": "user", "content": user}]
@@ -179,8 +193,11 @@ def check(text: str, here: str | None = None) -> list[str]:
         problems.append(f"C_BANNED: {banned_in(t)}")
     low = normalize(t)
     stock = [w for w in NARRATION_BANNED if re.search(rf"\b{re.escape(w)}", low)]
+    stock += [w for w in BODY_WORDS if re.search(rf"\b{w}s?\b", low)]
     if stock:
         problems.append(f"C_STOCK: {stock}")
+    if re.search(LIGHT_WORDS, low) and re.search(REVEAL, low) and re.search(UNSEEN, low):
+        problems.append("C_SENSE: light can't reveal a smell or a sound")
     if here:
         wrong = [w for w in WRONG_SURFACES["outdoors" if here in OUTDOORS else "indoors"] if re.search(rf"\b{w}\b", low)]
         if wrong:

@@ -1,241 +1,301 @@
 run,intrusion,which,facts,text,label,note
-lock_basement_erase_1006,X1,raw,"pocket now reads ""1983""; written by mara","The air grows thick, smelling of wet stone and something metallic.",,
-lock_basement_erase_1006,X1,final,"pocket now reads ""1983""; written by mara","You take out the guitar pick.
+lock_basement_erase_1006,X1,raw,"pocket now reads ""1988""; written by mara","A low, rhythmic drumming vibrates through the floorboards.",,
+lock_basement_erase_1006,X1,final,"pocket now reads ""1988""; written by mara","You take out the guitar pick.
 
-“1983”
+“1988”
 
-That wasn't there when you put it in your pocket. The handwriting isn't yours.
+That wasn't there when you put it in your pocket. The hand that cut it isn't yours.
 
-The air grows thick, smelling of wet stone and something metallic.",,
-lock_basement_erase_1006,X2,raw,"key07 now reads ""MARKET DAMP""; written by mara","The air grows thick, smelling of wet stone and something metallic.",,
-lock_basement_erase_1006,X2,final,"key07 now reads ""MARKET DAMP""; written by mara","Mara turns the key over in the dark. The paper tag catches the storm light.
+A low, rhythmic drumming vibrates through the floorboards.
 
-“MARKET DAMP”
+You locked the door. Somewhere, you didn't.",,
+lock_basement_erase_1006,X2,raw,"key07 now reads ""KEEP KEY""; written by player",A faint metallic tang hangs heavy in the stagnant air.,,
+lock_basement_erase_1006,X2,final,"key07 now reads ""KEEP KEY""; written by player","Mara turns the key over in the dark. The paper tag catches the storm light.
 
-That wasn't on the tag a minute ago. The handwriting isn't yours.
+“KEEP KEY”
 
-The air grows thick, smelling of wet stone and something metallic.",,
-lock_basement_open_1001,X1,raw,"pocket now reads ""8831""; written by mara",The air tastes thick and metallic against your skin.,,
-lock_basement_open_1001,X1,final,"pocket now reads ""8831""; written by mara","You take out the wedding ring.
+That wasn't on the tag a minute ago. It's your handwriting. You don't remember writing it.
 
-“8831”
+A faint metallic tang hangs heavy in the stagnant air.
 
-That wasn't there when you put it in your pocket. The handwriting isn't yours.
+You followed Mara. Somewhere, you trusted Teo.",,
+lock_basement_open_1001,X1,raw,"pocket now reads ""8842""; written by mara","A deep, low hum vibrates through the floorboards.",,
+lock_basement_open_1001,X1,final,"pocket now reads ""8842""; written by mara","You take out the wedding ring.
 
-The air tastes thick and metallic against your skin.",,
-lock_basement_open_1001,X2,raw,"key07 now reads ""VICTOR""; written by mara",The air tastes of wet stone and something metallic and ancient.,,
-lock_basement_open_1001,X2,final,"key07 now reads ""VICTOR""; written by mara","Mara turns the key over in the dark. The paper tag catches the storm light.
+“8842”
 
-“VICTOR”
+That wasn't there when you put it in your pocket. The hand that cut it isn't yours.
 
-That wasn't on the tag a minute ago. The handwriting isn't yours.
+A deep, low hum vibrates through the floorboards.
 
-The air tastes of wet stone and something metallic and ancient.",,
-lock_basement_open_1002,X1,raw,"pocket now reads ""8118""; written by mara",The air tastes thick with ozone and damp stone.,,
-lock_basement_open_1002,X1,final,"pocket now reads ""8118""; written by mara","You take out the guitar pick.
+You locked the door. Somewhere, you didn't.",,
+lock_basement_open_1001,X2,raw,"key07 now reads ""TRUST HER""; written by player","A heavy, metallic odor hangs thick in the stagnant air.",,
+lock_basement_open_1001,X2,final,"key07 now reads ""TRUST HER""; written by player","Mara turns the key over in the dark. The paper tag catches the storm light.
 
-“8118”
+“TRUST HER”
 
-That wasn't there when you put it in your pocket. The handwriting isn't yours.
+That wasn't on the tag a minute ago. It's your handwriting. You don't remember writing it.
 
-The air tastes thick with ozone and damp stone.",,
-lock_basement_open_1002,X2,raw,"key07 now reads ""LEVEL THREE DOOR""; written by mara",The air tastes like wet stone and ozone.,,
-lock_basement_open_1002,X2,final,"key07 now reads ""LEVEL THREE DOOR""; written by mara","Mara turns the key over in the dark. The paper tag catches the storm light.
+A heavy, metallic odor hangs thick in the stagnant air.
 
-“LEVEL THREE DOOR”
+You followed Mara. Somewhere, you trusted Teo.",,
+lock_basement_open_1002,X1,raw,"pocket now reads ""8117""; written by mara","The darkness presses against the surfaces with a heavy, sucking pressure.",,
+lock_basement_open_1002,X1,final,"pocket now reads ""8117""; written by mara","You take out the guitar pick.
 
-That wasn't on the tag a minute ago. The handwriting isn't yours.
+“8117”
 
-The air tastes like wet stone and ozone.",,
-lock_basement_open_1003,X1,raw,"pocket now reads ""8112""; written by mara","The damp air presses against your skin like cold, wet linen.",,
-lock_basement_open_1003,X1,final,"pocket now reads ""8112""; written by mara","You take out the folded receipt.
+That wasn't there when you put it in your pocket. The hand that cut it isn't yours.
 
-“8112”
+The darkness presses against the surfaces with a heavy, sucking pressure.
 
-That wasn't there when you put it in your pocket. The handwriting isn't yours.
+You locked the door. Somewhere, you didn't.",,
+lock_basement_open_1002,X2,raw,"key07 now reads ""TRUST MARA""; written by player",A faint metallic tang hangs heavy in the stagnant air.,,
+lock_basement_open_1002,X2,final,"key07 now reads ""TRUST MARA""; written by player","Mara turns the key over in the dark. The paper tag catches the storm light.
 
-The damp air presses against your skin like cold, wet linen.",,
-lock_basement_open_1003,X2,raw,"key07 now reads ""MARA""; written by mara",The air tastes like wet stone and stagnant water.,,
-lock_basement_open_1003,X2,final,"key07 now reads ""MARA""; written by mara","Mara turns the key over in the dark. The paper tag catches the storm light.
+“TRUST MARA”
 
-“MARA”
+That wasn't on the tag a minute ago. It's your handwriting. You don't remember writing it.
 
-That wasn't on the tag a minute ago. The handwriting isn't yours.
+A faint metallic tang hangs heavy in the stagnant air.
 
-The air tastes like wet stone and stagnant water.",,
-lock_basement_open_1004,X1,raw,"pocket now reads ""8001""; written by mara","The air tastes of wet stone and a sudden, sharp metallic chill against your skin.",,
-lock_basement_open_1004,X1,final,"pocket now reads ""8001""; written by mara","You take out the guitar pick.
+You followed Mara. Somewhere, you trusted Teo.",,
+lock_basement_open_1003,X1,raw,"pocket now reads ""4581""; written by mara","A deep, heavy pressure presses against the surrounding air.",,
+lock_basement_open_1003,X1,final,"pocket now reads ""4581""; written by mara","You take out the folded receipt.
 
-“8001”
+“4581”
 
 That wasn't there when you put it in your pocket. The handwriting isn't yours.
 
-The air tastes of wet stone and a sudden, sharp metallic chill against your skin.",,
-lock_basement_open_1004,X2,raw,"key07 now reads ""ATTIC""; written by mara",The damp air presses against your skin like cold linen.,,
-lock_basement_open_1004,X2,final,"key07 now reads ""ATTIC""; written by mara","Mara turns the key over in the dark. The paper tag catches the storm light.
+A deep, heavy pressure presses against the surrounding air.
 
-“ATTIC”
+You locked the door. Somewhere, you didn't.",,
+lock_basement_open_1003,X2,raw,"key07 now reads ""TRUST HER""; written by player","A slow, steady drip echoes against the concrete floor.",,
+lock_basement_open_1003,X2,final,"key07 now reads ""TRUST HER""; written by player","Mara turns the key over in the dark. The paper tag catches the storm light.
 
-That wasn't on the tag a minute ago. The handwriting isn't yours.
+“TRUST HER”
 
-The damp air presses against your skin like cold linen.",,
-lock_basement_open_1005,X1,raw,"pocket now reads ""4581""; written by mara","The air grows thick, tasting of wet stone and stagnant dust.",,
+That wasn't on the tag a minute ago. It's your handwriting. You don't remember writing it.
+
+A slow, steady drip echoes against the concrete floor.
+
+You followed Mara. Somewhere, you trusted Teo.",,
+lock_basement_open_1004,X1,raw,"pocket now reads ""9110""; written by mara","The air presses against the surface with a heavy, metallic taste.",,
+lock_basement_open_1004,X1,final,"pocket now reads ""9110""; written by mara","You take out the guitar pick.
+
+“9110”
+
+That wasn't there when you put it in your pocket. The hand that cut it isn't yours.
+
+The air presses against the surface with a heavy, metallic taste.
+
+You locked the door. Somewhere, you didn't.",,
+lock_basement_open_1004,X2,raw,"key07 now reads ""SORRY I'M WRONG""; written by player","A low, grinding vibration hums through the rough concrete floor.",,
+lock_basement_open_1004,X2,final,"key07 now reads ""SORRY I'M WRONG""; written by player","Mara turns the key over in the dark. The paper tag catches the storm light.
+
+“SORRY I'M WRONG”
+
+That wasn't on the tag a minute ago. It's your handwriting. You don't remember writing it.
+
+A low, grinding vibration hums through the rough concrete floor.
+
+You followed Mara. Somewhere, you trusted Teo.",,
+lock_basement_open_1005,X1,raw,"pocket now reads ""4581""; written by mara","The air presses against the surfaces with a heavy, metallic weight.",,
 lock_basement_open_1005,X1,final,"pocket now reads ""4581""; written by mara","You take out the bus ticket.
 
 “4581”
 
 That wasn't there when you put it in your pocket. The handwriting isn't yours.
 
-The air grows thick, tasting of wet stone and stagnant dust.",,
-lock_basement_open_1005,X2,raw,"key07 now reads ""FOUR FIVE EIGHT ONE""; written by mara","The damp air presses against your skin, thick with the smell of wet earth and something metallic.",,
-lock_basement_open_1005,X2,final,"key07 now reads ""FOUR FIVE EIGHT ONE""; written by mara","Mara turns the key over in the dark. The paper tag catches the storm light.
+The air presses against the surfaces with a heavy, metallic weight.
 
-“FOUR FIVE EIGHT ONE”
+You locked the door. Somewhere, you didn't.",,
+lock_basement_open_1005,X2,raw,"key07 now reads ""TRUST HER""; written by player","A low, grinding vibration resonates through the concrete floor.",,
+lock_basement_open_1005,X2,final,"key07 now reads ""TRUST HER""; written by player","Mara turns the key over in the dark. The paper tag catches the storm light.
 
-That wasn't on the tag a minute ago. The handwriting isn't yours.
+“TRUST HER”
 
-The damp air presses against your skin, thick with the smell of wet earth and something metallic.",,
-lock_roof_erase_1001,X1,raw,"pocket now reads ""8831""; written by mara",The air tastes like rusted metal and damp stone.,,
+That wasn't on the tag a minute ago. It's your handwriting. You don't remember writing it.
+
+A low, grinding vibration resonates through the concrete floor.
+
+You followed Mara. Somewhere, you trusted Teo.",,
+lock_roof_erase_1001,X1,raw,"pocket now reads ""8831""; written by mara","A deep, low hum vibrates through the floorboards.",,
 lock_roof_erase_1001,X1,final,"pocket now reads ""8831""; written by mara","You take out the photo of my sister.
 
 “8831”
 
 That wasn't there when you put it in your pocket. The handwriting isn't yours.
 
-The air tastes like rusted metal and damp stone.",,
-lock_roof_erase_1001,X2,raw,"key07 now reads ""ELIAS""; written by mara",The air tastes like wet stone and ozone.,,
-lock_roof_erase_1001,X2,final,"key07 now reads ""ELIAS""; written by mara","Something small and heavy clicks against the floor by your feet. A brass key on a paper tag that says BASEMENT 07. Nobody threw it.
+A deep, low hum vibrates through the floorboards.
 
-“ELIAS”
+You locked the door. Somewhere, you didn't.",,
+lock_roof_erase_1001,X2,raw,"key07 now reads ""KEEP KEY""; written by player","A heavy, metallic drumming pounds against the roofing material.",,
+lock_roof_erase_1001,X2,final,"key07 now reads ""KEEP KEY""; written by player","Something small and heavy clicks against the floor by your feet. A brass key on a paper tag that says BASEMENT 07. Nobody threw it.
 
-You've never seen this key before. Yet someone has written on its tag. The handwriting isn't yours.
+“KEEP KEY”
 
-The air tastes like wet stone and ozone.",,
-lock_roof_erase_1002,X1,raw,"pocket now reads ""4815""; written by mara",The air tastes like wet stone and ozone.,,
-lock_roof_erase_1002,X1,final,"pocket now reads ""4815""; written by mara","You take out the photo of my sister.
+You've never seen this key before. Yet someone has written on its tag. It's your handwriting. You don't remember writing it.
 
-“4815”
+A heavy, metallic drumming pounds against the roofing material.
 
-That wasn't there when you put it in your pocket. The handwriting isn't yours.
+You trusted Teo. Somewhere, you followed her down.",,
+lock_roof_erase_1002,X1,raw,"pocket now reads ""8811""; written by mara","The darkness presses a heavy, still pressure against the surroundings.",,
+lock_roof_erase_1002,X1,final,"pocket now reads ""8811""; written by mara","You take out the photo of my sister.
 
-The air tastes like wet stone and ozone.",,
-lock_roof_erase_1002,X2,raw,"key07 now reads ""SEVEN FLOOR DOOR""; written by mara",The air tastes thick with ozone and damp stone.,,
-lock_roof_erase_1002,X2,final,"key07 now reads ""SEVEN FLOOR DOOR""; written by mara","Something small and heavy clicks against the floor by your feet. A brass key on a paper tag that says BASEMENT 07. Nobody threw it.
-
-“SEVEN FLOOR DOOR”
-
-You've never seen this key before. Yet someone has written on its tag. The handwriting isn't yours.
-
-The air tastes thick with ozone and damp stone.",,
-lock_roof_erase_1003,X1,raw,"pocket now reads ""8112""; written by mara","The silence presses against your skin like cold, damp linen.",,
-lock_roof_erase_1003,X1,final,"pocket now reads ""8112""; written by mara","You take out the lighter.
-
-“8112”
+“8811”
 
 That wasn't there when you put it in your pocket. The handwriting isn't yours.
 
-The silence presses against your skin like cold, damp linen.",,
-lock_roof_erase_1003,X2,raw,"key07 now reads ""VICTOR""; written by mara",The air tastes metallic and impossibly cold against your skin.,,
-lock_roof_erase_1003,X2,final,"key07 now reads ""VICTOR""; written by mara","Something small and heavy clicks against the floor by your feet. A brass key on a paper tag that says BASEMENT 07. Nobody threw it.
+The darkness presses a heavy, still pressure against the surroundings.
 
-“VICTOR”
+You locked the door. Somewhere, you didn't.",,
+lock_roof_erase_1002,X2,raw,"key07 now reads ""TRUST HER""; written by player","The downpour hammers a relentless, drumming rhythm on the roofing material.",,
+lock_roof_erase_1002,X2,final,"key07 now reads ""TRUST HER""; written by player","Something small and heavy clicks against the floor by your feet. A brass key on a paper tag that says BASEMENT 07. Nobody threw it.
 
-You've never seen this key before. Yet someone has written on its tag. The handwriting isn't yours.
+“TRUST HER”
 
-The air tastes metallic and impossibly cold against your skin.",,
-lock_roof_erase_1006,X1,raw,"pocket now reads ""1983""; written by mara","The air grows thick, smelling of wet stone and something metallic.",,
-lock_roof_erase_1006,X1,final,"pocket now reads ""1983""; written by mara","You take out the train ticket.
+You've never seen this key before. Yet someone has written on its tag. It's your handwriting. You don't remember writing it.
 
-“1983”
+The downpour hammers a relentless, drumming rhythm on the roofing material.
 
-That wasn't there when you put it in your pocket. The handwriting isn't yours.
+You trusted Teo. Somewhere, you followed her down.",,
+lock_roof_erase_1003,X1,raw,"pocket now reads ""4581""; written by mara","A deep, heavy pressure presses against the surrounding air.",,
+lock_roof_erase_1003,X1,final,"pocket now reads ""4581""; written by mara","You take out the lighter.
 
-The air grows thick, smelling of wet stone and something metallic.",,
-lock_roof_erase_1006,X2,raw,"key07 now reads ""MARKET DOCK""; written by mara",A damp chill seeps through the thin fabric against your skin.,,
-lock_roof_erase_1006,X2,final,"key07 now reads ""MARKET DOCK""; written by mara","Something small and heavy clicks against the floor by your feet. A brass key on a paper tag that says BASEMENT 07. Nobody threw it.
+“4581”
 
-“MARKET DOCK”
+That wasn't there when you put it in your pocket. The hand that cut it isn't yours.
 
-You've never seen this key before. Yet someone has written on its tag. The handwriting isn't yours.
+A deep, heavy pressure presses against the surrounding air.
 
-A damp chill seeps through the thin fabric against your skin.",,
-lock_roof_open_1004,X1,raw,"pocket now reads ""8815""; written by mara",The air tastes of wet stone and ozone.,,
-lock_roof_open_1004,X1,final,"pocket now reads ""8815""; written by mara","You take out the train ticket.
+You locked the door. Somewhere, you didn't.",,
+lock_roof_erase_1003,X2,raw,"key07 now reads ""KEEP KEY""; written by player","The wind scrapes a rough, metallic friction across the rooftop surface.",,
+lock_roof_erase_1003,X2,final,"key07 now reads ""KEEP KEY""; written by player","Something small and heavy clicks against the floor by your feet. A brass key on a paper tag that says BASEMENT 07. Nobody threw it.
 
-“8815”
+“KEEP KEY”
 
-That wasn't there when you put it in your pocket. The handwriting isn't yours.
+You've never seen this key before. Yet someone has written on its tag. It's your handwriting. You don't remember writing it.
 
-The air tastes of wet stone and ozone.",,
-lock_roof_open_1004,X2,raw,"key07 now reads ""ROOF""; written by mara",The damp air presses against your skin like cold velvet.,,
-lock_roof_open_1004,X2,final,"key07 now reads ""ROOF""; written by mara","Something small and heavy clicks against the floor by your feet. A brass key on a paper tag that says BASEMENT 07. Nobody threw it.
+The wind scrapes a rough, metallic friction across the rooftop surface.
 
-“ROOF”
+You trusted Teo. Somewhere, you followed her down.",,
+lock_roof_erase_1006,X1,raw,"pocket now reads ""1988""; written by mara","A low, rhythmic drumming vibrates through the floorboards.",,
+lock_roof_erase_1006,X1,final,"pocket now reads ""1988""; written by mara","You take out the train ticket.
 
-You've never seen this key before. Yet someone has written on its tag. The handwriting isn't yours.
-
-The damp air presses against your skin like cold velvet.",,
-lock_roof_open_1005,X1,raw,"pocket now reads ""4819""; written by mara","The air grows thick, tasting of wet stone and stagnant dust.",,
-lock_roof_open_1005,X1,final,"pocket now reads ""4819""; written by mara","You take out the lighter.
-
-“4819”
+“1988”
 
 That wasn't there when you put it in your pocket. The handwriting isn't yours.
 
-The air grows thick, tasting of wet stone and stagnant dust.",,
-lock_roof_open_1005,X2,raw,"key07 now reads ""FOURTH FLOOR DOOR""; written by mara","The damp air presses against your skin, thick and clinging.",,
-lock_roof_open_1005,X2,final,"key07 now reads ""FOURTH FLOOR DOOR""; written by mara","Something small and heavy clicks against the floor by your feet. A brass key on a paper tag that says BASEMENT 07. Nobody threw it.
+A low, rhythmic drumming vibrates through the floorboards.
 
-“FOURTH FLOOR DOOR”
+You locked the door. Somewhere, you didn't.",,
+lock_roof_erase_1006,X2,raw,"key07 now reads ""KEEP IT""; written by player","A heavy, metallic scent presses against the exposed surface.",,
+lock_roof_erase_1006,X2,final,"key07 now reads ""KEEP IT""; written by player","Something small and heavy clicks against the floor by your feet. A brass key on a paper tag that says BASEMENT 07. Nobody threw it.
 
-You've never seen this key before. Yet someone has written on its tag. The handwriting isn't yours.
+“KEEP IT”
 
-The damp air presses against your skin, thick and clinging.",,
-open_basement_erase_1002,X1,raw,"key07 now reads ""4118""; written by mara",The air tastes metallic and impossibly cold against your skin.,,
-open_basement_erase_1002,X1,final,"key07 now reads ""4118""; written by mara","Mara turns the key over in the dark. The paper tag catches the storm light.
+You've never seen this key before. Yet someone has written on its tag. It's your handwriting. You don't remember writing it.
 
-“4118”
+A heavy, metallic scent presses against the exposed surface.
+
+You trusted Teo. Somewhere, you followed her down.",,
+lock_roof_open_1004,X1,raw,"pocket now reads ""9012""; written by mara","The air presses against the surface with a heavy, metallic vibration.",,
+lock_roof_open_1004,X1,final,"pocket now reads ""9012""; written by mara","You take out the train ticket.
+
+“9012”
+
+That wasn't there when you put it in your pocket. The handwriting isn't yours.
+
+The air presses against the surface with a heavy, metallic vibration.
+
+You locked the door. Somewhere, you didn't.",,
+lock_roof_open_1004,X2,raw,"key07 now reads ""TRUST HER""; written by player","The downpour strikes the corrugated metal with a rhythmic, deafening drumming.",,
+lock_roof_open_1004,X2,final,"key07 now reads ""TRUST HER""; written by player","Something small and heavy clicks against the floor by your feet. A brass key on a paper tag that says BASEMENT 07. Nobody threw it.
+
+“TRUST HER”
+
+You've never seen this key before. Yet someone has written on its tag. It's your handwriting. You don't remember writing it.
+
+The downpour strikes the corrugated metal with a rhythmic, deafening drumming.
+
+You trusted Teo. Somewhere, you followed her down.",,
+lock_roof_open_1005,X1,raw,"pocket now reads ""4589""; written by mara","The air presses against the surfaces with a heavy, vibrating stillness.",,
+lock_roof_open_1005,X1,final,"pocket now reads ""4589""; written by mara","You take out the lighter.
+
+“4589”
+
+That wasn't there when you put it in your pocket. The hand that cut it isn't yours.
+
+The air presses against the surfaces with a heavy, vibrating stillness.
+
+You locked the door. Somewhere, you didn't.",,
+lock_roof_open_1005,X2,raw,"key07 now reads ""TRUST HER""; written by player","The downpour strikes the metal with a relentless, drumming insistence.",,
+lock_roof_open_1005,X2,final,"key07 now reads ""TRUST HER""; written by player","Something small and heavy clicks against the floor by your feet. A brass key on a paper tag that says BASEMENT 07. Nobody threw it.
+
+“TRUST HER”
+
+You've never seen this key before. Yet someone has written on its tag. It's your handwriting. You don't remember writing it.
+
+The downpour strikes the metal with a relentless, drumming insistence.
+
+You trusted Teo. Somewhere, you followed her down.",,
+open_basement_erase_1002,X1,raw,"key07 now reads ""4581""; written by mara","The air presses down, a heavy, metallic pressure against the surfaces.",,
+open_basement_erase_1002,X1,final,"key07 now reads ""4581""; written by mara","Mara turns the key over in the dark. The paper tag catches the storm light.
+
+“4581”
 
 That wasn't on the tag a minute ago. The handwriting isn't yours.
 
-The air tastes metallic and impossibly cold against your skin.",,
-open_basement_erase_1002,X2,raw,"pocket now reads ""R O O F B A S E M E N T""; written by player",The air tastes like wet stone and stagnant water.,,
-open_basement_erase_1002,X2,final,"pocket now reads ""R O O F B A S E M E N T""; written by player","You take out the folded receipt.
+The air presses down, a heavy, metallic pressure against the surfaces.
 
-“R O O F B A S E M E N T”
+You opened the door. Somewhere, you didn't.",,
+open_basement_erase_1002,X2,raw,"pocket now reads ""TRUST HER""; written by player","The floor yields a faint, gritty rasp beneath the pressure.",,
+open_basement_erase_1002,X2,final,"pocket now reads ""TRUST HER""; written by player","You take out the folded receipt.
+
+“TRUST HER”
 
 That wasn't there when you put it in your pocket. It's your handwriting. You don't remember writing it.
 
-The air tastes like wet stone and stagnant water.",,
-open_basement_erase_1005,X1,raw,"key07 now reads ""8117""; written by mara","The air grows thick, smelling sharply of wet stone and something metallic.",,
-open_basement_erase_1005,X1,final,"key07 now reads ""8117""; written by mara","Mara turns the key over in the dark. The paper tag catches the storm light.
+The floor yields a faint, gritty rasp beneath the pressure.
 
-“8117”
+You followed Mara. Somewhere, you trusted Teo.",,
+open_basement_erase_1005,X1,raw,"key07 now reads ""8315""; written by mara","The air presses against the surfaces with a heavy, metallic grit.",,
+open_basement_erase_1005,X1,final,"key07 now reads ""8315""; written by mara","Mara turns the key over in the dark. The paper tag catches the storm light.
+
+“8315”
 
 That wasn't on the tag a minute ago. The handwriting isn't yours.
 
-The air grows thick, smelling sharply of wet stone and something metallic.",,
-open_basement_erase_1005,X2,raw,"pocket now reads ""ROOF AND  DOOR""; written by player","The damp air presses against your skin, thick with the smell of wet earth and something metallic.",,
-open_basement_erase_1005,X2,final,"pocket now reads ""ROOF AND  DOOR""; written by player","You take out the lighter.
+The air presses against the surfaces with a heavy, metallic grit.
 
-“ROOF AND  DOOR”
+You opened the door. Somewhere, you didn't.",,
+open_basement_erase_1005,X2,raw,"pocket now reads ""TRUST HER""; written by player","A low, resonant vibration travels through the concrete floor.",,
+open_basement_erase_1005,X2,final,"pocket now reads ""TRUST HER""; written by player","You take out the lighter.
 
-That wasn't there when you put it in your pocket. It's your handwriting. You don't remember writing it.
+“TRUST HER”
 
-The damp air presses against your skin, thick with the smell of wet earth and something metallic.",,
-open_basement_erase_1006,X1,raw,"key07 now reads ""0315""; written by mara","The air grows thick, smelling of wet stone and something metallic.",,
+That wasn't there when you put it in your pocket. It's your hand that cut it. You don't remember doing it.
+
+A low, resonant vibration travels through the concrete floor.
+
+You followed Mara. Somewhere, you trusted Teo.",,
+open_basement_erase_1006,X1,raw,"key07 now reads ""0315""; written by mara","A low, grinding vibration pulses through the floorboards.",,
 open_basement_erase_1006,X1,final,"key07 now reads ""0315""; written by mara","Mara turns the key over in the dark. The paper tag catches the storm light.
 
 “0315”
 
 That wasn't on the tag a minute ago. The handwriting isn't yours.
 
-The air grows thick, smelling of wet stone and something metallic.",,
-open_basement_erase_1006,X2,raw,"pocket now reads ""MARA BASEMENT""; written by player","The air grows thick, a damp, metallic chill against your skin.",,
-open_basement_erase_1006,X2,final,"pocket now reads ""MARA BASEMENT""; written by player","You take out the folded receipt.
+A low, grinding vibration pulses through the floorboards.
 
-“MARA BASEMENT”
+You opened the door. Somewhere, you didn't.",,
+open_basement_erase_1006,X2,raw,"pocket now reads ""TRUST MARA""; written by player","A heavy, metallic scent hangs thick in the stagnant air.",,
+open_basement_erase_1006,X2,final,"pocket now reads ""TRUST MARA""; written by player","You take out the folded receipt.
+
+“TRUST MARA”
 
 That wasn't there when you put it in your pocket. It's your handwriting. You don't remember writing it.
 
-The air grows thick, a damp, metallic chill against your skin.",,
+A heavy, metallic scent hangs thick in the stagnant air.
+
+You followed Mara. Somewhere, you trusted Teo.",,

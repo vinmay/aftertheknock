@@ -284,8 +284,10 @@ def test_crossing_two_is_in_your_own_hand_and_echoes_fork_two(f1, f2):
     line = {"roof": "You trusted Teo. Somewhere, you followed her down.",
             "basement": "You followed Mara. Somewhere, you trusted Teo."}[f2]
     assert g.crossings["D"]["parts"]["echo"] == line and line in g.crossings["D"]["narration"]
-    if f1 == "lock":                                                         # Mara handed you the key first
-        assert any(e.action == "give" and e.target == "key07" and e.to == "player" for e in g.timeline.branch("D").events)
+    if f1 == "lock":                                                         # the key reached your hand first, however
+        assert any(e.target == "key07" and ((e.action == "give" and e.to == "player") or
+                                            (e.action == "take" and e.actor == "player"))
+                   for e in g.timeline.branch("D").events if e.event_id < d.event_id)
 
 
 @pytest.mark.parametrize("f1,f2", [(a, b) for a in ("lock", "open") for b in ("basement", "roof")])
@@ -298,15 +300,19 @@ def test_crossing_lines_end_with_your_own_choice(f1, f2):
             assert paras[-2] == g.crossings[shadow]["parts"]["color"]
 
 
-@pytest.mark.parametrize("f1,f2", [(a, b) for a in ("lock", "open") for b in ("basement", "roof")])
-def test_whose_handwriting_only_when_you_wrote_it(f1, f2):
-    g, _ = play("ticket stub", f1, f2, "open")
-    line = "One of them is in your handwriting. Now you know whose."
-    assert line in g.ending_text("open") and "You understand now who it was meant for." not in g.ending_text("open")
-    oid = g.crossings["D"]["intrusion"]["origin_event_id"]
-    real = g.timeline.event
-    g.timeline.event = lambda eid: dataclasses.replace(real(eid), actor="mara") if eid == oid else real(eid)
-    assert line not in g.ending_text("open")
+def test_tone_audit_lines():
+    g, views = play("ticket stub", "lock", "roof", "open")
+    lock2 = next(v for v in views if v["scene"] == "lock_2")["text"]
+    assert lock2.rstrip().endswith("Then she walks to the stairwell, and the fire door sighs shut behind her. You hear her going down. Not up.")
+    sl = g.story["endings"]["slots"]
+    assert sl["mara_witness"] == "Beside you, Mara has gone very still. She isn't looking at the door. She's looking at you."
+    assert sl["fork2_echo_open_basement"] == ("Mara watches the two of you in the doorway. She has her witness now. "
+                                              "For the first time tonight, she sits down.")
+    assert g.story["flashback"]["speak_aloud"] == "“{text}” {A} says."
+    assert "whose_hand" not in sl
+    for f1, f2 in itertools.product(("lock", "open"), ("basement", "roof")):
+        g, _ = play("ticket stub", f1, f2, "open")
+        assert "Now you know whose." not in g.ending_text("open")
 
 
 def test_script_lines():
@@ -316,7 +322,9 @@ def test_script_lines():
     assert paras[0].startswith('"A night," she says.') and paras[1].startswith('"I need someone else to see it,"')
     erased = g.ending_text("erase")
     assert "and down in the dark of it a fridge begins to hum as if nothing happened." in erased
-    assert g.story["endings"]["slots"]["erase_mara_absent"] == "Far below, a metal door closes, gently, and does not open again."
+    sl = g.story["endings"]["slots"]
+    assert sl["erase_mara_absent_roof"] == "Far below, a metal door closes, gently, and does not open again."
+    assert sl["erase_mara_absent_basement"].startswith("Somewhere above you,")
     assert g.story["endings"]["slots"]["other_detail_took"].endswith("I didn't stop her.\"")
 
 
@@ -330,3 +338,23 @@ def test_a_place_you_own_takes_your_pronoun():
     x = next(x for x in g.timeline.intrusions if x.origin_branch == "B")
     lines = [l["line"] for l in g.memory(x.intrusion_id)["scene"]]
     assert any("his apartment, 6D" in l for l in lines) and not any("Teo unlocks Teo's" in l for l in lines), lines
+
+
+def test_erase_line_without_mara_follows_the_route():
+    for route, start in (("roof", "Far below,"), ("basement", "Somewhere above you,")):
+        for f1 in ("lock", "open"):
+            g, _ = play("ticket stub", f1, route, "erase")
+            sl = g.story["endings"]["slots"]
+            text = g.ending_text("erase")
+            if sl["erase_mara_present"] not in text:
+                assert start in text, (f1, route)
+                assert sl[f"erase_mara_absent_{'basement' if route == 'roof' else 'roof'}"] not in text
+
+
+def test_teo_opening_step_only_targets_his_door():
+    from knock.sim import load_shadows, step_schema, beat_violations
+    step = load_shadows()["B.lock"]["steps"][0]
+    g = Game("ticket stub", 1, RandomModel(), background=False)
+    assert step_schema(g.timeline.branch("S").state, step)["properties"]["target"]["enum"] == ["teo_apt"]
+    rules = [r for r, _ in beat_violations(step, {"action": "open", "actor": "teo", "target": "hall", "text": ""})]
+    assert "R_BEAT" in rules
