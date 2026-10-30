@@ -38,6 +38,11 @@ BODY_WORDS = ("face", "hair", "neck", "cheek", "lip", "mouth", "chest", "spine",
               "teeth", "tooth", "eye", "figure", "someone", "somebody", "silhouette", "shape", "breath", "breathing")
 # Light that "reveals" a smell or a sound mixes the senses ("a flash of white light reveals the smell of ...").
 LIGHT_WORDS = r"\b(light|lights|flash|flashes|lightning|glow|glows|glowing)\b"
+# Light and a smell or sound in one sentence mixes the senses whatever the verb ("exposes", "hits", ...).
+LIGHT_ANY = (r"\b(light|lights|flash|flashes|lightning|glow|glows|glowing|gleam|gleams|gleaming|"
+             r"flicker|flickers|flickering|beam|beams|ray|rays)\b")
+SMELL_SOUND = (r"\b(smell|smells|scent|scents|odou?r|odou?rs|stench|sound|sounds|noise|noises|drumming|"
+               r"hum|hums|humming|whisper|whispers|whispering|scratching)\b")
 REVEAL = r"\breveal(s|ed|ing)?\b"
 UNSEEN = (r"\b(smell|smells|scent|scents|odou?r|odou?rs|stench|sound|sounds|drumming|noise|noises|hum|hums|humming|"
           r"whisper|whispers|whispering|hitting|dripping|tapping|scraping|clicking)\b")
@@ -198,6 +203,8 @@ def check(text: str, here: str | None = None) -> list[str]:
         problems.append(f"C_STOCK: {stock}")
     if re.search(LIGHT_WORDS, low) and re.search(REVEAL, low) and re.search(UNSEEN, low):
         problems.append("C_SENSE: light can't reveal a smell or a sound")
+    elif re.search(LIGHT_ANY, low) and re.search(SMELL_SOUND, low):
+        problems.append("C_SENSE: light and a smell or sound in one sentence")
     if here:
         wrong = [w for w in WRONG_SURFACES["outdoors" if here in OUTDOORS else "indoors"] if re.search(rf"\b{w}\b", low)]
         if wrong:

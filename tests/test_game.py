@@ -340,3 +340,22 @@ def test_clean_atmosphere_sentences_pass(text, here):
 def test_narrator_system_prompt_keeps_senses_literal():
     from knock.narrator import SYSTEM
     assert "never 'revealed' by light" in SYSTEM and "nothing that suggests someone else is present" in SYSTEM
+
+
+@pytest.mark.parametrize("text", [
+    "A flash of white light exposes the smell of sulfur and the sound of dripping water.",
+    "A stroke of grey light hits the smell of copper and the sound of scratching wood.",
+])
+def test_light_with_a_smell_or_sound_is_rejected_whatever_the_verb(text):
+    from knock.narrator import check
+    assert any(p.startswith("C_SENSE") for p in check(text, "basement")), text
+
+
+@pytest.mark.parametrize("text,here", [
+    ("A flicker of lightning shows the wet railing, then the dark comes back.", "roof"),
+    ("The smell of wet plaster hangs in the stairwell.", "stairwell"),
+    ("Somewhere below, water drips onto concrete.", "basement"),
+])
+def test_one_sense_at_a_time_passes(text, here):
+    from knock.narrator import check
+    assert check(text, here) == [], (text, check(text, here))

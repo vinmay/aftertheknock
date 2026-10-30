@@ -10,7 +10,7 @@
   "raw": "{\"action\": \"give\", \"actor\": \"mara\", \"recipient\": \"teo\", \"summary\": \"Mara handed the bus ticket to Teo.\", \"target\": \"pocket\", \"text\": \"\"}",
   "meta": {
    "text": "{\"action\": \"give\", \"actor\": \"mara\", \"recipient\": \"teo\", \"summary\": \"Mara handed the bus ticket to Teo.\", \"target\": \"pocket\", \"text\": \"\"}",
-   "latency_s": 1.47,
+   "latency_s": 1.187,
    "prompt_tokens": 570,
    "output_tokens": 42,
    "model": "gemma-4-31B-it"
@@ -45,7 +45,7 @@
   "raw": "{\"action\": \"give\", \"actor\": \"player\", \"recipient\": \"mara\", \"summary\": \"The other you handed the bus ticket to Mara.\", \"target\": \"pocket\", \"text\": \"\"}",
   "meta": {
    "text": "{\"action\": \"give\", \"actor\": \"player\", \"recipient\": \"mara\", \"summary\": \"The other you handed the bus ticket to Mara.\", \"target\": \"pocket\", \"text\": \"\"}",
-   "latency_s": 1.359,
+   "latency_s": 1.325,
    "prompt_tokens": 608,
    "output_tokens": 44,
    "model": "gemma-4-31B-it"
@@ -80,7 +80,7 @@
   "raw": "{\"action\": \"give\", \"actor\": \"mara\", \"recipient\": \"teo\", \"summary\": \"Mara handed the bus ticket to Teo.\", \"target\": \"pocket\", \"text\": \"\"}",
   "meta": {
    "text": "{\"action\": \"give\", \"actor\": \"mara\", \"recipient\": \"teo\", \"summary\": \"Mara handed the bus ticket to Teo.\", \"target\": \"pocket\", \"text\": \"\"}",
-   "latency_s": 1.116,
+   "latency_s": 1.403,
    "prompt_tokens": 608,
    "output_tokens": 42,
    "model": "gemma-4-31B-it"
@@ -115,7 +115,7 @@
   "raw": "{\"action\": \"give\", \"actor\": \"mara\", \"recipient\": \"teo\", \"summary\": \"Mara handed the bus ticket to Teo.\", \"target\": \"pocket\", \"text\": \"\"}",
   "meta": {
    "text": "{\"action\": \"give\", \"actor\": \"mara\", \"recipient\": \"teo\", \"summary\": \"Mara handed the bus ticket to Teo.\", \"target\": \"pocket\", \"text\": \"\"}",
-   "latency_s": 1.228,
+   "latency_s": 1.171,
    "prompt_tokens": 570,
    "output_tokens": 42,
    "model": "gemma-4-31B-it"
@@ -150,7 +150,7 @@
   "raw": "{\"action\": \"give\", \"actor\": \"player\", \"recipient\": \"mara\", \"summary\": \"The other you handed the bus ticket to Mara.\", \"target\": \"pocket\", \"text\": \"\"}",
   "meta": {
    "text": "{\"action\": \"give\", \"actor\": \"player\", \"recipient\": \"mara\", \"summary\": \"The other you handed the bus ticket to Mara.\", \"target\": \"pocket\", \"text\": \"\"}",
-   "latency_s": 0.99,
+   "latency_s": 1.211,
    "prompt_tokens": 608,
    "output_tokens": 44,
    "model": "gemma-4-31B-it"
@@ -185,7 +185,7 @@
   "raw": "{\"action\": \"give\", \"actor\": \"mara\", \"recipient\": \"teo\", \"summary\": \"Mara handed the ticket to Teo.\", \"target\": \"pocket\", \"text\": \"\"}",
   "meta": {
    "text": "{\"action\": \"give\", \"actor\": \"mara\", \"recipient\": \"teo\", \"summary\": \"Mara handed the ticket to Teo.\", \"target\": \"pocket\", \"text\": \"\"}",
-   "latency_s": 1.24,
+   "latency_s": 1.027,
    "prompt_tokens": 608,
    "output_tokens": 41,
    "model": "gemma-4-31B-it"
@@ -220,7 +220,7 @@
   "raw": "{\"action\": \"give\", \"actor\": \"mara\", \"recipient\": \"teo\", \"summary\": \"Mara handed the bus ticket to Teo.\", \"target\": \"pocket\", \"text\": \"\"}",
   "meta": {
    "text": "{\"action\": \"give\", \"actor\": \"mara\", \"recipient\": \"teo\", \"summary\": \"Mara handed the bus ticket to Teo.\", \"target\": \"pocket\", \"text\": \"\"}",
-   "latency_s": 1.033,
+   "latency_s": 1.103,
    "prompt_tokens": 570,
    "output_tokens": 42,
    "model": "gemma-4-31B-it"
@@ -255,7 +255,7 @@
   "raw": "{\"action\": \"give\", \"actor\": \"player\", \"recipient\": \"mara\", \"summary\": \"The other you handed the bus ticket to Mara.\", \"target\": \"pocket\", \"text\": \"\"}",
   "meta": {
    "text": "{\"action\": \"give\", \"actor\": \"player\", \"recipient\": \"mara\", \"summary\": \"The other you handed the bus ticket to Mara.\", \"target\": \"pocket\", \"text\": \"\"}",
-   "latency_s": 0.983,
+   "latency_s": 1.291,
    "prompt_tokens": 608,
    "output_tokens": 43,
    "model": "gemma-4-31B-it"
@@ -290,7 +290,7 @@
   "raw": "{\"action\": \"give\", \"actor\": \"mara\", \"recipient\": \"teo\", \"summary\": \"Mara handed the bus ticket to Teo.\", \"target\": \"pocket\", \"text\": \"\"}",
   "meta": {
    "text": "{\"action\": \"give\", \"actor\": \"mara\", \"recipient\": \"teo\", \"summary\": \"Mara handed the bus ticket to Teo.\", \"target\": \"pocket\", \"text\": \"\"}",
-   "latency_s": 1.322,
+   "latency_s": 1.134,
    "prompt_tokens": 608,
    "output_tokens": 42,
    "model": "gemma-4-31B-it"
@@ -325,7 +325,7 @@
   "raw": "{\"action\": \"give\", \"actor\": \"mara\", \"recipient\": \"teo\", \"summary\": \"Mara handed the bus ticket to Teo.\", \"target\": \"pocket\", \"text\": \"\"}",
   "meta": {
    "text": "{\"action\": \"give\", \"actor\": \"mara\", \"recipient\": \"teo\", \"summary\": \"Mara handed the bus ticket to Teo.\", \"target\": \"pocket\", \"text\": \"\"}",
-   "latency_s": 1.377,
+   "latency_s": 1.229,
    "prompt_tokens": 570,
    "output_tokens": 42,
    "model": "gemma-4-31B-it"
@@ -360,7 +360,7 @@
   "raw": "{\"action\": \"give\", \"actor\": \"player\", \"recipient\": \"mara\", \"summary\": \"The other you handed the bus ticket to Mara.\", \"target\": \"pocket\", \"text\": \"\"}",
   "meta": {
    "text": "{\"action\": \"give\", \"actor\": \"player\", \"recipient\": \"mara\", \"summary\": \"The other you handed the bus ticket to Mara.\", \"target\": \"pocket\", \"text\": \"\"}",
-   "latency_s": 1.386,
+   "latency_s": 1.177,
    "prompt_tokens": 608,
    "output_tokens": 44,
    "model": "gemma-4-31B-it"
@@ -395,7 +395,7 @@
   "raw": "{\"action\": \"give\", \"actor\": \"mara\", \"recipient\": \"teo\", \"summary\": \"Mara handed the bus ticket to Teo.\", \"target\": \"pocket\", \"text\": \"\"}",
   "meta": {
    "text": "{\"action\": \"give\", \"actor\": \"mara\", \"recipient\": \"teo\", \"summary\": \"Mara handed the bus ticket to Teo.\", \"target\": \"pocket\", \"text\": \"\"}",
-   "latency_s": 1.205,
+   "latency_s": 1.047,
    "prompt_tokens": 608,
    "output_tokens": 42,
    "model": "gemma-4-31B-it"
@@ -430,7 +430,7 @@
   "raw": "{\"action\": \"give\", \"actor\": \"mara\", \"recipient\": \"teo\", \"summary\": \"Mara handed the bus ticket to Teo.\", \"target\": \"pocket\", \"text\": \"\"}",
   "meta": {
    "text": "{\"action\": \"give\", \"actor\": \"mara\", \"recipient\": \"teo\", \"summary\": \"Mara handed the bus ticket to Teo.\", \"target\": \"pocket\", \"text\": \"\"}",
-   "latency_s": 1.134,
+   "latency_s": 1.218,
    "prompt_tokens": 570,
    "output_tokens": 42,
    "model": "gemma-4-31B-it"
@@ -465,7 +465,7 @@
   "raw": "{\"action\": \"give\", \"actor\": \"player\", \"recipient\": \"mara\", \"summary\": \"The other you gave the bus ticket to Mara.\", \"target\": \"pocket\", \"text\": \"\"}",
   "meta": {
    "text": "{\"action\": \"give\", \"actor\": \"player\", \"recipient\": \"mara\", \"summary\": \"The other you gave the bus ticket to Mara.\", \"target\": \"pocket\", \"text\": \"\"}",
-   "latency_s": 1.268,
+   "latency_s": 10.925,
    "prompt_tokens": 608,
    "output_tokens": 43,
    "model": "gemma-4-31B-it"
@@ -500,7 +500,7 @@
   "raw": "{\"action\": \"give\", \"actor\": \"mara\", \"recipient\": \"teo\", \"summary\": \"Mara handed the bus ticket to Teo.\", \"target\": \"pocket\", \"text\": \"\"}",
   "meta": {
    "text": "{\"action\": \"give\", \"actor\": \"mara\", \"recipient\": \"teo\", \"summary\": \"Mara handed the bus ticket to Teo.\", \"target\": \"pocket\", \"text\": \"\"}",
-   "latency_s": 1.252,
+   "latency_s": 1.464,
    "prompt_tokens": 608,
    "output_tokens": 42,
    "model": "gemma-4-31B-it"
@@ -535,7 +535,7 @@
   "raw": "{\"action\": \"give\", \"actor\": \"mara\", \"recipient\": \"teo\", \"summary\": \"Mara gave the bus ticket to Teo.\", \"target\": \"pocket\", \"text\": \"\"}",
   "meta": {
    "text": "{\"action\": \"give\", \"actor\": \"mara\", \"recipient\": \"teo\", \"summary\": \"Mara gave the bus ticket to Teo.\", \"target\": \"pocket\", \"text\": \"\"}",
-   "latency_s": 1.298,
+   "latency_s": 1.47,
    "prompt_tokens": 570,
    "output_tokens": 42,
    "model": "gemma-4-31B-it"
@@ -570,7 +570,7 @@
   "raw": "{\"action\": \"give\", \"actor\": \"player\", \"recipient\": \"mara\", \"summary\": \"The other you gave the bus ticket to Mara.\", \"target\": \"pocket\", \"text\": \"\"}",
   "meta": {
    "text": "{\"action\": \"give\", \"actor\": \"player\", \"recipient\": \"mara\", \"summary\": \"The other you gave the bus ticket to Mara.\", \"target\": \"pocket\", \"text\": \"\"}",
-   "latency_s": 1.499,
+   "latency_s": 1.565,
    "prompt_tokens": 608,
    "output_tokens": 43,
    "model": "gemma-4-31B-it"
@@ -605,7 +605,7 @@
   "raw": "{\"action\": \"give\", \"actor\": \"mara\", \"recipient\": \"teo\", \"summary\": \"Mara handed the bus ticket to Teo.\", \"target\": \"pocket\", \"text\": \"\"}",
   "meta": {
    "text": "{\"action\": \"give\", \"actor\": \"mara\", \"recipient\": \"teo\", \"summary\": \"Mara handed the bus ticket to Teo.\", \"target\": \"pocket\", \"text\": \"\"}",
-   "latency_s": 1.103,
+   "latency_s": 1.531,
    "prompt_tokens": 608,
    "output_tokens": 42,
    "model": "gemma-4-31B-it"
@@ -640,7 +640,7 @@
   "raw": "{\"action\": \"give\", \"actor\": \"mara\", \"recipient\": \"teo\", \"summary\": \"Mara gave the bus ticket to Teo.\", \"target\": \"pocket\", \"text\": \"\"}",
   "meta": {
    "text": "{\"action\": \"give\", \"actor\": \"mara\", \"recipient\": \"teo\", \"summary\": \"Mara gave the bus ticket to Teo.\", \"target\": \"pocket\", \"text\": \"\"}",
-   "latency_s": 1.264,
+   "latency_s": 1.237,
    "prompt_tokens": 570,
    "output_tokens": 42,
    "model": "gemma-4-31B-it"
@@ -675,7 +675,7 @@
   "raw": "{\"action\": \"give\", \"actor\": \"player\", \"recipient\": \"mara\", \"summary\": \"The other you handed the ticket to Mara.\", \"target\": \"pocket\", \"text\": \"\"}",
   "meta": {
    "text": "{\"action\": \"give\", \"actor\": \"player\", \"recipient\": \"mara\", \"summary\": \"The other you handed the ticket to Mara.\", \"target\": \"pocket\", \"text\": \"\"}",
-   "latency_s": 1.304,
+   "latency_s": 1.288,
    "prompt_tokens": 608,
    "output_tokens": 42,
    "model": "gemma-4-31B-it"
@@ -710,7 +710,7 @@
   "raw": "{\"action\": \"give\", \"actor\": \"mara\", \"recipient\": \"teo\", \"summary\": \"Mara gave the bus ticket to Teo.\", \"target\": \"pocket\", \"text\": \"\"}",
   "meta": {
    "text": "{\"action\": \"give\", \"actor\": \"mara\", \"recipient\": \"teo\", \"summary\": \"Mara gave the bus ticket to Teo.\", \"target\": \"pocket\", \"text\": \"\"}",
-   "latency_s": 1.36,
+   "latency_s": 1.233,
    "prompt_tokens": 608,
    "output_tokens": 42,
    "model": "gemma-4-31B-it"
@@ -745,7 +745,7 @@
   "raw": "{\"action\": \"give\", \"actor\": \"mara\", \"recipient\": \"teo\", \"summary\": \"Mara handed the bus ticket to Teo.\", \"target\": \"pocket\", \"text\": \"\"}",
   "meta": {
    "text": "{\"action\": \"give\", \"actor\": \"mara\", \"recipient\": \"teo\", \"summary\": \"Mara handed the bus ticket to Teo.\", \"target\": \"pocket\", \"text\": \"\"}",
-   "latency_s": 1.46,
+   "latency_s": 1.261,
    "prompt_tokens": 570,
    "output_tokens": 42,
    "model": "gemma-4-31B-it"
@@ -780,7 +780,7 @@
   "raw": "{\"action\": \"give\", \"actor\": \"player\", \"recipient\": \"mara\", \"summary\": \"The other you handed the ticket to Mara.\", \"target\": \"pocket\", \"text\": \"\"}",
   "meta": {
    "text": "{\"action\": \"give\", \"actor\": \"player\", \"recipient\": \"mara\", \"summary\": \"The other you handed the ticket to Mara.\", \"target\": \"pocket\", \"text\": \"\"}",
-   "latency_s": 1.184,
+   "latency_s": 1.276,
    "prompt_tokens": 608,
    "output_tokens": 42,
    "model": "gemma-4-31B-it"
@@ -815,7 +815,7 @@
   "raw": "{\"action\": \"give\", \"actor\": \"mara\", \"recipient\": \"teo\", \"summary\": \"Mara handed the ticket to Teo.\", \"target\": \"pocket\", \"text\": \"\"}",
   "meta": {
    "text": "{\"action\": \"give\", \"actor\": \"mara\", \"recipient\": \"teo\", \"summary\": \"Mara handed the ticket to Teo.\", \"target\": \"pocket\", \"text\": \"\"}",
-   "latency_s": 1.221,
+   "latency_s": 1.1,
    "prompt_tokens": 608,
    "output_tokens": 41,
    "model": "gemma-4-31B-it"
@@ -850,7 +850,7 @@
   "raw": "{\"action\": \"give\", \"actor\": \"mara\", \"recipient\": \"teo\", \"summary\": \"Mara handed the bus ticket to Teo.\", \"target\": \"pocket\", \"text\": \"\"}",
   "meta": {
    "text": "{\"action\": \"give\", \"actor\": \"mara\", \"recipient\": \"teo\", \"summary\": \"Mara handed the bus ticket to Teo.\", \"target\": \"pocket\", \"text\": \"\"}",
-   "latency_s": 1.289,
+   "latency_s": 2.437,
    "prompt_tokens": 570,
    "output_tokens": 42,
    "model": "gemma-4-31B-it"
@@ -885,7 +885,7 @@
   "raw": "{\"action\": \"give\", \"actor\": \"player\", \"recipient\": \"mara\", \"summary\": \"The other you handed the bus ticket to Mara.\", \"target\": \"pocket\", \"text\": \"\"}",
   "meta": {
    "text": "{\"action\": \"give\", \"actor\": \"player\", \"recipient\": \"mara\", \"summary\": \"The other you handed the bus ticket to Mara.\", \"target\": \"pocket\", \"text\": \"\"}",
-   "latency_s": 1.247,
+   "latency_s": 1.336,
    "prompt_tokens": 608,
    "output_tokens": 43,
    "model": "gemma-4-31B-it"
@@ -920,7 +920,7 @@
   "raw": "{\"action\": \"give\", \"actor\": \"mara\", \"recipient\": \"teo\", \"summary\": \"Mara gave the bus ticket to Teo.\", \"target\": \"pocket\", \"text\": \"\"}",
   "meta": {
    "text": "{\"action\": \"give\", \"actor\": \"mara\", \"recipient\": \"teo\", \"summary\": \"Mara gave the bus ticket to Teo.\", \"target\": \"pocket\", \"text\": \"\"}",
-   "latency_s": 1.278,
+   "latency_s": 1.185,
    "prompt_tokens": 608,
    "output_tokens": 42,
    "model": "gemma-4-31B-it"
@@ -955,7 +955,7 @@
   "raw": "{\"action\": \"give\", \"actor\": \"mara\", \"recipient\": \"teo\", \"summary\": \"Mara gave the bus ticket to Teo.\", \"target\": \"pocket\", \"text\": \"\"}",
   "meta": {
    "text": "{\"action\": \"give\", \"actor\": \"mara\", \"recipient\": \"teo\", \"summary\": \"Mara gave the bus ticket to Teo.\", \"target\": \"pocket\", \"text\": \"\"}",
-   "latency_s": 1.213,
+   "latency_s": 1.262,
    "prompt_tokens": 570,
    "output_tokens": 42,
    "model": "gemma-4-31B-it"
@@ -990,7 +990,7 @@
   "raw": "{\"action\": \"give\", \"actor\": \"player\", \"recipient\": \"mara\", \"summary\": \"The other you handed the bus ticket to Mara.\", \"target\": \"pocket\", \"text\": \"\"}",
   "meta": {
    "text": "{\"action\": \"give\", \"actor\": \"player\", \"recipient\": \"mara\", \"summary\": \"The other you handed the bus ticket to Mara.\", \"target\": \"pocket\", \"text\": \"\"}",
-   "latency_s": 1.305,
+   "latency_s": 1.172,
    "prompt_tokens": 608,
    "output_tokens": 43,
    "model": "gemma-4-31B-it"
@@ -1025,7 +1025,7 @@
   "raw": "{\"action\": \"give\", \"actor\": \"mara\", \"recipient\": \"teo\", \"summary\": \"Mara handed the ticket to Teo.\", \"target\": \"pocket\", \"text\": \"\"}",
   "meta": {
    "text": "{\"action\": \"give\", \"actor\": \"mara\", \"recipient\": \"teo\", \"summary\": \"Mara handed the ticket to Teo.\", \"target\": \"pocket\", \"text\": \"\"}",
-   "latency_s": 1.176,
+   "latency_s": 1.199,
    "prompt_tokens": 608,
    "output_tokens": 41,
    "model": "gemma-4-31B-it"

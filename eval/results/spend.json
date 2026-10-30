@@ -2,62 +2,62 @@
  "cap_usd": 10.0,
  "price_in_per_m": 0.18,
  "price_out_per_m": 0.5,
- "total_usd": 0.1281473,
- "calls": 1063,
+ "total_usd": 0.14142074,
+ "calls": 1171,
  "runs": {
   "lock_basement_open_1001": {
-   "calls": 90,
-   "prompt_tokens": 48124,
-   "output_tokens": 3643,
-   "usd": 0.01048382
+   "calls": 101,
+   "prompt_tokens": 53994,
+   "output_tokens": 4045,
+   "usd": 0.01174142
   },
   "lock_roof_erase_1001": {
-   "calls": 82,
-   "prompt_tokens": 43195,
-   "output_tokens": 3276,
-   "usd": 0.0094131
+   "calls": 92,
+   "prompt_tokens": 48501,
+   "output_tokens": 3629,
+   "usd": 0.01054468
   },
   "open_basement_open_1001": {
-   "calls": 102,
-   "prompt_tokens": 55847,
-   "output_tokens": 4273,
-   "usd": 0.01218896
+   "calls": 112,
+   "prompt_tokens": 61478,
+   "output_tokens": 4676,
+   "usd": 0.01340404
   },
   "open_roof_open_1001": {
-   "calls": 105,
-   "prompt_tokens": 57667,
-   "output_tokens": 4203,
-   "usd": 0.01248156
+   "calls": 114,
+   "prompt_tokens": 62966,
+   "output_tokens": 4561,
+   "usd": 0.01361438
   },
   "lock_basement_open_1002": {
-   "calls": 93,
-   "prompt_tokens": 51073,
-   "output_tokens": 3892,
-   "usd": 0.01113914
+   "calls": 103,
+   "prompt_tokens": 56683,
+   "output_tokens": 4281,
+   "usd": 0.01234344
   },
   "lock_roof_erase_1002": {
-   "calls": 87,
-   "prompt_tokens": 46708,
-   "output_tokens": 3580,
-   "usd": 0.01019744
+   "calls": 97,
+   "prompt_tokens": 52350,
+   "output_tokens": 3980,
+   "usd": 0.011413
   },
   "open_basement_erase_1002": {
-   "calls": 101,
-   "prompt_tokens": 55479,
-   "output_tokens": 4259,
-   "usd": 0.01211572
+   "calls": 110,
+   "prompt_tokens": 60784,
+   "output_tokens": 4637,
+   "usd": 0.01325962
   },
   "open_roof_open_1002": {
-   "calls": 103,
-   "prompt_tokens": 56642,
-   "output_tokens": 4090,
-   "usd": 0.01224056
+   "calls": 112,
+   "prompt_tokens": 61927,
+   "output_tokens": 4435,
+   "usd": 0.01336436
   },
   "unattributed": {
-   "calls": 300,
-   "prompt_tokens": 175150,
-   "output_tokens": 12720,
-   "usd": 0.037887
+   "calls": 330,
+   "prompt_tokens": 193010,
+   "output_tokens": 13988,
+   "usd": 0.0417358
   }
  }
 }

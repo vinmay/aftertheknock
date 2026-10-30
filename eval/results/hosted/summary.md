@@ -14,13 +14,13 @@ Model: gemma-4-31B-it provider-managed, 8 live playthroughs (every fork path), r
 | Shadow events from hand-written fallback | 0/54 (0%) |
 | Proposals rejected by the validator | 1/55 (2%) |
 | Deliberate impossible give rejected | 30/30 (100%) |
-| Model's atmosphere sentence, first attempt | 3 rejected by checks, 2 provider errors; 14/16 crossings kept a sentence |
+| Model's atmosphere sentence, first attempt | 7 rejected by checks, 0 provider errors; 14/16 crossings kept a sentence |
 | Narration contradictions, hand-labeled | not labeled |
 | Intrusion accuracy, hand-labeled | not labeled |
-| Model call latency p50 / p95 | 1.42 s / 1.81 s |
-| Whole shadow timeline p50 / p95 | 5.1 s / 6.22 s |
-| Model calls per playthrough (mean) | 9.2 |
-| Tokens per playthrough (mean) | 5636 |
+| Model call latency p50 / p95 | 1.36 s / 1.75 s |
+| Whole shadow timeline p50 / p95 | 4.88 s / 5.65 s |
+| Model calls per playthrough (mean) | 9.8 |
+| Tokens per playthrough (mean) | 5872 |
 
 Variation (same choices, different seeds):
 
@@ -58,4 +58,4 @@ Freedom vs. guarantees, per shadow step (committed by the model or by a hand-wri
 | D.open.roof | 2 | 2 | 0 | 0 | give | 2 |
 | D.open.roof | 3 | 2 | 0 | 0 | mark | 2 |
 
-Spend: $0.00906 over 8 playthroughs (mean $0.00113 each) at $0.18/$0.5 per 1M input/output tokens.
+Spend: $0.00942 over 8 playthroughs (mean $0.00118 each) at $0.18/$0.5 per 1M input/output tokens.

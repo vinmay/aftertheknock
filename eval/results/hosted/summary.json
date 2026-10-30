@@ -40,12 +40,11 @@
  "narration": {
   "crossings": 16,
   "note": "crossing text is hand-written templates with committed facts; the model adds at most one checked sentence of atmosphere",
-  "raw_first_attempt_failed_rule_checks": "3/16 (19%)",
-  "raw_first_attempt_provider_errors": "2/16 (12%)",
+  "raw_first_attempt_failed_rule_checks": "7/16 (44%)",
+  "raw_first_attempt_provider_errors": "0/16 (0%)",
   "raw_failure_kinds": {
-   "C_SENSE": 2,
-   "C_PLACE": 1,
-   "TRANSPORT": 2
+   "C_SENSE": 6,
+   "C_PLACE": 1
   },
   "final_text_from_model": "14/16 (88%)",
   "final_text_fallback": "2/16 (12%)",
@@ -132,7 +131,7 @@
     "texts_with_counts": {
      "4022": 1,
      "8021": 1,
-     "8042": 1,
+     "8052": 1,
      "4029": 1
     }
    },
@@ -165,7 +164,7 @@
     ],
     "distinct_texts": 4,
     "texts_with_counts": {
-     "I'll keep it safe for now.": 1,
+     "I need to see it.": 1,
      "I'll keep this safe for now.": 1,
      "Here, take it for a moment.": 1,
      "I need to see her face.": 1
@@ -257,7 +256,7 @@
     "distinct_texts": 2,
     "texts_with_counts": {
      "We have to go down now.": 1,
-     "The wind sounds like it is screaming.": 1
+     "The wind sounds like screaming.": 1
     }
    },
    {
@@ -359,7 +358,7 @@
     "distinct_texts": 2,
     "texts_with_counts": {
      "Keep it safe until we get down.": 1,
-     "Hold this for a moment.": 1
+     "Keep this safe until we reach the bottom.": 1
     }
    },
    {
@@ -380,22 +379,22 @@
   ]
  },
  "performance": {
-  "model_call_latency_p50_s": 1.42,
-  "model_call_latency_p95_s": 1.81,
-  "shadow_sim_p50_s": 5.1,
-  "shadow_sim_p95_s": 6.22,
-  "crossing_scene_p50_s": 6.33,
-  "crossing_scene_p95_s": 9.0,
+  "model_call_latency_p50_s": 1.36,
+  "model_call_latency_p95_s": 1.75,
+  "shadow_sim_p50_s": 4.88,
+  "shadow_sim_p95_s": 5.65,
+  "crossing_scene_p50_s": 5.75,
+  "crossing_scene_p95_s": 6.41,
   "crossing_note": "time from click to crossing text with no reading pause; includes waiting for the shadow",
-  "model_calls_per_playthrough_mean": 9.2,
-  "tokens_per_playthrough_mean": 5636
+  "model_calls_per_playthrough_mean": 9.8,
+  "tokens_per_playthrough_mean": 5872
  },
  "spend": {
   "playthroughs": 8,
-  "usd_total": 0.00906,
-  "usd_per_playthrough_mean": 0.00113,
+  "usd_total": 0.00942,
+  "usd_per_playthrough_mean": 0.00118,
   "price_in_per_m": 0.18,
   "price_out_per_m": 0.5,
-  "ledger_total_usd_all_calls": 0.1281473
+  "ledger_total_usd_all_calls": 0.14142074
  }
 }
